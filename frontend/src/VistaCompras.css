@@ -1,0 +1,160 @@
+.vista-compra {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  box-sizing: border-box;
+  height: 100vh;
+  background-color: #0f172a;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+.buscador-check-compra {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.buscador-compra {
+  padding: 8px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: none;
+  width: 100%;
+  max-width: 400px;
+}
+
+.ver-agotados-check {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  gap: 6px;
+  background-color: #1e293b;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.ver-agotados-check input {
+  accent-color: #10b981;
+  transform: scale(1.2);
+}
+
+.contenedor-lista-compra {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 10px;
+}
+
+.productos-compra {
+  border-radius: 8px;
+  padding: 10px;
+  overflow-y: auto;
+  height: 50vh;
+  scrollbar-width: thin;
+  scrollbar-color: #64748b transparent;
+  background-color: #1e293b;
+}
+
+.productos-compra::-webkit-scrollbar {
+  width: 8px;
+}
+
+.productos-compra::-webkit-scrollbar-thumb {
+  background-color: #64748b;
+  border-radius: 4px;
+}
+
+.item-compra {
+  display: flex;
+  margin-bottom: 6px;
+  padding: 6px 8px;
+  background-color: #334155;
+  border-radius: 6px;
+}
+
+.fila {
+  flex-direction: row;
+}
+
+.info-compra.horiz {
+  display: grid;
+  grid-template-columns: 100px 400px 80px 100px 150px 500px;
+  align-items: center;
+  gap: 10px;
+}
+
+.info-compra.horiz span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 🔹 Imagen de productos con altura fija */
+.info-compra.horiz img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.btn-accion {
+  padding: 6px 12px;
+  background-color: #059669;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 20%;
+  align-self: flex-end;
+}
+
+.btn-accion:hover {
+  background-color: #047857;
+}
+
+/* === Carrito alineado con las columnas de productos === */
+.carrito-item.linea.compacto {
+  display: grid;
+  grid-template-columns: 100px 400px 80px 100px 150px auto;
+  align-items: center;
+  background-color: #334155;
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  gap: 10px;
+}
+
+.carrito-item.linea.compacto span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 🔹 Imagen del carrito con misma altura que productos */
+.carrito-item.linea.compacto img {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.carrito-item.linea.compacto .eliminar {
+  background: transparent;
+  border: none;
+  color: #f87171;
+  font-size: 16px;
+  cursor: pointer;
+  justify-self: end;
+}
+
+.carrito-item.linea.compacto .eliminar:hover {
+  color: #ef4444;
+}
+.imagen.mini {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 4px;
+}
