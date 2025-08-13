@@ -1,5 +1,12 @@
+//RegistrarCompra.jsx
 import React, { useState, useEffect, useRef } from "react";
 import "./RegistrarCompra.css";
+
+// Importar columnas
+import Columna1 from "./Columna1";
+import Columna2 from "./Columna2";
+import Columna3 from "./Columna3";
+import Columna4 from "./Columna4";
 
 export default function RegistrarCompra({ onCompraRegistrada }) {
   const [form1, setForm1] = useState({
@@ -17,6 +24,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     img3: "",
     img4: "",
   });
+
   const URLAPI = import.meta.env.VITE_URLAPI;
   const [factura, setFactura] = useState("");
   const [proveedor, setProveedor] = useState("");
@@ -24,12 +32,12 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
   const [fecha, setFecha] = useState(new Date().toISOString().substr(0, 10));
   const [productosAgregados, setProductosAgregados] = useState([]);
   const [mostrarDialogo, setMostrarDialogo] = useState(false);
-  const [cliente, setCliente] = useState("Sin Nombre");
   const [productosBD, setProductosBD] = useState([]);
   const [mensajeValidacion, setMensajeValidacion] = useState({
     texto: "",
-    tipo: "", // "error" o "exito"
+    tipo: "",
   });
+
   const refs = {
     ref: useRef(),
     nombre: useRef(),
@@ -38,12 +46,14 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     descripcion: useRef(),
     img1: useRef(),
   };
+
+  // Cargar productos
   useEffect(() => {
     fetch(`${URLAPI}/api/prod`)
       .then((res) => res.json())
       .then((data) => setProductosBD(data))
       .catch((err) => console.error("Error cargando productos:", err));
-  }, []);
+  }, [URLAPI]);
 
   const handleRefChange = (e) => {
     const nuevaRef = e.target.value;
@@ -80,14 +90,6 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         img4: "",
       });
     }
-  };
-
-  const handleFocus = () => {
-    if (cliente === "Sin Nombre") setCliente("");
-  };
-
-  const handleBlur = () => {
-    if (cliente.trim() === "") setCliente("Sin Nombre");
   };
 
   const isCampoDeshabilitado = (campo) => {
@@ -139,11 +141,10 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       return;
     }
 
-    // ✅ Si pasa todas las validaciones
     setProductosAgregados([...productosAgregados, { ...form1, ...form2 }]);
     setForm1({ nombre: "", ref: "", etiqueta: "", stock: "", valor: "" });
     setForm2({ descripcion: "", img1: "", img2: "", img3: "", img4: "" });
-    setMensajeValidacion({ texto: "", tipo: "" }); // Limpia mensaje
+    setMensajeValidacion({ texto: "", tipo: "" });
   };
 
   const eliminarProducto = (index) => {
@@ -151,9 +152,9 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     nuevos.splice(index, 1);
     setProductosAgregados(nuevos);
   };
+
   const aplicarCambios = async () => {
     try {
-      // Enviar POST a /api/comp por cada producto
       for (const prod of productosAgregados) {
         const cuerpoComp = {
           factura,
@@ -172,26 +173,20 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
 
         if (!resComp.ok) throw new Error("Error guardando en /api/comp");
 
-        // Si registro es productos, verificar si ya existe
         if (registro === "Productos") {
           const existe = productosBD.find((p) => p.ref === prod.ref);
 
           if (existe) {
-            // PUT a /api/prod/:id con stock actualizado
             const nuevoStock = parseInt(existe.stock) + parseInt(prod.stock);
-            const resPut = await fetch(
-              `http://localhost:3000/api/prod/${existe._id}`,
-              {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ stock: nuevoStock }),
-              }
-            );
+            const resPut = await fetch(`${URLAPI}/api/prod/${existe._id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ stock: nuevoStock }),
+            });
 
             if (!resPut.ok)
               throw new Error("Error actualizando producto existente");
           } else {
-            // POST nuevo producto
             const nuevoProd = {
               nombre: prod.nombre,
               ref: prod.ref,
@@ -218,13 +213,8 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         }
       }
 
-      // Si todo salió bien
       setMostrarDialogo(false);
-      setMensajeValidacion({
-        texto: "Registro exitoso",
-        tipo: "exito",
-      });
-      // Limpiar formularios
+      setMensajeValidacion({ texto: "Registro exitoso", tipo: "exito" });
       setForm1({ nombre: "", ref: "", etiqueta: "", stock: "", valor: "" });
       setForm2({ descripcion: "", img1: "", img2: "", img3: "", img4: "" });
       setFactura("");
@@ -232,10 +222,11 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       setRegistro("Productos");
       setFecha(new Date().toISOString().substr(0, 10));
       setProductosAgregados([]);
-      // Refrescar productosBD
+
       const res = await fetch(`${URLAPI}/api/prod`);
       const data = await res.json();
       setProductosBD(data);
+
       if (typeof onCompraRegistrada === "function") {
         onCompraRegistrada();
       }
@@ -255,284 +246,45 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         className="grid-compras"
         style={{ gridTemplateColumns: "18% 18% 41% 18%" }}
       >
-        {/* Columna 1 */}
-        <div className="columna">
-          <label className="label-inline">
-            <span>Referencia</span>
-            <input
-              ref={refs.ref}
-              maxLength={20}
-              value={form1.ref}
-              onChange={(e) => {
-                handleRefChange(e);
-                if (mensajeValidacion.texto) {
-                  setMensajeValidacion({ texto: "", tipo: "" });
-                }
-              }}
-            />
-          </label>
-          <label className="label-inline">
-            <span>Nombre</span>
-            <input
-              ref={refs.nombre}
-              maxLength={20}
-              value={form1.nombre}
-              onChange={(e) => setForm1({ ...form1, nombre: e.target.value })}
-              disabled={isCampoDeshabilitado("nombre")}
-            />
-          </label>
-          <label className="label-inline">
-            <span>Etiqueta</span>
-            <input
-              ref={refs.etiqueta}
-              maxLength={20}
-              value={form1.etiqueta}
-              onChange={(e) => setForm1({ ...form1, etiqueta: e.target.value })}
-              disabled={isCampoDeshabilitado("etiqueta")}
-            />
-          </label>
-          <label className="label-inline">
-            <span>Stock</span>
-            <input
-              type="number"
-              value={form1.stock}
-              onChange={(e) => {
-                const val = e.target.value.replace(/\D/g, "");
-                setForm1({ ...form1, stock: val });
-              }}
-              onFocus={(e) => e.target.select()}
-            />
-          </label>
-          <label className="label-inline">
-            <span>Valor</span>
-            <input
-              ref={refs.valor}
-              type="number"
-              value={form1.valor}
-              onChange={(e) => {
-                const val = e.target.value.replace(/\D/g, "");
-                setForm1({ ...form1, valor: val });
-              }}
-              onFocus={(e) => e.target.select()}
-              disabled={isCampoDeshabilitado("valor")}
-            />
-          </label>
-          <label className="label-inline">
-            <span>Descripción</span>
-            <input
-              ref={refs.descripcion}
-              type="text"
-              maxLength={50}
-              value={form2.descripcion}
-              onChange={(e) =>
-                setForm2({ ...form2, descripcion: e.target.value })
-              }
-              disabled={isCampoDeshabilitado("descripcion")}
-            />
-          </label>
-          {mensajeValidacion.texto && (
-            <div
-              style={{
-                color:
-                  mensajeValidacion.tipo === "error" ? "#ef4444" : "#22c55e",
-                fontSize: "1rem",
-                fontWeight: "bold",
-                marginTop: "22px",
-                marginBottom: "6px",
-                width: "100%",
-                textAlign: "left",
-              }}
-            >
-              {mensajeValidacion.texto}
-            </div>
-          )}
-        </div>
+        <Columna1
+          form1={form1}
+          form2={form2}
+          mensajeValidacion={mensajeValidacion}
+          refs={refs}
+          handleRefChange={handleRefChange}
+          setForm1={setForm1}
+          setForm2={setForm2}
+          isCampoDeshabilitado={isCampoDeshabilitado}
+          setMensajeValidacion={setMensajeValidacion}
+        />
 
-        {/* Columna 2 */}
-        <div className="columna">
-          <label className="label-inline">
-            <span className="label-url">URL Img1</span>
-            <input
-              ref={refs.img1}
-              maxLength={250}
-              value={form2.img1}
-              onChange={(e) => setForm2({ ...form2, img1: e.target.value })}
-              disabled={isCampoDeshabilitado("img1")}
-            />
-          </label>
-          <label className="label-inline">
-            <span className="label-url">URL Img2</span>
-            <input
-              maxLength={250}
-              value={form2.img2}
-              onChange={(e) => setForm2({ ...form2, img2: e.target.value })}
-              disabled={isCampoDeshabilitado("img2")}
-            />
-          </label>
-          <label className="label-inline">
-            <span className="label-url">URL Img3</span>
-            <input
-              maxLength={250}
-              value={form2.img3}
-              onChange={(e) => setForm2({ ...form2, img3: e.target.value })}
-              disabled={isCampoDeshabilitado("img3")}
-            />
-          </label>
-          <label className="label-inline">
-            <span className="label-url">URL Img4</span>
-            <input
-              maxLength={250}
-              value={form2.img4}
-              onChange={(e) => setForm2({ ...form2, img4: e.target.value })}
-              disabled={isCampoDeshabilitado("img4")}
-            />
-          </label>
-          <button className="btn-agregar-compra" onClick={agregarProducto}>
-            Agregar
-          </button>
-        </div>
+        <Columna2
+          form2={form2}
+          setForm2={setForm2}
+          refs={refs}
+          isCampoDeshabilitado={isCampoDeshabilitado}
+          agregarProducto={agregarProducto}
+        />
 
-        {/* Columna 3 */}
-        <div className="columna">
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "20% 20% 20% 20% 20%",
-              width: "100%",
-              fontWeight: "bold",
-              fontSize: "0.85rem",
-              color: "#10b981",
-              borderBottom: "1px solid #475569",
-              paddingBottom: "4px",
-              marginBottom: "4px",
-            }}
-          >
-            <span style={{ textAlign: "left" }}>Referencia</span>
-            <span style={{ textAlign: "left" }}>Producto</span>
-            <span style={{ textAlign: "right" }}>Cant</span>
-            <span style={{ textAlign: "right" }}>Valor</span>
-            <span style={{ textAlign: "right" }}></span>
-          </div>
+        <Columna3
+          productosAgregados={productosAgregados}
+          eliminarProducto={eliminarProducto}
+        />
 
-          {productosAgregados.map((prod, idx) => (
-            <div
-              key={idx}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "20% 20% 20% 20% 20%",
-                width: "100%",
-                padding: "2px 0",
-                fontSize: "0.85rem",
-                color: "#f1f5f9",
-              }}
-            >
-              <span style={{ textAlign: "left", fontWeight: "bold" }}>
-                {prod.ref}
-              </span>
-              <span style={{ textAlign: "left" }}>{prod.nombre}</span>
-              <span style={{ textAlign: "right" }}>{prod.stock}</span>
-              <span style={{ textAlign: "right" }}>
-                {prod.valor.toLocaleString()}
-              </span>
-              <span
-                style={{
-                  textAlign: "right",
-                  color: "#F87171",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                }}
-                onClick={() => eliminarProducto(idx)}
-              >
-                Eliminar
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Columna 4 */}
-        <div className="columna">
-          <label className="label-inline">
-            <span>Factura</span>
-            <input
-              maxLength={15}
-              value={factura}
-              onChange={(e) => {
-                setFactura(e.target.value);
-                if (mensajeValidacion.texto) {
-                  setMensajeValidacion({ texto: "", tipo: "" });
-                }
-              }}
-            />
-          </label>
-
-          <label className="label-inline">
-            <span>Proveedor</span>
-            <input
-              maxLength={15}
-              value={proveedor}
-              onChange={(e) => setProveedor(e.target.value)}
-            />
-          </label>
-
-          <label className="label-inline">
-            <span>Registro</span>
-            <select
-              value={registro}
-              onChange={(e) => setRegistro(e.target.value)}
-              style={{
-                padding: "4px 6px",
-                borderRadius: "4px",
-                maxWidth: "174px",
-                width: "100%",
-                height: "28px",
-                fontSize: "0.85rem",
-              }}
-            >
-              <option value="Productos">Productos</option>
-              <option value="Gastos">Gastos</option>
-            </select>
-          </label>
-
-          <label className="label-inline">
-            <span>Fecha</span>
-            <input
-              type="date"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-              onBlur={() => {
-                const hoy = new Date().toISOString().substr(0, 10);
-
-                // Si la fecha no es válida o es mayor que hoy → volver a hoy
-                if (!fecha || isNaN(Date.parse(fecha)) || fecha > hoy) {
-                  setFecha(hoy);
-                }
-              }}
-            />
-          </label>
-
-          {/* 🟠 Aquí está la validación nueva */}
-          <button
-            className="btn-confirmar-compra"
-            onClick={() => {
-              if (
-                factura.trim().length < 3 ||
-                proveedor.trim().length < 3 ||
-                productosAgregados.length === 0
-              ) {
-                setMensajeValidacion({
-                  texto: "Algún dato no es válido",
-                  tipo: "error",
-                });
-                return;
-              }
-
-              setMensajeValidacion({ texto: "", tipo: "" });
-              setMostrarDialogo(true);
-            }}
-          >
-            Registrar Compra
-          </button>
-        </div>
+        <Columna4
+          factura={factura}
+          setFactura={setFactura}
+          proveedor={proveedor}
+          setProveedor={setProveedor}
+          registro={registro}
+          setRegistro={setRegistro}
+          fecha={fecha}
+          setFecha={setFecha}
+          mensajeValidacion={mensajeValidacion}
+          setMensajeValidacion={setMensajeValidacion}
+          productosAgregados={productosAgregados}
+          setMostrarDialogo={setMostrarDialogo}
+        />
       </div>
 
       {mostrarDialogo && (
