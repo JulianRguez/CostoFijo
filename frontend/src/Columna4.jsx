@@ -19,7 +19,7 @@ export default function Columna4({
       <label className="label-inline">
         <span>Factura</span>
         <input
-          maxLength={15}
+          maxLength={25}
           value={factura}
           onChange={(e) => {
             setFactura(e.target.value);
@@ -33,7 +33,7 @@ export default function Columna4({
       <label className="label-inline">
         <span>Proveedor</span>
         <input
-          maxLength={15}
+          maxLength={25}
           value={proveedor}
           onChange={(e) => setProveedor(e.target.value)}
         />

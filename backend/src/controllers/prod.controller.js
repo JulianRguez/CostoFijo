@@ -54,22 +54,73 @@ export const createProducts = async (req, res) => {
   }
 };
 
-export const updateProduct = async (req, res) => {
+export const updateProducts = async (req, res) => {
   try {
-    const { id } = req.params;
-    const datosActualizados = req.body;
+    // 1) Normalizar payload a array
+    const payload = Array.isArray(req.body) ? req.body : [req.body];
 
-    const productoActualizado = await Prod.findByIdAndUpdate(id, datosActualizados, {
-      new: true,
-      runValidators: true
-    });
-
-    if (!productoActualizado) {
-      return res.status(404).json({ mensaje: "Producto no encontrado" });
+    if (!payload || payload.length === 0) {
+      return res.status(400).json({
+        mensaje: "El body está vacío. Envía uno o varios productos para actualizar."
+      });
     }
 
-    res.json(productoActualizado);
+    // 2) Validar que todos tengan _id
+    const missingId = payload.find((p) => !p._id);
+    if (missingId) {
+      return res.status(400).json({
+        mensaje: "Todos los productos a actualizar deben incluir su _id."
+      });
+    }
+
+    // 3) Campos permitidos para actualización
+    const allowed = [
+      "nombre",
+      "ref",
+      "etiqueta",
+      "stock",
+      "precio",
+      "descripcion",
+      "urlFoto1",
+      "urlFoto2",
+      "urlFoto3",
+      "urlFoto4",
+      "reversado",
+      "calificacion"
+    ];
+
+    // 4) Procesar actualizaciones
+    const results = [];
+    for (const p of payload) {
+      const updateData = {};
+      for (const k of allowed) {
+        if (p[k] !== undefined) updateData[k] = p[k];
+      }
+
+      const updated = await Prod.findByIdAndUpdate(
+        p._id,
+        updateData,
+        { new: true, runValidators: true }
+      );
+
+      if (updated) {
+        results.push(updated);
+      } else {
+        results.push({ _id: p._id, error: "Producto no encontrado" });
+      }
+    }
+
+    // 5) Respuesta
+    return res.status(200).json({
+      total: results.length,
+      productos: results
+    });
+
   } catch (error) {
-    res.status(400).json({ mensaje: "Error al actualizar producto", error });
+    return res.status(400).json({
+      mensaje: "Error al actualizar productos",
+      error: error.message || error
+    });
   }
 };
+

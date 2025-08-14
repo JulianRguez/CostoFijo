@@ -3,7 +3,7 @@ const router = express.Router();
 import * as prodController from "../controllers/prod.controller.js";
 
 router.get("/", prodController.getProducts);
-router.post("/", prodController.createProducts); // <- plural
-router.put("/:id", prodController.updateProduct);
+router.post("/", prodController.createProducts);
+router.put("/", prodController.updateProducts); 
 
 export default router;

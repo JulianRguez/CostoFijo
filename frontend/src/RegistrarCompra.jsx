@@ -155,64 +155,80 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
 
   const aplicarCambios = async () => {
     try {
-      for (const prod of productosAgregados) {
-        const cuerpoComp = {
-          factura,
-          registro,
-          fecha,
-          idProd: prod.ref,
-          cantidad: parseInt(prod.stock),
-          valor: parseInt(prod.valor),
-        };
+      // 1️⃣ Arreglo de compras (siempre todos)
+      const compArray = productosAgregados.map((prod) => ({
+        factura,
+        proveedor,
+        registro,
+        fecha,
+        idProd: prod.ref,
+        cantidad: parseInt(prod.stock),
+        valor: parseInt(prod.valor),
+      }));
 
-        const resComp = await fetch(`${URLAPI}/api/comp`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cuerpoComp),
-        });
+      // 2️⃣ Separar productos para actualizar o crear
+      const productosActualizar = [];
+      const productosCrear = [];
 
-        if (!resComp.ok) throw new Error("Error guardando en /api/comp");
+      productosAgregados.forEach((prod) => {
+        const existente = productosBD.find((p) => p.ref === prod.ref);
 
-        if (registro === "Productos") {
-          const existe = productosBD.find((p) => p.ref === prod.ref);
-
-          if (existe) {
-            const nuevoStock = parseInt(existe.stock) + parseInt(prod.stock);
-            const resPut = await fetch(`${URLAPI}/api/prod/${existe._id}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ stock: nuevoStock }),
-            });
-
-            if (!resPut.ok)
-              throw new Error("Error actualizando producto existente");
-          } else {
-            const nuevoProd = {
-              nombre: prod.nombre,
-              ref: prod.ref,
-              etiqueta: prod.etiqueta,
-              stock: parseInt(prod.stock),
-              precio: parseInt(prod.valor),
-              descripcion: prod.descripcion,
-              urlFoto1: prod.img1,
-              urlFoto2: prod.img2 || "",
-              urlFoto3: prod.img3 || "",
-              urlFoto4: prod.img4 || "",
-              reversado: 0,
-              calificacion: [5, 5, 5],
-            };
-
-            const resPost = await fetch(`${URLAPI}/api/prod`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(nuevoProd),
-            });
-
-            if (!resPost.ok) throw new Error("Error creando producto nuevo");
-          }
+        if (existente) {
+          // Stock actualizado
+          const nuevoStock = parseInt(existente.stock) + parseInt(prod.stock);
+          productosActualizar.push({
+            _id: existente._id,
+            stock: nuevoStock,
+          });
+        } else {
+          // Producto nuevo
+          productosCrear.push({
+            nombre: prod.nombre,
+            ref: prod.ref,
+            etiqueta: prod.etiqueta,
+            stock: parseInt(prod.stock),
+            precio: parseInt(prod.valor),
+            descripcion: prod.descripcion,
+            urlFoto1: prod.img1,
+            urlFoto2: prod.img2 || "",
+            urlFoto3: prod.img3 || "",
+            urlFoto4: prod.img4 || "",
+            reversado: 0,
+            calificacion: [5, 5, 5],
+          });
         }
+      });
+
+      // 3️⃣ POST a /api/comp (todas las compras)
+      const resComp = await fetch(`${URLAPI}/api/comp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(compArray),
+      });
+      if (!resComp.ok) throw new Error("Error guardando en /api/comp");
+
+      // 4️⃣ PUT a /api/prod (productos existentes)
+      if (productosActualizar.length > 0) {
+        const resPut = await fetch(`${URLAPI}/api/prod`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(productosActualizar),
+        });
+        if (!resPut.ok)
+          throw new Error("Error actualizando productos existentes");
       }
 
+      // 5️⃣ POST a /api/prod (productos nuevos)
+      if (productosCrear.length > 0) {
+        const resPost = await fetch(`${URLAPI}/api/prod`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(productosCrear),
+        });
+        if (!resPost.ok) throw new Error("Error creando productos nuevos");
+      }
+
+      // 6️⃣ Reset de formulario y actualización de productos
       setMostrarDialogo(false);
       setMensajeValidacion({ texto: "Registro exitoso", tipo: "exito" });
       setForm1({ nombre: "", ref: "", etiqueta: "", stock: "", valor: "" });
@@ -223,9 +239,9 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       setFecha(new Date().toISOString().substr(0, 10));
       setProductosAgregados([]);
 
-      const res = await fetch(`${URLAPI}/api/prod`);
-      const data = await res.json();
-      setProductosBD(data);
+      const resProd = await fetch(`${URLAPI}/api/prod`);
+      const dataProd = await resProd.json();
+      setProductosBD(dataProd);
 
       if (typeof onCompraRegistrada === "function") {
         onCompraRegistrada();
@@ -233,7 +249,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     } catch (error) {
       console.error(error);
       setMensajeValidacion({
-        texto: "Algún dato no es válido",
+        texto: error.message || "No pudo ser guardado",
         tipo: "error",
       });
     }

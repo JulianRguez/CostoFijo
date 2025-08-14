@@ -11,7 +11,6 @@ export default function VistaCentral() {
   );
   const [mostrarModal, setMostrarModal] = useState(false);
   const [nombreCliente, setNombreCliente] = useState("Sin Registro");
-  const [confirmando, setConfirmando] = useState(false); // Bloqueo botón confirmar
 
   const URLAPI = import.meta.env.VITE_URLAPI;
 
@@ -84,30 +83,60 @@ export default function VistaCentral() {
   };
 
   // Confirmar venta
+  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
+  // tipo: "exito" o "error"
+
   const handleConfirmar = async () => {
     if (carrito.length === 0) return;
-    setConfirmando(true);
+
+    if (!nombreCliente || nombreCliente.trim() === "") {
+      setMensaje({
+        texto: "Por favor ingresa el nombre del cliente.",
+        tipo: "error",
+      });
+      return;
+    }
+
+    // 1) Cerrar el modal inmediatamente
+    setMostrarModal(false);
 
     try {
-      for (const item of carrito) {
-        const payload = {
-          idProd: item._id,
-          idClient: nombreCliente,
-          cantidad: item.cantidad,
-          valor: item.precio,
-          factura: "FACT-000",
+      // 2) Preparar ventas
+      const ventasPayload = carrito.map((item) => ({
+        idProd: item._id,
+        idClient: nombreCliente,
+        cantidad: item.cantidad,
+        valor: item.precio,
+        factura: "FACT-000",
+      }));
+
+      // 3) Preparar actualización de stock usando el stock ORIGINAL en 'productos'
+      const stockPayload = carrito.map((item) => {
+        const productoOriginal = productos.find((p) => p._id === item._id);
+        return {
+          _id: item._id,
+          stock: productoOriginal?.stock ?? 0,
         };
+      });
 
-        await axios.post(`${URLAPI}/api/vent`, payload);
-      }
+      // 4) Enviar ventas
+      await axios.post(`${URLAPI}/api/vent`, ventasPayload);
 
-      alert("Registros enviados correctamente.");
-      setMostrarModal(false);
+      // 5) Actualizar stock
+      await axios.put(`${URLAPI}/api/prod`, stockPayload);
+
+      // 6) Refrescar productos desde el servidor
+      const res = await axios.get(`${URLAPI}/api/prod`);
+      setProductos(res.data);
+
+      // 7) Mostrar mensaje de éxito y limpiar carrito
+      setMensaje({ texto: "Registro exitoso", tipo: "exito" });
+      setCarrito([]);
     } catch (error) {
-      console.error("Error al enviar ventas:", error);
-      alert("Ocurrió un error al enviar las ventas. Reintenta.");
-    } finally {
-      setConfirmando(false);
+      console.error("Error al confirmar venta:", error);
+
+      // 8) Mostrar mensaje de error y NO limpiar el carrito
+      setMensaje({ texto: "Error al realizar el registro", tipo: "error" });
     }
   };
 
@@ -158,7 +187,18 @@ export default function VistaCentral() {
 
         {/* Carrito */}
         <div className="contenedor-carrito">
-          <h2 className="carrito-titulo">Productos seleccionados</h2>
+          <div className="carrito-header">
+            <h2 className="carrito-titulo">Productos seleccionados</h2>
+            {mensaje.texto && (
+              <span
+                className={`msg-estado ${
+                  mensaje.tipo === "exito" ? "ok" : "err"
+                }`}
+              >
+                {mensaje.texto}
+              </span>
+            )}
+          </div>
           <div className="carrito-scroll">
             {carrito.map((item) => (
               <div key={item._id} className="carrito-item linea compacto">
@@ -212,15 +252,8 @@ export default function VistaCentral() {
               <strong style={{ fontSize: "16px" }}>Total: ${total}</strong>
             </div>
             <div className="acciones-modal">
-              <button
-                onClick={() => setMostrarModal(false)}
-                disabled={confirmando}
-              >
-                Cancelar
-              </button>
-              <button onClick={handleConfirmar} disabled={confirmando}>
-                {confirmando ? "Enviando..." : "Confirmar"}
-              </button>
+              <button onClick={() => setMostrarModal(false)}>Cancelar</button>
+              <button onClick={handleConfirmar}>Confirmar</button>
             </div>
           </div>
         </div>

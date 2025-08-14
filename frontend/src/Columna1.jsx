@@ -41,13 +41,18 @@ export default function Columna1({
 
       <label className="label-inline">
         <span>Etiqueta</span>
-        <input
+        <select
           ref={refs.etiqueta}
-          maxLength={20}
           value={form1.etiqueta}
           onChange={(e) => setForm1({ ...form1, etiqueta: e.target.value })}
           disabled={isCampoDeshabilitado("etiqueta")}
-        />
+        >
+          <option value="Papeleria">Papeleria</option>
+          <option value="Celulares">Celulares</option>
+          <option value="Acesorios">Accesorios</option>
+          <option value="Hogar">Hogar</option>
+          <option value="Servicios">Servicios</option>
+        </select>
       </label>
 
       <label className="label-inline">
