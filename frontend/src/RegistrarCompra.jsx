@@ -12,7 +12,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
   const [form1, setForm1] = useState({
     nombre: "",
     ref: "",
-    etiqueta: "",
+    etiqueta: "Accesorios",
     stock: "",
     valor: "",
   });
@@ -79,7 +79,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       setForm1((prev) => ({
         ...prev,
         nombre: "",
-        etiqueta: "",
+        etiqueta: "Accesorios",
         valor: "",
       }));
       setForm2({
@@ -142,7 +142,13 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     }
 
     setProductosAgregados([...productosAgregados, { ...form1, ...form2 }]);
-    setForm1({ nombre: "", ref: "", etiqueta: "", stock: "", valor: "" });
+    setForm1({
+      nombre: "",
+      ref: "",
+      etiqueta: "Accesorios",
+      stock: "",
+      valor: "",
+    });
     setForm2({ descripcion: "", img1: "", img2: "", img3: "", img4: "" });
     setMensajeValidacion({ texto: "", tipo: "" });
   };
@@ -231,7 +237,13 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       // 6️⃣ Reset de formulario y actualización de productos
       setMostrarDialogo(false);
       setMensajeValidacion({ texto: "Registro exitoso", tipo: "exito" });
-      setForm1({ nombre: "", ref: "", etiqueta: "", stock: "", valor: "" });
+      setForm1({
+        nombre: "",
+        ref: "",
+        etiqueta: "Accesorios",
+        stock: "",
+        valor: "",
+      });
       setForm2({ descripcion: "", img1: "", img2: "", img3: "", img4: "" });
       setFactura("");
       setProveedor("");

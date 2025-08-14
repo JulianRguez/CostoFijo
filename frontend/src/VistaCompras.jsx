@@ -111,6 +111,7 @@ export default function VistaCompras() {
                 <span style={getRegistroStyle(item.registro)}>
                   {item.registro}
                 </span>
+                <span>{`Ref: ${item.idProd}`}</span>
                 <span>
                   {agruparFacturas
                     ? `Factura   ${item.factura}`

@@ -41,7 +41,11 @@ export default function Columna4({
 
       <label className="label-inline">
         <span>Registro</span>
-        <select value={registro} onChange={(e) => setRegistro(e.target.value)}>
+        <select
+          value={registro}
+          onChange={(e) => setRegistro(e.target.value)}
+          className="lst"
+        >
           <option value="Productos">Productos</option>
           <option value="Gastos">Gastos</option>
         </select>

@@ -80,7 +80,7 @@
 
 .info-compra.horiz {
   display: grid;
-  grid-template-columns: 100px 400px 80px 100px 150px 500px;
+  grid-template-columns: 120px 180px 400px 80px 100px 150px 500px;
   align-items: center;
   gap: 10px;
 }

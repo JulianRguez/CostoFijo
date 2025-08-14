@@ -46,12 +46,14 @@ export default function Columna1({
           value={form1.etiqueta}
           onChange={(e) => setForm1({ ...form1, etiqueta: e.target.value })}
           disabled={isCampoDeshabilitado("etiqueta")}
+          className="lst"
         >
+          <option value="Accesorios">Accesorios</option>
           <option value="Papeleria">Papeleria</option>
           <option value="Celulares">Celulares</option>
-          <option value="Acesorios">Accesorios</option>
           <option value="Hogar">Hogar</option>
           <option value="Servicios">Servicios</option>
+          <option value="Gasto">Gasto</option>
         </select>
       </label>
 
