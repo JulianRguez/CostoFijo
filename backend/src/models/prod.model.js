@@ -7,6 +7,8 @@ const prodSchema = new mongoose.Schema({
   etiqueta: { type: String },
   stock: { type: Number, required: true },
   precio: { type: Number, required: true },
+  valorVenta: { type: Number, required: true },
+  minStock: { type: Number, required: true },
   descripcion: { type: String },
   urlFoto1: { type: String },
   urlFoto2: { type: String },

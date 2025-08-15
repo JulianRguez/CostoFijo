@@ -1,3 +1,4 @@
+//Columna2.jsx
 import React from "react";
 
 export default function Columna2({
