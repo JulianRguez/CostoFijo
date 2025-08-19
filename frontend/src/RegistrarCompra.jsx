@@ -2,11 +2,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./RegistrarCompra.css";
 
-// Importar columnas
 import Columna1 from "./Columna1";
 import Columna2 from "./Columna2";
 import Columna3 from "./Columna3";
 import Columna4 from "./Columna4";
+
+const URLIMGASTO = import.meta.env.VITE_IMGGASTO;
 
 export default function RegistrarCompra({ onCompraRegistrada }) {
   const [form1, setForm1] = useState({
@@ -15,6 +16,8 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     etiqueta: "Accesorios",
     stock: "",
     valor: "",
+    valorVenta: "",
+    minStock: "",
   });
 
   const [form2, setForm2] = useState({
@@ -47,7 +50,6 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     img1: useRef(),
   };
 
-  // Cargar productos
   useEffect(() => {
     fetch(`${URLAPI}/api/prod`)
       .then((res) => res.json())
@@ -67,6 +69,8 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         nombre: encontrado.nombre,
         etiqueta: encontrado.etiqueta,
         valor: encontrado.precio,
+        valorVenta: encontrado.valorVenta || "",
+        minStock: encontrado.minStock || "",
       }));
       setForm2({
         descripcion: encontrado.descripcion,
@@ -81,6 +85,8 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         nombre: "",
         etiqueta: "Accesorios",
         valor: "",
+        valorVenta: "",
+        minStock: "",
       }));
       setForm2({
         descripcion: "",
@@ -103,13 +109,15 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       { valor: form1.nombre, ref: refs.nombre },
       { valor: form1.etiqueta, ref: refs.etiqueta },
       { valor: form1.valor, ref: refs.valor },
+      { valor: form1.valorVenta, ref: null },
+      { valor: form1.minStock, ref: null },
       { valor: form2.descripcion, ref: refs.descripcion },
       { valor: form2.img1, ref: refs.img1 },
     ];
 
     for (const campo of camposObligatorios) {
       if (!campo.valor || campo.valor.toString().trim() === "") {
-        campo.ref.current?.focus();
+        campo.ref?.current?.focus();
         setMensajeValidacion({
           texto: "Algún dato no es válido",
           tipo: "error",
@@ -132,8 +140,12 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       return;
     }
 
-    if (form1.stock <= 0 || form1.valor <= 100) {
-      refs.valor.current?.focus();
+    if (
+      form1.stock <= 0 ||
+      form1.valor <= 100 ||
+      form1.valorVenta <= 100 ||
+      form1.minStock < 0
+    ) {
       setMensajeValidacion({
         texto: "Algún dato no es válido",
         tipo: "error",
@@ -148,6 +160,8 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       etiqueta: "Accesorios",
       stock: "",
       valor: "",
+      valorVenta: "",
+      minStock: "",
     });
     setForm2({ descripcion: "", img1: "", img2: "", img3: "", img4: "" });
     setMensajeValidacion({ texto: "", tipo: "" });
@@ -161,8 +175,22 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
 
   const aplicarCambios = async () => {
     try {
-      // 1️⃣ Arreglo de compras (siempre todos)
-      const compArray = productosAgregados.map((prod) => ({
+      // Si es un registro de tipo "Gastos", transformamos productos
+      const productosFinales = productosAgregados.map((prod) => {
+        if (registro === "Gastos") {
+          return {
+            ...prod,
+            etiqueta: "Gasto", // ✅ ahora etiqueta en vez de ref
+            stock: 1,
+            valorVenta: 0,
+            minStock: 0,
+            img1: URLIMGASTO,
+          };
+        }
+        return prod;
+      });
+
+      const compArray = productosFinales.map((prod) => ({
         factura,
         proveedor,
         registro,
@@ -172,28 +200,27 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         valor: parseInt(prod.valor),
       }));
 
-      // 2️⃣ Separar productos para actualizar o crear
       const productosActualizar = [];
       const productosCrear = [];
 
-      productosAgregados.forEach((prod) => {
+      productosFinales.forEach((prod) => {
         const existente = productosBD.find((p) => p.ref === prod.ref);
 
         if (existente) {
-          // Stock actualizado
           const nuevoStock = parseInt(existente.stock) + parseInt(prod.stock);
           productosActualizar.push({
             _id: existente._id,
             stock: nuevoStock,
           });
         } else {
-          // Producto nuevo
           productosCrear.push({
             nombre: prod.nombre,
             ref: prod.ref,
             etiqueta: prod.etiqueta,
             stock: parseInt(prod.stock),
             precio: parseInt(prod.valor),
+            valorVenta: parseInt(prod.valorVenta),
+            minStock: parseInt(prod.minStock),
             descripcion: prod.descripcion,
             urlFoto1: prod.img1,
             urlFoto2: prod.img2 || "",
@@ -205,7 +232,6 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         }
       });
 
-      // 3️⃣ POST a /api/comp (todas las compras)
       const resComp = await fetch(`${URLAPI}/api/comp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -213,7 +239,6 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       });
       if (!resComp.ok) throw new Error("Error guardando en /api/comp");
 
-      // 4️⃣ PUT a /api/prod (productos existentes)
       if (productosActualizar.length > 0) {
         const resPut = await fetch(`${URLAPI}/api/prod`, {
           method: "PUT",
@@ -224,7 +249,6 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
           throw new Error("Error actualizando productos existentes");
       }
 
-      // 5️⃣ POST a /api/prod (productos nuevos)
       if (productosCrear.length > 0) {
         const resPost = await fetch(`${URLAPI}/api/prod`, {
           method: "POST",
@@ -234,7 +258,6 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         if (!resPost.ok) throw new Error("Error creando productos nuevos");
       }
 
-      // 6️⃣ Reset de formulario y actualización de productos
       setMostrarDialogo(false);
       setMensajeValidacion({ texto: "Registro exitoso", tipo: "exito" });
       setForm1({
@@ -243,6 +266,8 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         etiqueta: "Accesorios",
         stock: "",
         valor: "",
+        valorVenta: "",
+        minStock: "",
       });
       setForm2({ descripcion: "", img1: "", img2: "", img3: "", img4: "" });
       setFactura("");
@@ -287,6 +312,8 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         />
 
         <Columna2
+          form1={form1}
+          setForm1={setForm1}
           form2={form2}
           setForm2={setForm2}
           refs={refs}

@@ -59,9 +59,9 @@ export default function VistaCentral() {
     setCarrito(carrito.filter((i) => i._id !== id));
   };
 
-  // Calcular total
+  // Calcular total usando valorVenta si existe
   const total = carrito.reduce(
-    (acc, item) => acc + item.precio * item.cantidad,
+    (acc, item) => acc + (item.valorVenta ?? item.precio) * item.cantidad,
     0
   );
 
@@ -84,7 +84,6 @@ export default function VistaCentral() {
 
   // Confirmar venta
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
-  // tipo: "exito" o "error"
 
   const handleConfirmar = async () => {
     if (carrito.length === 0) return;
@@ -97,20 +96,17 @@ export default function VistaCentral() {
       return;
     }
 
-    // 1) Cerrar el modal inmediatamente
     setMostrarModal(false);
 
     try {
-      // 2) Preparar ventas
       const ventasPayload = carrito.map((item) => ({
         idProd: item._id,
         idClient: nombreCliente,
         cantidad: item.cantidad,
-        valor: item.precio,
+        valor: item.valorVenta ?? item.precio,
         factura: "FACT-000",
       }));
 
-      // 3) Preparar actualización de stock usando el stock ORIGINAL en 'productos'
       const stockPayload = carrito.map((item) => {
         const productoOriginal = productos.find((p) => p._id === item._id);
         return {
@@ -119,23 +115,16 @@ export default function VistaCentral() {
         };
       });
 
-      // 4) Enviar ventas
       await axios.post(`${URLAPI}/api/vent`, ventasPayload);
-
-      // 5) Actualizar stock
       await axios.put(`${URLAPI}/api/prod`, stockPayload);
 
-      // 6) Refrescar productos desde el servidor
       const res = await axios.get(`${URLAPI}/api/prod`);
       setProductos(res.data);
 
-      // 7) Mostrar mensaje de éxito y limpiar carrito
       setMensaje({ texto: "Registro exitoso", tipo: "exito" });
       setCarrito([]);
     } catch (error) {
       console.error("Error al confirmar venta:", error);
-
-      // 8) Mostrar mensaje de error y NO limpiar el carrito
       setMensaje({ texto: "Error al realizar el registro", tipo: "error" });
     }
   };
@@ -170,7 +159,7 @@ export default function VistaCentral() {
               <span>{prod.nombre}</span>
               <span>Ref: {prod.ref}</span>
               <span>{prod.stock}</span>
-              <span>${prod.precio}</span>
+              <span>${prod.valorVenta ?? prod.precio}</span>
               <span>R: {prod.reversado}</span>
               <span>{prod.etiqueta}</span>
               <span>⭐ {prod.calificacion?.length || 0}</span>
@@ -205,8 +194,8 @@ export default function VistaCentral() {
                 <img src={item.urlFoto1} alt="" className="imagen mini" />
                 <span>{item.nombre}</span>
                 <span>x{item.cantidad}</span>
-                <span>${item.precio}</span>
-                <span>${item.precio * item.cantidad}</span>
+                <span>${item.valorVenta ?? item.precio}</span>
+                <span>${(item.valorVenta ?? item.precio) * item.cantidad}</span>
                 <button
                   className="eliminar"
                   onClick={() => quitarDelCarrito(item._id)}
@@ -246,7 +235,7 @@ export default function VistaCentral() {
               {carrito.map((item) => (
                 <div key={item._id} style={{ fontSize: "16px" }}>
                   {item.nombre} - x{item.cantidad} - $
-                  {item.precio * item.cantidad}
+                  {(item.valorVenta ?? item.precio) * item.cantidad}
                 </div>
               ))}
               <strong style={{ fontSize: "16px" }}>Total: ${total}</strong>

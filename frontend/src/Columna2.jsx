@@ -2,6 +2,8 @@
 import React from "react";
 
 export default function Columna2({
+  form1,
+  setForm1,
   form2,
   setForm2,
   refs,
@@ -10,6 +12,37 @@ export default function Columna2({
 }) {
   return (
     <div className="columna">
+      {/* Campos nuevos antes de URL Img1 */}
+      <label className="label-inline">
+        <span className="label-url">Valor venta</span>
+        <input
+          type="number"
+          value={form1.valorVenta}
+          onChange={(e) =>
+            setForm1({
+              ...form1,
+              valorVenta: e.target.value.replace(/\D/g, ""),
+            })
+          }
+          onFocus={(e) => e.target.select()}
+        />
+      </label>
+
+      <label className="label-inline">
+        <span className="label-url">Stock min</span>
+        <input
+          type="number"
+          value={form1.minStock}
+          onChange={(e) =>
+            setForm1({
+              ...form1,
+              minStock: e.target.value.replace(/\D/g, ""),
+            })
+          }
+          onFocus={(e) => e.target.select()}
+        />
+      </label>
+
       <label className="label-inline">
         <span className="label-url">URL Img1</span>
         <input
