@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
   "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
-  "build": "npm run build --prefix frontend && npx copyfiles -u 1 \"frontend/dist/**/*\" backend/dist",
+  "build": "npm install --prefix frontend && npm run build --prefix frontend && npx copyfiles -u 1 \"frontend/dist/**/*\" backend/dist",
   "start": "NODE_ENV=production npm run start --prefix backend"
 },
   "devDependencies": {
