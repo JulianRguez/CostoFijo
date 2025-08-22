@@ -277,8 +277,12 @@ html {
 }
 
 .msg-estado.ok {
-  color: #16a34a;
+  color: #10b981;
 } /* verde */
 .msg-estado.err {
   color: #dc2626;
 } /* rojo */
+.btn-confirmar:disabled {
+  background-color: #64748b;
+  cursor: not-allowed;
+}

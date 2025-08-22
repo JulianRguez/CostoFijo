@@ -11,6 +11,14 @@ export default function VistaCentral() {
   );
   const [mostrarModal, setMostrarModal] = useState(false);
   const [nombreCliente, setNombreCliente] = useState("Sin Registro");
+  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
+
+  // Nuevos estados para el modal
+  const [creditoDirecto, setCreditoDirecto] = useState(false);
+  const [fechaPago, setFechaPago] = useState("");
+  const [valorFinanciado, setValorFinanciado] = useState(0);
+  const [aplicaGarantia, setAplicaGarantia] = useState(false);
+  const [garantiaDias, setGarantiaDias] = useState(0);
 
   const URLAPI = import.meta.env.VITE_URLAPI;
 
@@ -30,20 +38,19 @@ export default function VistaCentral() {
   // Agregar producto al carrito
   const agregarAlCarrito = (producto) => {
     if (producto.stock <= 0) return;
+    if (mensaje.texto) {
+      setMensaje({ texto: "", tipo: "" });
+    }
 
     const existe = carrito.find((item) => item._id === producto._id);
-    const actualizadoProductos = productos.map((p) =>
-      p._id === producto._id ? { ...p, stock: p.stock - 1 } : p
-    );
-    setProductos(actualizadoProductos);
-
     if (existe) {
-      const actualizado = carrito.map((item) =>
-        item._id === producto._id
-          ? { ...item, cantidad: item.cantidad + 1 }
-          : item
+      setCarrito(
+        carrito.map((item) =>
+          item._id === producto._id
+            ? { ...item, cantidad: item.cantidad + 1 }
+            : item
+        )
       );
-      setCarrito(actualizado);
     } else {
       setCarrito([...carrito, { ...producto, cantidad: 1 }]);
     }
@@ -51,15 +58,10 @@ export default function VistaCentral() {
 
   // Quitar producto del carrito
   const quitarDelCarrito = (id) => {
-    const item = carrito.find((i) => i._id === id);
-    const actualizadoProductos = productos.map((p) =>
-      p._id === id ? { ...p, stock: p.stock + item.cantidad } : p
-    );
-    setProductos(actualizadoProductos);
     setCarrito(carrito.filter((i) => i._id !== id));
   };
 
-  // Calcular total usando valorVenta si existe
+  // Calcular total
   const total = carrito.reduce(
     (acc, item) => acc + (item.valorVenta ?? item.precio) * item.cantidad,
     0
@@ -67,6 +69,13 @@ export default function VistaCentral() {
 
   // Filtrar productos
   const productosFiltrados = productos
+    .map((p) => {
+      const enCarrito = carrito.find((c) => c._id === p._id);
+      return {
+        ...p,
+        stock: p.stock - (enCarrito?.cantidad || 0),
+      };
+    })
     .filter((p) => p.ref?.toLowerCase().includes(filtrar.toLowerCase()))
     .filter((p) => verAgotados || p.stock > 0);
 
@@ -83,14 +92,12 @@ export default function VistaCentral() {
   };
 
   // Confirmar venta
-  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
-
   const handleConfirmar = async () => {
     if (carrito.length === 0) return;
 
     if (!nombreCliente || nombreCliente.trim() === "") {
       setMensaje({
-        texto: "Por favor ingresa el nombre del cliente.",
+        texto: "Por favor ingresa el documento de identidad del cliente.",
         tipo: "error",
       });
       return;
@@ -104,25 +111,28 @@ export default function VistaCentral() {
         idClient: nombreCliente,
         cantidad: item.cantidad,
         valor: item.valorVenta ?? item.precio,
-        factura: "FACT-000",
+        factura: `FACT-${Date.now()}`,
+        creditoDirecto,
+        fechaPago: creditoDirecto ? fechaPago : null,
+        valorFinanciado: creditoDirecto ? valorFinanciado : 0,
+        aplicaGarantia,
+        garantiaDias: aplicaGarantia ? garantiaDias : 0,
       }));
 
-      const stockPayload = carrito.map((item) => {
-        const productoOriginal = productos.find((p) => p._id === item._id);
-        return {
-          _id: item._id,
-          stock: productoOriginal?.stock ?? 0,
-        };
-      });
-
       await axios.post(`${URLAPI}/api/vent`, ventasPayload);
-      await axios.put(`${URLAPI}/api/prod`, stockPayload);
 
+      // Refrescar productos
       const res = await axios.get(`${URLAPI}/api/prod`);
       setProductos(res.data);
 
       setMensaje({ texto: "Registro exitoso", tipo: "exito" });
       setCarrito([]);
+      setNombreCliente("Sin Registro");
+      setCreditoDirecto(false);
+      setFechaPago("");
+      setValorFinanciado(0);
+      setAplicaGarantia(false);
+      setGarantiaDias(0);
     } catch (error) {
       console.error("Error al confirmar venta:", error);
       setMensaje({ texto: "Error al realizar el registro", tipo: "error" });
@@ -221,8 +231,18 @@ export default function VistaCentral() {
         <div className="modal">
           <div className="modal-contenido">
             <h2>Registro de venta</h2>
+
+            {/* Documento cliente */}
             <div className="campo">
-              <label>Nombre del cliente:</label>
+              <label
+                style={{
+                  fontWeight: "bold",
+                  color: "#10b981",
+                  fontSize: "16px",
+                }}
+              >
+                Documento de identidad del cliente:
+              </label>
               <input
                 type="text"
                 value={nombreCliente}
@@ -231,6 +251,96 @@ export default function VistaCentral() {
                 onBlur={handleNombreBlur}
               />
             </div>
+
+            {/* Texto aviso */}
+            <p style={{ fontSize: "13px", color: "#94a3b8" }}>
+              El cliente no está registrado, se guardará con datos por defecto.
+            </p>
+
+            <hr style={{ border: "1px solid #334155", margin: "10px 0" }} />
+
+            {/* Crédito directo */}
+            <div className="campo">
+              <label
+                style={{
+                  fontWeight: "bold",
+                  color: "#10b981",
+                  fontSize: "16px",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={creditoDirecto}
+                  onChange={() => setCreditoDirecto(!creditoDirecto)}
+                  style={{ marginRight: "8px" }}
+                />
+                Crédito Directo
+              </label>
+            </div>
+
+            {/* Fecha de pago */}
+            <div className="campo">
+              <label>Fecha de pago:</label>
+              <input
+                type="date"
+                value={fechaPago}
+                onChange={(e) => setFechaPago(e.target.value)}
+                disabled={!creditoDirecto}
+              />
+            </div>
+
+            {/* Valor financiado */}
+            <div className="campo">
+              <label>Valor financiado:</label>
+              <input
+                type="number"
+                min="0"
+                max={total}
+                value={valorFinanciado}
+                onChange={(e) => setValorFinanciado(Number(e.target.value))}
+                disabled={!creditoDirecto}
+              />
+            </div>
+            <p style={{ fontSize: "14px", color: "#fbbf24" }}>
+              Total a pagar ahora: ${total - valorFinanciado}
+            </p>
+
+            <hr style={{ border: "1px solid #334155", margin: "10px 0" }} />
+
+            {/* Aplica garantía */}
+            <div className="campo">
+              <label
+                style={{
+                  fontWeight: "bold",
+                  color: "#10b981",
+                  fontSize: "16px",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={aplicaGarantia}
+                  onChange={() => setAplicaGarantia(!aplicaGarantia)}
+                  style={{ marginRight: "8px" }}
+                />
+                Aplica garantía
+              </label>
+            </div>
+
+            {/* Garantía en días */}
+            <div className="campo">
+              <label>Garantía en días:</label>
+              <input
+                type="number"
+                min="0"
+                value={garantiaDias}
+                onChange={(e) => setGarantiaDias(Number(e.target.value))}
+                disabled={!aplicaGarantia}
+              />
+            </div>
+
+            <hr style={{ border: "1px solid #334155", margin: "10px 0" }} />
+
+            {/* Lista de productos */}
             <div className="detalle-productos">
               {carrito.map((item) => (
                 <div key={item._id} style={{ fontSize: "16px" }}>
@@ -238,8 +348,11 @@ export default function VistaCentral() {
                   {(item.valorVenta ?? item.precio) * item.cantidad}
                 </div>
               ))}
-              <strong style={{ fontSize: "16px" }}>Total: ${total}</strong>
+              <strong style={{ fontSize: "16px" }}>
+                Total: ${total - valorFinanciado}
+              </strong>
             </div>
+
             <div className="acciones-modal">
               <button onClick={() => setMostrarModal(false)}>Cancelar</button>
               <button onClick={handleConfirmar}>Confirmar</button>
