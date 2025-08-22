@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./VistaCentral.css";
+import ConfVenta from "./ConfVenta";
 
 export default function VistaCentral() {
   const [productos, setProductos] = useState([]);
@@ -12,13 +13,6 @@ export default function VistaCentral() {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [nombreCliente, setNombreCliente] = useState("Sin Registro");
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
-
-  // Nuevos estados para el modal
-  const [creditoDirecto, setCreditoDirecto] = useState(false);
-  const [fechaPago, setFechaPago] = useState("");
-  const [valorFinanciado, setValorFinanciado] = useState(0);
-  const [aplicaGarantia, setAplicaGarantia] = useState(false);
-  const [garantiaDias, setGarantiaDias] = useState(0);
 
   const URLAPI = import.meta.env.VITE_URLAPI;
 
@@ -76,6 +70,7 @@ export default function VistaCentral() {
         stock: p.stock - (enCarrito?.cantidad || 0),
       };
     })
+    .filter((p) => p.etiqueta !== "Gasto") // 👈 excluir gastos
     .filter((p) => p.ref?.toLowerCase().includes(filtrar.toLowerCase()))
     .filter((p) => verAgotados || p.stock > 0);
 
@@ -92,47 +87,48 @@ export default function VistaCentral() {
   };
 
   // Confirmar venta
-  const handleConfirmar = async () => {
+  const handleConfirmar = async (extraData) => {
     if (carrito.length === 0) return;
 
-    if (!nombreCliente || nombreCliente.trim() === "") {
-      setMensaje({
-        texto: "Por favor ingresa el documento de identidad del cliente.",
-        tipo: "error",
-      });
-      return;
-    }
-
-    setMostrarModal(false);
-
     try {
+      // 👉 1. Registrar la venta
       const ventasPayload = carrito.map((item) => ({
         idProd: item._id,
         idClient: nombreCliente,
         cantidad: item.cantidad,
         valor: item.valorVenta ?? item.precio,
         factura: `FACT-${Date.now()}`,
-        creditoDirecto,
-        fechaPago: creditoDirecto ? fechaPago : null,
-        valorFinanciado: creditoDirecto ? valorFinanciado : 0,
-        aplicaGarantia,
-        garantiaDias: aplicaGarantia ? garantiaDias : 0,
+        ...extraData, // incluye creditoDirecto, fechaPago, valorFinanciado, etc.
       }));
 
       await axios.post(`${URLAPI}/api/vent`, ventasPayload);
 
-      // Refrescar productos
+      // 👉 2. Separar productos nuevos y existentes
+      const nuevosProductos = carrito.filter((item) => !item._id);
+      const productosExistentes = carrito.filter((item) => item._id);
+
+      // 👉 3. Crear nuevos productos (si hay)
+      if (nuevosProductos.length > 0) {
+        await axios.post(`${URLAPI}/api/prod`, nuevosProductos);
+      }
+
+      // 👉 4. Actualizar stock de existentes (si hay)
+      if (productosExistentes.length > 0) {
+        const payloadUpdate = productosExistentes.map((item) => ({
+          _id: item._id,
+          stock: item.stock - item.cantidad,
+        }));
+        await axios.put(`${URLAPI}/api/prod`, payloadUpdate);
+      }
+
+      // 👉 5. Refrescar lista de productos
       const res = await axios.get(`${URLAPI}/api/prod`);
       setProductos(res.data);
 
+      // 👉 6. Reset de estados
       setMensaje({ texto: "Registro exitoso", tipo: "exito" });
       setCarrito([]);
       setNombreCliente("Sin Registro");
-      setCreditoDirecto(false);
-      setFechaPago("");
-      setValorFinanciado(0);
-      setAplicaGarantia(false);
-      setGarantiaDias(0);
     } catch (error) {
       console.error("Error al confirmar venta:", error);
       setMensaje({ texto: "Error al realizar el registro", tipo: "error" });
@@ -200,7 +196,10 @@ export default function VistaCentral() {
           </div>
           <div className="carrito-scroll">
             {carrito.map((item) => (
-              <div key={item._id} className="carrito-item linea compacto">
+              <div
+                key={item._id || item.ref}
+                className="carrito-item linea compacto"
+              >
                 <img src={item.urlFoto1} alt="" className="imagen mini" />
                 <span>{item.nombre}</span>
                 <span>x{item.cantidad}</span>
@@ -228,137 +227,16 @@ export default function VistaCentral() {
 
       {/* Modal */}
       {mostrarModal && (
-        <div className="modal">
-          <div className="modal-contenido">
-            <h2>Registro de venta</h2>
-
-            {/* Documento cliente */}
-            <div className="campo">
-              <label
-                style={{
-                  fontWeight: "bold",
-                  color: "#10b981",
-                  fontSize: "16px",
-                }}
-              >
-                Documento de identidad del cliente:
-              </label>
-              <input
-                type="text"
-                value={nombreCliente}
-                onChange={(e) => setNombreCliente(e.target.value)}
-                onFocus={handleNombreFocus}
-                onBlur={handleNombreBlur}
-              />
-            </div>
-
-            {/* Texto aviso */}
-            <p style={{ fontSize: "13px", color: "#94a3b8" }}>
-              El cliente no está registrado, se guardará con datos por defecto.
-            </p>
-
-            <hr style={{ border: "1px solid #334155", margin: "10px 0" }} />
-
-            {/* Crédito directo */}
-            <div className="campo">
-              <label
-                style={{
-                  fontWeight: "bold",
-                  color: "#10b981",
-                  fontSize: "16px",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={creditoDirecto}
-                  onChange={() => setCreditoDirecto(!creditoDirecto)}
-                  style={{ marginRight: "8px" }}
-                />
-                Crédito Directo
-              </label>
-            </div>
-
-            {/* Fecha de pago */}
-            <div className="campo">
-              <label>Fecha de pago:</label>
-              <input
-                type="date"
-                value={fechaPago}
-                onChange={(e) => setFechaPago(e.target.value)}
-                disabled={!creditoDirecto}
-              />
-            </div>
-
-            {/* Valor financiado */}
-            <div className="campo">
-              <label>Valor financiado:</label>
-              <input
-                type="number"
-                min="0"
-                max={total}
-                value={valorFinanciado}
-                onChange={(e) => setValorFinanciado(Number(e.target.value))}
-                disabled={!creditoDirecto}
-              />
-            </div>
-            <p style={{ fontSize: "14px", color: "#fbbf24" }}>
-              Total a pagar ahora: ${total - valorFinanciado}
-            </p>
-
-            <hr style={{ border: "1px solid #334155", margin: "10px 0" }} />
-
-            {/* Aplica garantía */}
-            <div className="campo">
-              <label
-                style={{
-                  fontWeight: "bold",
-                  color: "#10b981",
-                  fontSize: "16px",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={aplicaGarantia}
-                  onChange={() => setAplicaGarantia(!aplicaGarantia)}
-                  style={{ marginRight: "8px" }}
-                />
-                Aplica garantía
-              </label>
-            </div>
-
-            {/* Garantía en días */}
-            <div className="campo">
-              <label>Garantía en días:</label>
-              <input
-                type="number"
-                min="0"
-                value={garantiaDias}
-                onChange={(e) => setGarantiaDias(Number(e.target.value))}
-                disabled={!aplicaGarantia}
-              />
-            </div>
-
-            <hr style={{ border: "1px solid #334155", margin: "10px 0" }} />
-
-            {/* Lista de productos */}
-            <div className="detalle-productos">
-              {carrito.map((item) => (
-                <div key={item._id} style={{ fontSize: "16px" }}>
-                  {item.nombre} - x{item.cantidad} - $
-                  {(item.valorVenta ?? item.precio) * item.cantidad}
-                </div>
-              ))}
-              <strong style={{ fontSize: "16px" }}>
-                Total: ${total - valorFinanciado}
-              </strong>
-            </div>
-
-            <div className="acciones-modal">
-              <button onClick={() => setMostrarModal(false)}>Cancelar</button>
-              <button onClick={handleConfirmar}>Confirmar</button>
-            </div>
-          </div>
-        </div>
+        <ConfVenta
+          carrito={carrito}
+          total={total}
+          nombreCliente={nombreCliente}
+          setNombreCliente={setNombreCliente}
+          handleNombreFocus={handleNombreFocus}
+          handleNombreBlur={handleNombreBlur}
+          onClose={() => setMostrarModal(false)}
+          onConfirmar={(extraData) => handleConfirmar(extraData)}
+        />
       )}
     </div>
   );

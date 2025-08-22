@@ -180,75 +180,6 @@ html {
   padding-top: 5px;
 }
 
-/* MODAL */
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(15, 23, 42, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.modal-contenido {
-  background-color: #1e293b;
-  padding: 20px;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 500px;
-  color: white;
-}
-
-.modal-contenido h2 {
-  margin-top: 0;
-  color: #10b981;
-}
-
-.modal-contenido .campo {
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-contenido input[type="text"] {
-  padding: 6px;
-  border: none;
-  border-radius: 4px;
-  background-color: #334155;
-  color: white;
-  font-size: 14px;
-}
-
-.detalle-productos {
-  margin-bottom: 15px;
-  font-size: 14px;
-}
-
-.acciones-modal {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.acciones-modal button {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  background-color: #334155;
-  color: white;
-  cursor: pointer;
-}
-
-.acciones-modal button:hover {
-  background-color: #475569;
-}
-
-/* Responsividad */
 @media (max-width: 600px) {
   .producto-info.horizontal {
     flex-direction: column;
@@ -259,12 +190,8 @@ html {
   .btn-confirmar {
     width: 100%;
   }
-
-  .acciones-modal {
-    flex-direction: column;
-    align-items: stretch;
-  }
 }
+
 .carrito-header {
   display: flex;
   align-items: center;
@@ -278,10 +205,12 @@ html {
 
 .msg-estado.ok {
   color: #10b981;
-} /* verde */
+}
+
 .msg-estado.err {
   color: #dc2626;
-} /* rojo */
+}
+
 .btn-confirmar:disabled {
   background-color: #64748b;
   cursor: not-allowed;
