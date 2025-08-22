@@ -37,6 +37,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   text-align: center;
+  width: 200px;
 }
 
 .btn-vender:hover {
@@ -55,6 +56,7 @@ body {
   text-align: center;
   text-decoration: none;
   display: block;
+  width: 200px;
 }
 
 /* Contenedores de secciones */
@@ -63,6 +65,7 @@ body {
   border-radius: 12px;
   padding: 1rem;
   box-shadow: inset 0 0 0 1px #334155;
+  border: 10px;
 }
 
 .menu-titulo {
@@ -187,4 +190,16 @@ body {
   background-color: #10b981; /* verde */
   color: white;
   font-weight: bold;
+}
+.menu-lateral .btn-vender,
+.menu-lateral .btn-contactar {
+  display: block;
+  width: 100%;
+  margin: 8px 0; /* separación vertical */
+  padding: 10px 0; /* espacio interno del botón */
+  text-align: center;
+}
+.bloque-deshabilitado {
+  pointer-events: none; /* no permite clics */
+  opacity: 0.5; /* se ve grisado */
 }
