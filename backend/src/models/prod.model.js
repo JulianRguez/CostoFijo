@@ -13,7 +13,7 @@ const prodSchema = new mongoose.Schema({
   urlFoto1: { type: String },
   urlFoto2: { type: String },
   urlFoto3: { type: String },
-  urlFoto4: { type: String },
+  version: { type: String },
   reversado: { type: Number, default: 0 },
   calificacion: { type: [Number], default: [] }
 });

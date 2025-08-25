@@ -13,7 +13,7 @@
 .titulo-compra {
   margin: 0;
   font-size: 18px;
-  color: #10b981;
+  color: #059669;
 }
 
 .grid-compras {
@@ -68,7 +68,7 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  background-color: #10b981;
+  background-color: #059669;
   color: white;
   max-width: 174px;
   width: 100%;
@@ -148,7 +148,7 @@
 }
 
 .titulo-modal {
-  color: #10b981; /* verde igual al título principal */
+  color: #059669; /* verde igual al título principal */
   margin-bottom: 16px;
 }
 
@@ -207,7 +207,7 @@
 .btn-aplicar-modal {
   padding: 4px 12px;
   border: none;
-  background-color: #10b981;
+  background-color: #059669;
   color: white;
   border-radius: 4px;
   cursor: pointer;
@@ -215,7 +215,7 @@
 }
 
 .btn-aplicar-modal:hover {
-  background-color: #0d946b;
+  background-color: #047857;
 }
 .lst {
   border-radius: 5px;

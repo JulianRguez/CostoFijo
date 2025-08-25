@@ -63,7 +63,9 @@ export default function App() {
     "Compras",
     "Bajo stock",
     "Deudores",
-    "Reporte",
+    "Clientes",
+    "Proveedores",
+    "Estadisticas",
   ];
 
   return (

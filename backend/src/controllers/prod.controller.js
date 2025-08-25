@@ -27,7 +27,7 @@ export const createProducts = async (req, res) => {
       "urlFoto1",
       "urlFoto2",
       "urlFoto3",
-      "urlFoto4",
+      "version",
       "reversado",
       "calificacion"
     ];
@@ -88,7 +88,7 @@ export const updateProducts = async (req, res) => {
       "urlFoto1",
       "urlFoto2",
       "urlFoto3",
-      "urlFoto4",
+      "version",
       "reversado",
       "calificacion"
     ];

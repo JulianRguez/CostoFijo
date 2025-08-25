@@ -14,7 +14,7 @@ export default function Columna3({ productosAgregados, eliminarProducto }) {
     ...layout,
     fontWeight: "bold",
     fontSize: "0.85rem",
-    color: "#10b981",
+    color: "#059669",
     borderBottom: "1px solid #475569",
     paddingBottom: "4px",
     marginBottom: "4px",

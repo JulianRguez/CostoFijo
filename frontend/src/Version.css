@@ -1,0 +1,168 @@
+/* Fondo del overlay */
+.version-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+/* Modal oscuro */
+.version-modal {
+  background: #1e293b; /* azul oscuro */
+  color: #f1f5f9; /* texto claro */
+  padding: 20px;
+  border-radius: 12px;
+  width: 480px;
+  max-width: 95%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  border: 1px solid #334155;
+}
+
+.version-modal h2 {
+  margin-bottom: 12px;
+  text-align: center;
+  color: #059669; /* verde brillante */
+}
+
+/* Inputs en fila */
+.version-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.version-inputs span {
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.version-inputs input[type="text"],
+.version-inputs input[type="number"] {
+  padding: 6px;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  background: #0f172a;
+  color: #f1f5f9;
+  width: 120px;
+}
+
+.version-inputs input::placeholder {
+  color: #94a3b8;
+}
+
+/* Botón agregar alineado a la izquierda y mismo ancho que los otros */
+.btn-agregar {
+  background: #059669;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 30%; /* mismo ancho que confirmar/cancelar */
+  margin: 8px 0 12px; /* alineado arriba a la izquierda */
+  text-align: center;
+}
+.btn-agregar:hover {
+  background: #047857;
+}
+
+/* Lista */
+.version-lista {
+  margin: 10px 0;
+}
+.version-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr 80px;
+  padding: 6px;
+  border-bottom: 1px solid #334155;
+  text-align: left; /* alinear columnas a la izquierda */
+}
+.version-lista-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 80px;
+  padding: 6px;
+  color: #059669;
+  font-weight: bold;
+  border-top: 1px solid #334155;
+  text-align: left; /* alinear columnas a la izquierda */
+}
+.version-item:hover {
+  background: #0f172a;
+}
+
+.version-item .eliminar {
+  color: #f87171;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: left;
+}
+
+/* Mensajes */
+.mensaje-error {
+  color: #f87171;
+  font-size: 0.9rem;
+  margin: 8px 0;
+  text-align: left;
+}
+
+.mensaje-exito {
+  color: #059669;
+  font-size: 0.9rem;
+  margin: 8px 0;
+  text-align: left;
+}
+
+/* Acciones */
+.acciones {
+  display: flex;
+  justify-content: flex-start; /* botones alineados a la izquierda */
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.btn-confirmar,
+.btn-cancelar {
+  flex: none; /* ya no ocupan todo el ancho */
+  width: 30%; /* mismo ancho entre sí y con Agregar */
+  margin: 0 4px 0 0;
+  padding: 10px;
+  border: none;
+  margin-top: 50px;
+  margin-left: 60px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Confirmar en verde */
+.btn-confirmar {
+  background: #059669;
+  color: white;
+}
+.btn-confirmar:hover {
+  background: #047857;
+}
+
+/* Cancelar en gris */
+.btn-cancelar {
+  background: #475569;
+  color: white;
+}
+.btn-cancelar:hover {
+  background: #334155;
+}
+.version-inputs input[type="number"]::-webkit-outer-spin-button,
+.version-inputs input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

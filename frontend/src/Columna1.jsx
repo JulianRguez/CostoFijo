@@ -33,7 +33,7 @@ export default function Columna1({
         <span>Nombre</span>
         <input
           ref={refs.nombre}
-          maxLength={20}
+          maxLength={30}
           value={form1.nombre}
           onChange={(e) => setForm1({ ...form1, nombre: e.target.value })}
           disabled={isCampoDeshabilitado("nombre")}
@@ -49,8 +49,8 @@ export default function Columna1({
           disabled={isCampoDeshabilitado("etiqueta")}
           className="lst"
         >
-          <option value="Accesorios">Accesorios</option>
           <option value="Papeleria">Papeleria</option>
+          <option value="Accesorios">Accesorios</option>
           <option value="Celulares">Celulares</option>
           <option value="Hogar">Hogar</option>
           <option value="Servicios">Servicios</option>

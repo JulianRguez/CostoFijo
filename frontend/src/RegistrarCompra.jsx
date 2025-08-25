@@ -13,7 +13,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
   const [form1, setForm1] = useState({
     nombre: "",
     ref: "",
-    etiqueta: "Accesorios",
+    etiqueta: "Papeleria",
     stock: "",
     valor: "",
     valorVenta: "",
@@ -25,7 +25,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     img1: "",
     img2: "",
     img3: "",
-    img4: "",
+    version: "",
   });
 
   const URLAPI = import.meta.env.VITE_URLAPI;
@@ -77,13 +77,13 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         img1: encontrado.urlFoto1,
         img2: encontrado.urlFoto2 || "",
         img3: encontrado.urlFoto3 || "",
-        img4: encontrado.urlFoto4 || "",
+        version: encontrado.version || "",
       });
     } else {
       setForm1((prev) => ({
         ...prev,
         nombre: "",
-        etiqueta: "Accesorios",
+        etiqueta: "Papeleria",
         valor: "",
         valorVenta: "",
         minStock: "",
@@ -93,7 +93,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         img1: "",
         img2: "",
         img3: "",
-        img4: "",
+        version: "",
       });
     }
   };
@@ -157,13 +157,13 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     setForm1({
       nombre: "",
       ref: "",
-      etiqueta: "Accesorios",
+      etiqueta: "Papeleria",
       stock: "",
       valor: "",
       valorVenta: "",
       minStock: "",
     });
-    setForm2({ descripcion: "", img1: "", img2: "", img3: "", img4: "" });
+    setForm2({ descripcion: "", img1: "", img2: "", img3: "", version: "" });
     setMensajeValidacion({ texto: "", tipo: "" });
   };
 
@@ -192,14 +192,14 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
 
       const compArray = productosFinales.map((prod) => ({
         factura,
-        proveedor,
+        proveedor, // lo mantengo por compatibilidad
+        idProv: proveedor.trim(), // 🔹 nuevo campo requerido por la API
         registro,
         fecha,
         idProd: prod.ref,
-        cantidad: parseInt(prod.stock),
-        valor: parseInt(prod.valor),
+        cantidad: parseInt(prod.stock, 10),
+        valor: parseInt(prod.valor, 10),
       }));
-
       const productosActualizar = [];
       const productosCrear = [];
 
@@ -225,7 +225,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
             urlFoto1: prod.img1,
             urlFoto2: prod.img2 || "",
             urlFoto3: prod.img3 || "",
-            urlFoto4: prod.img4 || "",
+            version: prod.version || "",
             reversado: 0,
             calificacion: [5, 5, 5],
           });
@@ -263,13 +263,13 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       setForm1({
         nombre: "",
         ref: "",
-        etiqueta: "Accesorios",
+        etiqueta: "Papeleria",
         stock: "",
         valor: "",
         valorVenta: "",
         minStock: "",
       });
-      setForm2({ descripcion: "", img1: "", img2: "", img3: "", img4: "" });
+      setForm2({ descripcion: "", img1: "", img2: "", img3: "", version: "" });
       setFactura("");
       setProveedor("");
       setRegistro("Productos");

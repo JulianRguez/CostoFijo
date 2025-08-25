@@ -18,7 +18,7 @@ export const createCompras = async (req, res) => {
     }
 
     // 3) Whitelist + casteos ligeros (ajusta a tu schema)
-    const allowed = ["idProd", "fecha", "cantidad", "valor", "factura", "registro", "devuelto"];
+    const allowed = ["idProd", "fecha", "cantidad", "valor", "factura", "registro", "devuelto","idProv"];
     const docs = payload.map((c) => {
       const doc = {};
       for (const k of allowed) {

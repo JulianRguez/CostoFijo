@@ -47,8 +47,8 @@ body {
 /* Botón contactar: se mantiene sin cambios */
 .btn-contactar {
   background: transparent;
-  color: #10b981;
-  border: 2px solid #10b981;
+  color: #059669;
+  border: 2px solid #059669;
   border-radius: 8px;
   padding: 0.5rem;
   font-weight: 600;
@@ -85,8 +85,9 @@ body {
 }
 
 .menu-item {
+  margin: -3px;
   font-size: 1rem;
-  padding: 0.5rem;
+  padding: 0.4rem;
   border-radius: 8px;
   color: #d1fae5;
   cursor: pointer;
@@ -119,7 +120,7 @@ body {
 .logo {
   font-size: 1.25rem;
   font-weight: bold;
-  color: #10b981;
+  color: #059669;
 }
 
 .estado-usuario {
@@ -187,7 +188,7 @@ body {
   box-sizing: border-box;
 }
 .menu-item.activo {
-  background-color: #10b981; /* verde */
+  background-color: #059669; /* verde */
   color: white;
   font-weight: bold;
 }

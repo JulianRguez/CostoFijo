@@ -8,7 +8,8 @@ const compSchema = new mongoose.Schema({
   valor: { type: Number, required: true },
   devuelto: { type: Boolean, default: false },
   factura: { type: String, default: "" },    
-  registro: { type: String, default: "" }     
+  registro: { type: String, default: "" },  
+  idProv: { type: String, default: "" }     
 });
 
 export default mongoose.model("Comp", compSchema, "comp");

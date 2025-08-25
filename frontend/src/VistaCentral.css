@@ -44,7 +44,7 @@ html {
 }
 
 .checkbox-ver-agotados input {
-  accent-color: #10b981;
+  accent-color: #059669;
   transform: scale(1.2);
 }
 
@@ -117,7 +117,7 @@ html {
 .producto.linea,
 .carrito-item.linea {
   display: grid;
-  grid-template-columns: 4% 20% 8% 8% 8% 8% 8% 8% 8% 8% 8%;
+  grid-template-columns: 4% 20% 8% 5% 8% 18% 8% 8% 8% 8% 8% 8%;
 }
 
 .producto-info.horizontal {
@@ -204,7 +204,7 @@ html {
 }
 
 .msg-estado.ok {
-  color: #10b981;
+  color: #059669;
 }
 
 .msg-estado.err {
@@ -214,4 +214,18 @@ html {
 .btn-confirmar:disabled {
   background-color: #64748b;
   cursor: not-allowed;
+}
+.version-select {
+  width: 50%;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: none;
+  background-color: #64748b;
+  color: white;
+  font-size: 14px;
+}
+
+.version-select:focus {
+  outline: none;
+  background-color: #334155;
 }

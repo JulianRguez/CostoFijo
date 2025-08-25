@@ -36,7 +36,7 @@
 }
 
 .ver-agotados-check input {
-  accent-color: #10b981;
+  accent-color: #059669;
   transform: scale(1.2);
 }
 
@@ -157,4 +157,10 @@
   width: auto;
   object-fit: contain;
   border-radius: 4px;
+}
+#btnConfirmar {
+  width: 20%;
+  margin: 0 0 0 auto; /* empuja el botón hacia la derecha */
+  display: block;
+  margin-right: 10%;
 }
