@@ -100,7 +100,9 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
 
   const isCampoDeshabilitado = (campo) => {
     const coincide = productosBD.some((prod) => prod.ref === form1.ref);
-    return coincide && campo !== "stock" && campo !== "ref";
+    return (
+      coincide && campo !== "stock" && campo !== "ref" && campo !== "version"
+    ); // ✅ versión nunca se deshabilita
   };
 
   const agregarProducto = () => {
@@ -140,6 +142,32 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       return;
     }
 
+    // ✅ Validación extra: si el producto ya existe en BD
+    // ✅ Validación extra: si el producto ya existe en BD
+    const encontrado = productosBD.find((p) => p.ref === form1.ref);
+    if (encontrado) {
+      const stockIngresado = parseInt(form1.stock || 0, 10);
+      const stockEnBD = parseInt(encontrado.stock || 0, 10);
+
+      // 🚨 Solo validar versiones si alguna vez hubo una versión
+      if (form2.version && (encontrado.version || "").trim() !== "") {
+        let sumaVersion = 0;
+        const partes = form2.version.split("-");
+        for (let i = 1; i < partes.length; i += 2) {
+          sumaVersion += parseInt(partes[i] || 0, 10);
+        }
+
+        if (stockIngresado + stockEnBD !== sumaVersion) {
+          setMensajeValidacion({
+            texto: `El campo "Versión" no es válido`,
+            tipo: "error",
+          });
+          return;
+        }
+      }
+      // ⚡️ Si la versión está vacía en BD y sigue vacía en el form → no se valida nada
+    }
+
     if (
       form1.stock <= 0 ||
       form1.valor <= 100 ||
@@ -175,12 +203,11 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
 
   const aplicarCambios = async () => {
     try {
-      // Si es un registro de tipo "Gastos", transformamos productos
       const productosFinales = productosAgregados.map((prod) => {
         if (registro === "Gastos") {
           return {
             ...prod,
-            etiqueta: "Gasto", // ✅ ahora etiqueta en vez de ref
+            etiqueta: "Gasto",
             stock: 1,
             valorVenta: 0,
             minStock: 0,
@@ -192,8 +219,8 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
 
       const compArray = productosFinales.map((prod) => ({
         factura,
-        proveedor, // lo mantengo por compatibilidad
-        idProv: proveedor.trim(), // 🔹 nuevo campo requerido por la API
+        proveedor,
+        idProv: proveedor.trim(),
         registro,
         fecha,
         idProd: prod.ref,
@@ -211,6 +238,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
           productosActualizar.push({
             _id: existente._id,
             stock: nuevoStock,
+            version: prod.version, // ✅ ahora también se actualiza versión
           });
         } else {
           productosCrear.push({
@@ -319,6 +347,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
           refs={refs}
           isCampoDeshabilitado={isCampoDeshabilitado}
           agregarProducto={agregarProducto}
+          productosBD={productosBD}
         />
 
         <Columna3

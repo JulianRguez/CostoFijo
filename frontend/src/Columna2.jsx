@@ -9,13 +9,17 @@ export default function Columna2({
   refs,
   isCampoDeshabilitado,
   agregarProducto,
+  productosBD, // ✅ nuevo prop
 }) {
   const [mostrarVersion, setMostrarVersion] = useState(false);
 
-  // 🔹 Si cambia el stock, limpiar versión
+  // ✅ Si cambia el stock, limpiar versión SOLO si la referencia no existe en BD
   useEffect(() => {
-    setForm2((prev) => ({ ...prev, version: "" }));
-  }, [form1.stock, setForm2]);
+    const existe = productosBD.some((prod) => prod.ref === form1.ref);
+    if (!existe) {
+      setForm2((prev) => ({ ...prev, version: "" }));
+    }
+  }, [form1.stock, form1.ref, productosBD, setForm2]);
 
   return (
     <div className="columna">
@@ -108,9 +112,20 @@ export default function Columna2({
       </button>
 
       {/* Modal de versiones */}
+      {/* Modal de versiones */}
       {mostrarVersion && (
         <Version
-          stockActual={form1.stock}
+          stockActual={(() => {
+            const encontrado = productosBD.find((p) => p.ref === form1.ref);
+            if (encontrado) {
+              return (
+                parseInt(encontrado.stock || 0, 10) +
+                parseInt(form1.stock || 0, 10)
+              );
+            }
+            return parseInt(form1.stock || 0, 10);
+          })()}
+          versionInicial={form2.version} // ✅ pasar la versión guardada
           onConfirmar={(versionString) => {
             setForm2({ ...form2, version: versionString });
             setMostrarVersion(false);

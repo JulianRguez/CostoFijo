@@ -1,12 +1,32 @@
 // Version.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Version.css";
 
-export default function Version({ stockActual, onConfirmar, onCancelar }) {
+export default function Version({
+  stockActual,
+  versionInicial,
+  onConfirmar,
+  onCancelar,
+}) {
   const [version, setVersion] = useState("");
   const [stock, setStock] = useState("");
   const [versiones, setVersiones] = useState([]);
   const [mensaje, setMensaje] = useState("");
+
+  // ✅ Al abrir modal, si hay versionInicial, cargarla en la lista
+  useEffect(() => {
+    if (versionInicial) {
+      const partes = versionInicial.split("-");
+      const cargadas = [];
+      for (let i = 0; i < partes.length; i += 2) {
+        cargadas.push({
+          version: partes[i],
+          stock: parseInt(partes[i + 1], 10) || 0,
+        });
+      }
+      setVersiones(cargadas);
+    }
+  }, [versionInicial]);
 
   const handleAgregar = () => {
     if (!version.trim() || !stock.trim()) {
@@ -39,7 +59,27 @@ export default function Version({ stockActual, onConfirmar, onCancelar }) {
     setMensaje("");
   };
 
+  const handleIncrementar = (index) => {
+    setVersiones((prev) =>
+      prev.map((v, i) => (i === index ? { ...v, stock: v.stock + 1 } : v))
+    );
+  };
+
+  const handleDecrementar = (index) => {
+    setVersiones((prev) =>
+      prev.map((v, i) =>
+        i === index && v.stock > 1 ? { ...v, stock: v.stock - 1 } : v
+      )
+    );
+  };
+
   const handleConfirmar = () => {
+    // ✅ Si no hay ninguna versión → enviar vacío
+    if (versiones.length === 0) {
+      onConfirmar("");
+      return;
+    }
+
     const total = versiones.reduce((acc, v) => acc + v.stock, 0);
     if (total !== parseInt(stockActual, 10)) {
       setMensaje("La suma de los stocks debe ser igual a la cantidad actual.");
@@ -109,15 +149,35 @@ export default function Version({ stockActual, onConfirmar, onCancelar }) {
           <div className="version-lista-header">
             <span>Versión</span>
             <span>Stock</span>
-            <span>Eliminar</span>
+            <span>Acciones</span>
           </div>
           {versiones.map((v, i) => (
             <div className="version-item" key={i}>
               <span>{v.version}</span>
               <span>{v.stock}</span>
-              <span className="eliminar" onClick={() => handleEliminar(i)}>
-                ✖
-              </span>
+              <div>
+                <button
+                  className="btn-mas"
+                  title="Aumentar"
+                  onClick={() => handleIncrementar(i)}
+                >
+                  +
+                </button>
+                <button
+                  className="btn-menos"
+                  title="Disminuir"
+                  onClick={() => handleDecrementar(i)}
+                >
+                  -
+                </button>
+                <span
+                  className="eliminar"
+                  title="Eliminar"
+                  onClick={() => handleEliminar(i)}
+                >
+                  ✖
+                </span>
+              </div>
             </div>
           ))}
         </div>

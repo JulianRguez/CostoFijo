@@ -81,22 +81,23 @@
 }
 .version-item {
   display: grid;
-  grid-template-columns: 1fr 1fr 80px;
+  grid-template-columns: 2fr 1.5fr 1.5fr; /* ✅ stock 50% menos, acciones más anchas */
   padding: 6px;
   border-bottom: 1px solid #334155;
-  text-align: left; /* alinear columnas a la izquierda */
+  text-align: left;
 }
 .version-lista-header {
   display: grid;
-  grid-template-columns: 1fr 1fr 80px;
+  grid-template-columns: 2fr 1.5fr 1.5fr; /* igual que arriba */
   padding: 6px;
   color: #059669;
   font-weight: bold;
   border-top: 1px solid #334155;
-  text-align: left; /* alinear columnas a la izquierda */
+  text-align: left;
 }
+
 .version-item:hover {
-  background: #0f172a;
+  background: #475569;
 }
 
 .version-item .eliminar {
@@ -165,4 +166,42 @@
 .version-inputs input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+/* Acciones dentro de cada fila */
+.acciones-version {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Botón + */
+.btn-mas,
+.btn-menos {
+  background: #64748b; /* verde */
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-weight: bold;
+  line-height: 1;
+  text-align: center;
+  margin-right: 10px;
+}
+.btn-mas:hover,
+.btn-menos:hover {
+  background: #788ca8;
+}
+
+/* Ajustar la X para que quede alineada */
+.version-item .eliminar {
+  color: #f87171;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: center;
+  padding: 0 4px;
+}
+.version-item .eliminar:hover {
+  color: #dc2626;
 }
