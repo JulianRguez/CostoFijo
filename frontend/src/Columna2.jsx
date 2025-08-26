@@ -97,8 +97,24 @@ export default function Columna2({
           value={form2.version}
           readOnly
           onClick={() => {
-            if (parseInt(form1.stock, 10) > 0) {
-              setMostrarVersion(true);
+            const encontrado = productosBD.find((p) => p.ref === form1.ref);
+
+            if (encontrado) {
+              // ✅ Caso producto existente
+              const stockIngresado = parseInt(form1.stock || 0, 10);
+              const stockEnBD = parseInt(encontrado.stock || 0, 10);
+
+              if (
+                stockIngresado > 0 ||
+                (stockIngresado === 0 && stockEnBD > 0)
+              ) {
+                setMostrarVersion(true);
+              }
+            } else {
+              // ✅ Caso producto nuevo
+              if (parseInt(form1.stock || 0, 10) > 0) {
+                setMostrarVersion(true);
+              }
             }
           }}
           placeholder="Click para definir versiones"

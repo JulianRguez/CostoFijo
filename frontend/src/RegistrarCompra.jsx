@@ -1,4 +1,4 @@
-//RegistrarCompra.jsx
+// RegistrarCompra.jsx
 import React, { useState, useEffect, useRef } from "react";
 import "./RegistrarCompra.css";
 
@@ -102,9 +102,12 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     const coincide = productosBD.some((prod) => prod.ref === form1.ref);
     return (
       coincide && campo !== "stock" && campo !== "ref" && campo !== "version"
-    ); // ✅ versión nunca se deshabilita
+    );
   };
 
+  // =========================
+  //        AGREGAR
+  // =========================
   const agregarProducto = () => {
     const camposObligatorios = [
       { valor: form1.ref, ref: refs.ref },
@@ -128,11 +131,10 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       }
     }
 
-    const yaExiste = productosAgregados.some(
-      (prod) => prod.ref.toLowerCase() === form1.ref.toLowerCase()
+    const yaExisteEnLista = productosAgregados.some(
+      (prod) => prod.ref.toLowerCase() === (form1.ref || "").toLowerCase()
     );
-
-    if (yaExiste) {
+    if (yaExisteEnLista) {
       setForm1((prev) => ({ ...prev, ref: "" }));
       refs.ref.current?.focus();
       setMensajeValidacion({
@@ -142,21 +144,27 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       return;
     }
 
-    // ✅ Validación extra: si el producto ya existe en BD
-    // ✅ Validación extra: si el producto ya existe en BD
+    // --- Datos del producto en BD ---
     const encontrado = productosBD.find((p) => p.ref === form1.ref);
+    const stockIngresado = parseInt(form1.stock || 0, 10) || 0;
+    const stockEnBD = parseInt(encontrado?.stock || 0, 10) || 0;
+    const versionBD = encontrado?.version || "";
+    const versionForm = form2.version ?? "";
+
+    const permitirSoloVersion =
+      !!encontrado &&
+      stockIngresado === 0 &&
+      stockEnBD > 0 &&
+      versionForm !== versionBD;
+
+    // --- Validación de versiones ---
     if (encontrado) {
-      const stockIngresado = parseInt(form1.stock || 0, 10);
-      const stockEnBD = parseInt(encontrado.stock || 0, 10);
-
-      // 🚨 Solo validar versiones si alguna vez hubo una versión
-      if (form2.version && (encontrado.version || "").trim() !== "") {
+      if (versionForm && versionForm.trim() !== "") {
         let sumaVersion = 0;
-        const partes = form2.version.split("-");
+        const partes = versionForm.split("-");
         for (let i = 1; i < partes.length; i += 2) {
-          sumaVersion += parseInt(partes[i] || 0, 10);
+          sumaVersion += parseInt(partes[i] || 0, 10) || 0;
         }
-
         if (stockIngresado + stockEnBD !== sumaVersion) {
           setMensajeValidacion({
             texto: `El campo "Versión" no es válido`,
@@ -165,15 +173,16 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
           return;
         }
       }
-      // ⚡️ Si la versión está vacía en BD y sigue vacía en el form → no se valida nada
     }
 
-    if (
-      form1.stock <= 0 ||
-      form1.valor <= 100 ||
-      form1.valorVenta <= 100 ||
-      form1.minStock < 0
-    ) {
+    // --- Validaciones numéricas ---
+    const stockValidoOExcepcion = permitirSoloVersion || stockIngresado > 0;
+    const otrosNumerosValidos =
+      parseInt(form1.valor || 0, 10) > 100 &&
+      parseInt(form1.valorVenta || 0, 10) > 100 &&
+      parseInt(form1.minStock || 0, 10) >= 0;
+
+    if (!stockValidoOExcepcion || !otrosNumerosValidos) {
       setMensajeValidacion({
         texto: "Algún dato no es válido",
         tipo: "error",
@@ -181,7 +190,11 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       return;
     }
 
-    setProductosAgregados([...productosAgregados, { ...form1, ...form2 }]);
+    setProductosAgregados([
+      ...productosAgregados,
+      { ...form1, ...form2, stock: form1.stock === "" ? "0" : form1.stock },
+    ]);
+
     setForm1({
       nombre: "",
       ref: "",
@@ -200,7 +213,6 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     nuevos.splice(index, 1);
     setProductosAgregados(nuevos);
   };
-
   const aplicarCambios = async () => {
     try {
       const productosFinales = productosAgregados.map((prod) => {
@@ -208,25 +220,40 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
           return {
             ...prod,
             etiqueta: "Gasto",
-            stock: 1,
-            valorVenta: 0,
-            minStock: 0,
+            stock: "1",
+            valorVenta: "0",
+            minStock: "0",
             img1: URLIMGASTO,
           };
         }
         return prod;
       });
 
-      const compArray = productosFinales.map((prod) => ({
-        factura,
-        proveedor,
-        idProv: proveedor.trim(),
-        registro,
-        fecha,
-        idProd: prod.ref,
-        cantidad: parseInt(prod.stock, 10),
-        valor: parseInt(prod.valor, 10),
-      }));
+      const compArray = productosFinales
+        .map((prod) => {
+          const existente = productosBD.find((p) => p.ref === prod.ref);
+          const stockIngresado = parseInt(prod.stock || 0, 10) || 0;
+          const stockEnBD = parseInt(existente?.stock || 0, 10) || 0;
+
+          // 🚨 Caso especial: solo versión → no registrar en comp
+          const esSoloVersion =
+            existente && stockIngresado === 0 && stockEnBD > 0;
+
+          if (esSoloVersion) return null;
+
+          return {
+            factura,
+            proveedor,
+            idProv: proveedor.trim(),
+            registro,
+            fecha,
+            idProd: prod.ref,
+            cantidad: stockIngresado, // ✅ siempre solo el del input
+            valor: parseInt(prod.valor || 0, 10) || 0,
+          };
+        })
+        .filter(Boolean);
+
       const productosActualizar = [];
       const productosCrear = [];
 
@@ -234,21 +261,28 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         const existente = productosBD.find((p) => p.ref === prod.ref);
 
         if (existente) {
-          const nuevoStock = parseInt(existente.stock) + parseInt(prod.stock);
+          const stockEnBD = parseInt(existente.stock || 0, 10) || 0;
+          const stockIngresado = parseInt(prod.stock || 0, 10) || 0;
+
+          const nuevoStock =
+            stockIngresado === 0 && stockEnBD > 0
+              ? stockEnBD // ✅ mantener stock de BD
+              : stockEnBD + stockIngresado;
+
           productosActualizar.push({
             _id: existente._id,
             stock: nuevoStock,
-            version: prod.version, // ✅ ahora también se actualiza versión
+            version: prod.version, // respeta vacío o cambios
           });
         } else {
           productosCrear.push({
             nombre: prod.nombre,
             ref: prod.ref,
             etiqueta: prod.etiqueta,
-            stock: parseInt(prod.stock),
-            precio: parseInt(prod.valor),
-            valorVenta: parseInt(prod.valorVenta),
-            minStock: parseInt(prod.minStock),
+            stock: parseInt(prod.stock || 0, 10) || 0,
+            precio: parseInt(prod.valor || 0, 10) || 0,
+            valorVenta: parseInt(prod.valorVenta || 0, 10) || 0,
+            minStock: parseInt(prod.minStock || 0, 10) || 0,
             descripcion: prod.descripcion,
             urlFoto1: prod.img1,
             urlFoto2: prod.img2 || "",
@@ -260,12 +294,14 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         }
       });
 
-      const resComp = await fetch(`${URLAPI}/api/comp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(compArray),
-      });
-      if (!resComp.ok) throw new Error("Error guardando en /api/comp");
+      if (compArray.length > 0) {
+        const resComp = await fetch(`${URLAPI}/api/comp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(compArray),
+        });
+        if (!resComp.ok) throw new Error("Error guardando en /api/comp");
+      }
 
       if (productosActualizar.length > 0) {
         const resPut = await fetch(`${URLAPI}/api/prod`, {
@@ -399,25 +435,29 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
                 <span style={{ textAlign: "right" }}>Subtotal</span>
               </div>
 
-              {productosAgregados.map((prod, idx) => (
-                <div key={idx} className="fila-tabla-modal">
-                  <span>{prod.ref}</span>
-                  <span>{prod.nombre}</span>
-                  <span style={{ textAlign: "right" }}>{prod.stock}</span>
-                  <span style={{ textAlign: "right" }}>
-                    {(
-                      parseInt(prod.stock) * parseInt(prod.valor)
-                    ).toLocaleString()}
-                  </span>
-                </div>
-              ))}
+              {productosAgregados.map((prod, idx) => {
+                const cant = parseInt(prod.stock || 0, 10) || 0;
+                const val = parseInt(prod.valor || 0, 10) || 0;
+                return (
+                  <div key={idx} className="fila-tabla-modal">
+                    <span>{prod.ref}</span>
+                    <span>{prod.nombre}</span>
+                    <span style={{ textAlign: "right" }}>{cant}</span>
+                    <span style={{ textAlign: "right" }}>
+                      {(cant * val).toLocaleString()}
+                    </span>
+                  </div>
+                );
+              })}
 
               <div className="total-tabla-modal">
                 Total:{" "}
                 {productosAgregados
                   .reduce(
                     (acc, p) =>
-                      acc + parseInt(p.stock || 0) * parseInt(p.valor || 0),
+                      acc +
+                      (parseInt(p.stock || 0, 10) || 0) *
+                        (parseInt(p.valor || 0, 10) || 0),
                     0
                   )
                   .toLocaleString()}
