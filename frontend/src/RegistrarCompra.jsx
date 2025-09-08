@@ -36,6 +36,8 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
   const [productosAgregados, setProductosAgregados] = useState([]);
   const [mostrarDialogo, setMostrarDialogo] = useState(false);
   const [productosBD, setProductosBD] = useState([]);
+  const [esGastoExistente, setEsGastoExistente] = useState(false);
+  const [loadingAgregar, setLoadingAgregar] = useState(false);
   const [mensajeValidacion, setMensajeValidacion] = useState({
     texto: "",
     tipo: "",
@@ -79,6 +81,10 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         img3: encontrado.urlFoto3 || "",
         version: encontrado.version || "",
       });
+
+      // 👉 Si la referencia ya existe, forzar el registro a "Productos"
+      setRegistro("Productos");
+      setEsGastoExistente(encontrado.etiqueta === "Gasto");
     } else {
       setForm1((prev) => ({
         ...prev,
@@ -95,6 +101,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         img3: "",
         version: "",
       });
+      setEsGastoExistente(false);
     }
   };
 
@@ -108,104 +115,121 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
   // =========================
   //        AGREGAR
   // =========================
-  const agregarProducto = () => {
-    const camposObligatorios = [
-      { valor: form1.ref, ref: refs.ref },
-      { valor: form1.nombre, ref: refs.nombre },
-      { valor: form1.etiqueta, ref: refs.etiqueta },
-      { valor: form1.valor, ref: refs.valor },
-      { valor: form1.valorVenta, ref: null },
-      { valor: form1.minStock, ref: null },
-      { valor: form2.descripcion, ref: refs.descripcion },
-      { valor: form2.img1, ref: refs.img1 },
-    ];
+  const agregarProducto = async () => {
+    if (loadingAgregar) return; // evita doble clic
+    setLoadingAgregar(true); // ✅ empieza loading
 
-    for (const campo of camposObligatorios) {
-      if (!campo.valor || campo.valor.toString().trim() === "") {
-        campo.ref?.current?.focus();
+    try {
+      const camposObligatorios = [
+        { valor: form1.ref, ref: refs.ref },
+        { valor: form1.nombre, ref: refs.nombre },
+        { valor: form1.etiqueta, ref: refs.etiqueta },
+        { valor: form1.valor, ref: refs.valor },
+        { valor: form1.valorVenta, ref: null },
+        { valor: form1.minStock, ref: null },
+        { valor: form2.descripcion, ref: refs.descripcion },
+        { valor: form2.img1, ref: refs.img1 },
+      ];
+
+      for (const campo of camposObligatorios) {
+        if (!campo.valor || campo.valor.toString().trim() === "") {
+          campo.ref?.current?.focus();
+          setMensajeValidacion({
+            texto: "Algún dato no es válido",
+            tipo: "error",
+          });
+          setLoadingAgregar(false); // ✅ libera loading
+          return;
+        }
+      }
+
+      const yaExisteEnLista = productosAgregados.some(
+        (prod) => prod.ref.toLowerCase() === (form1.ref || "").toLowerCase()
+      );
+      if (yaExisteEnLista) {
+        setForm1((prev) => ({ ...prev, ref: "" }));
+        refs.ref.current?.focus();
         setMensajeValidacion({
           texto: "Algún dato no es válido",
           tipo: "error",
         });
         return;
       }
-    }
 
-    const yaExisteEnLista = productosAgregados.some(
-      (prod) => prod.ref.toLowerCase() === (form1.ref || "").toLowerCase()
-    );
-    if (yaExisteEnLista) {
-      setForm1((prev) => ({ ...prev, ref: "" }));
-      refs.ref.current?.focus();
-      setMensajeValidacion({
-        texto: "Algún dato no es válido",
-        tipo: "error",
-      });
-      return;
-    }
+      // --- Datos del producto en BD ---
+      const encontrado = productosBD.find((p) => p.ref === form1.ref);
+      const stockIngresado = parseInt(form1.stock || 0, 10) || 0;
+      const stockEnBD = parseInt(encontrado?.stock || 0, 10) || 0;
+      const versionBD = encontrado?.version || "";
+      const versionForm = form2.version ?? "";
 
-    // --- Datos del producto en BD ---
-    const encontrado = productosBD.find((p) => p.ref === form1.ref);
-    const stockIngresado = parseInt(form1.stock || 0, 10) || 0;
-    const stockEnBD = parseInt(encontrado?.stock || 0, 10) || 0;
-    const versionBD = encontrado?.version || "";
-    const versionForm = form2.version ?? "";
+      const permitirSoloVersion =
+        !!encontrado &&
+        stockIngresado === 0 &&
+        stockEnBD > 0 &&
+        versionForm !== versionBD;
 
-    const permitirSoloVersion =
-      !!encontrado &&
-      stockIngresado === 0 &&
-      stockEnBD > 0 &&
-      versionForm !== versionBD;
-
-    // --- Validación de versiones ---
-    if (encontrado) {
-      if (versionForm && versionForm.trim() !== "") {
-        let sumaVersion = 0;
-        const partes = versionForm.split("-");
-        for (let i = 1; i < partes.length; i += 2) {
-          sumaVersion += parseInt(partes[i] || 0, 10) || 0;
-        }
-        if (stockIngresado + stockEnBD !== sumaVersion) {
-          setMensajeValidacion({
-            texto: `El campo "Versión" no es válido`,
-            tipo: "error",
-          });
-          return;
+      // --- Validación de versiones ---
+      if (encontrado) {
+        if (versionForm && versionForm.trim() !== "") {
+          let sumaVersion = 0;
+          const partes = versionForm.split("-");
+          for (let i = 1; i < partes.length; i += 2) {
+            sumaVersion += parseInt(partes[i] || 0, 10) || 0;
+          }
+          if (stockIngresado + stockEnBD !== sumaVersion) {
+            setMensajeValidacion({
+              texto: `El campo "Versión" no es válido`,
+              tipo: "error",
+            });
+            return;
+          }
         }
       }
-    }
 
-    // --- Validaciones numéricas ---
-    const stockValidoOExcepcion = permitirSoloVersion || stockIngresado > 0;
-    const otrosNumerosValidos =
-      parseInt(form1.valor || 0, 10) > 100 &&
-      parseInt(form1.valorVenta || 0, 10) > 100 &&
-      parseInt(form1.minStock || 0, 10) >= 0;
+      // --- Validaciones numéricas ---
+      const stockValidoOExcepcion = permitirSoloVersion || stockIngresado > 0;
+      const otrosNumerosValidos =
+        parseInt(form1.valor || 0, 10) > 100 &&
+        parseInt(form1.valorVenta || 0, 10) > 100 &&
+        parseInt(form1.minStock || 0, 10) >= 0;
 
-    if (!stockValidoOExcepcion || !otrosNumerosValidos) {
-      setMensajeValidacion({
-        texto: "Algún dato no es válido",
-        tipo: "error",
+      if (!stockValidoOExcepcion || !otrosNumerosValidos) {
+        setMensajeValidacion({
+          texto: "Algún dato no es válido",
+          tipo: "error",
+        });
+        return;
+      }
+
+      const existente = productosBD.find((p) => p.ref === form1.ref);
+
+      setProductosAgregados([
+        ...productosAgregados,
+        {
+          ...form1,
+          ...form2,
+          stock: form1.stock === "" ? "0" : form1.stock,
+          _id: existente?._id || null, // ✅ si existe en BD guardamos su _id
+        },
+      ]);
+
+      setForm1({
+        nombre: "",
+        ref: "",
+        etiqueta: "Papeleria",
+        stock: "",
+        valor: "",
+        valorVenta: "",
+        minStock: "",
       });
-      return;
+      setForm2({ descripcion: "", img1: "", img2: "", img3: "", version: "" });
+      setMensajeValidacion({ texto: "", tipo: "" });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingAgregar(false); // ✅ libera loading siempre
     }
-
-    setProductosAgregados([
-      ...productosAgregados,
-      { ...form1, ...form2, stock: form1.stock === "" ? "0" : form1.stock },
-    ]);
-
-    setForm1({
-      nombre: "",
-      ref: "",
-      etiqueta: "Papeleria",
-      stock: "",
-      valor: "",
-      valorVenta: "",
-      minStock: "",
-    });
-    setForm2({ descripcion: "", img1: "", img2: "", img3: "", version: "" });
-    setMensajeValidacion({ texto: "", tipo: "" });
   };
 
   const eliminarProducto = (index) => {
@@ -373,6 +397,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
           setForm2={setForm2}
           isCampoDeshabilitado={isCampoDeshabilitado}
           setMensajeValidacion={setMensajeValidacion}
+          esGastoExistente={esGastoExistente}
         />
 
         <Columna2
@@ -384,6 +409,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
           isCampoDeshabilitado={isCampoDeshabilitado}
           agregarProducto={agregarProducto}
           productosBD={productosBD}
+          esGastoExistente={esGastoExistente}
         />
 
         <Columna3

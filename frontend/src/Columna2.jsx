@@ -9,7 +9,9 @@ export default function Columna2({
   refs,
   isCampoDeshabilitado,
   agregarProducto,
-  productosBD, // ✅ nuevo prop
+  productosBD,
+  esGastoExistente,
+  loadingAgregar,
 }) {
   const [mostrarVersion, setMostrarVersion] = useState(false);
 
@@ -36,6 +38,7 @@ export default function Columna2({
             })
           }
           onFocus={(e) => e.target.select()}
+          disabled={isCampoDeshabilitado("valorVenta")} // ✅ nuevo
         />
       </label>
 
@@ -52,6 +55,7 @@ export default function Columna2({
             })
           }
           onFocus={(e) => e.target.select()}
+          disabled={isCampoDeshabilitado("minStock")} // ✅ nuevo
         />
       </label>
 
@@ -97,13 +101,11 @@ export default function Columna2({
           value={form2.version}
           readOnly
           onClick={() => {
+            if (esGastoExistente) return; // ✅ no abrir modal si es gasto
             const encontrado = productosBD.find((p) => p.ref === form1.ref);
-
             if (encontrado) {
-              // ✅ Caso producto existente
               const stockIngresado = parseInt(form1.stock || 0, 10);
               const stockEnBD = parseInt(encontrado.stock || 0, 10);
-
               if (
                 stockIngresado > 0 ||
                 (stockIngresado === 0 && stockEnBD > 0)
@@ -111,20 +113,23 @@ export default function Columna2({
                 setMostrarVersion(true);
               }
             } else {
-              // ✅ Caso producto nuevo
               if (parseInt(form1.stock || 0, 10) > 0) {
                 setMostrarVersion(true);
               }
             }
           }}
           placeholder="Click para definir versiones"
-          disabled={isCampoDeshabilitado("version")}
+          disabled={isCampoDeshabilitado("version") || esGastoExistente} // ✅ nuevo
         />
       </label>
 
       {/* Botón Agregar */}
-      <button className="btn-agregar-compra" onClick={agregarProducto}>
-        Agregar
+      <button
+        className="btn-agregar-compra"
+        onClick={agregarProducto}
+        disabled={esGastoExistente || loadingAgregar} // ✅ bloqueado si gasto o en loading
+      >
+        {loadingAgregar ? "Agregando..." : "Agregar"}
       </button>
 
       {/* Modal de versiones */}

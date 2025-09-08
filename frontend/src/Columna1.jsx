@@ -11,6 +11,7 @@ export default function Columna1({
   setForm2,
   isCampoDeshabilitado,
   setMensajeValidacion,
+  esGastoExistente,
 }) {
   return (
     <div className="columna">
@@ -68,6 +69,7 @@ export default function Columna1({
             setForm1({ ...form1, stock: val });
           }}
           onFocus={(e) => e.target.select()}
+          disabled={esGastoExistente} // ✅ nuevo
         />
       </label>
 

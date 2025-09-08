@@ -46,6 +46,7 @@ export default function Columna4({
           value={registro}
           onChange={(e) => setRegistro(e.target.value)}
           className="lst"
+          disabled={productosAgregados.some((p) => p._id)} // ✅ si hay al menos 1 de BD
         >
           <option value="Productos">Productos</option>
           <option value="Gastos">Gastos</option>

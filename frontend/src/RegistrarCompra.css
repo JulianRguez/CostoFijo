@@ -222,3 +222,14 @@
   width: 174px;
   height: 26px;
 }
+.btn-confirmar-compra:disabled,
+.btn-agregar-compra:disabled {
+  background-color: #9ca3af; /* gris medio */
+  cursor: not-allowed;
+  color: #f3f4f6; /* texto gris claro */
+}
+.btn-agregar-compra:disabled {
+  background-color: #9ca3af; /* gris */
+  cursor: not-allowed;
+  color: #f3f4f6;
+}
