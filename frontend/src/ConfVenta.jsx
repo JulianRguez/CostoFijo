@@ -22,9 +22,6 @@ export default function ConfVenta({
     "Para crédito y garantía el cliente debe estar registrado; ingrese el documento de identidad."
   );
 
-  // NUEVO: estado de carga para controlar el flujo
-  const [loading, setLoading] = useState(false);
-
   // Estado de garantía por producto
   const [garantias, setGarantias] = useState({});
   const debounceRef = useRef(null);
@@ -72,6 +69,7 @@ export default function ConfVenta({
   // 👉 Manejar cambios con debounce
   const handleDocumentoChange = (value) => {
     setNombreCliente(value);
+
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     if (value.length >= 5) {
@@ -104,33 +102,26 @@ export default function ConfVenta({
       [id]: { ...prev[id], dias: numDias },
     }));
   };
-
   // 👉 Total final restando valor financiado
   const totalFinal = total - (creditoDirecto ? Number(valorFinanciado) : 0);
 
-  // 👉 Confirmar venta (ahora asíncrono y controlado)
-  const confirmar = async () => {
-    if (loading) return;
-    setLoading(true);
+  // 👉 Confirmar venta
+  const confirmar = () => {
+    onConfirmar({
+      creditoDirecto,
+      fechaPago,
+      valorFinanciado: Number(valorFinanciado),
+      garantias, // ahora enviamos las garantías por producto
+      totalFinal,
+      clienteValido, // 👈 enviar flag
+      cliente: clienteData, // 👈 enviar objeto cliente
+    });
 
-    try {
-      await onConfirmar({
-        creditoDirecto,
-        fechaPago,
-        valorFinanciado: Number(valorFinanciado),
-        garantias, // garantías por producto
-        totalFinal,
-        clienteValido, // flag
-        cliente: clienteData, // objeto cliente
-      });
-    } finally {
-      // al terminar (éxito o error), cerramos y reseteamos
-      setLoading(false);
-      setCreditoDirecto(false);
-      setValorFinanciado("0");
-      setGarantias({});
-      onClose();
-    }
+    // Reset
+    setCreditoDirecto(false);
+    setValorFinanciado("0");
+    setGarantias({});
+    onClose();
   };
 
   return (
@@ -149,7 +140,6 @@ export default function ConfVenta({
             onChange={(e) => handleDocumentoChange(e.target.value)}
             onFocus={handleNombreFocus}
             className="confventa-input"
-            disabled={loading}
           />
         </div>
 
@@ -164,7 +154,7 @@ export default function ConfVenta({
               type="checkbox"
               checked={creditoDirecto}
               onChange={() => setCreditoDirecto(!creditoDirecto)}
-              disabled={!clienteValido || loading}
+              disabled={!clienteValido}
             />
             Crédito Directo
           </label>
@@ -177,7 +167,7 @@ export default function ConfVenta({
             type="date"
             value={fechaPago}
             onChange={(e) => setFechaPago(e.target.value)}
-            disabled={!creditoDirecto || loading}
+            disabled={!creditoDirecto}
             className="confventa-input blanco"
             min={getTomorrow()}
           />
@@ -198,7 +188,7 @@ export default function ConfVenta({
               setValorFinanciado(valorFinanciado === "" ? "0" : valorFinanciado)
             }
             onChange={(e) => setValorFinanciado(e.target.value)}
-            disabled={!creditoDirecto || loading}
+            disabled={!creditoDirecto}
             className="confventa-input blanco"
           />
         </div>
@@ -223,7 +213,7 @@ export default function ConfVenta({
             <div>Artículo</div>
             <div>Cantidad</div>
             <div>Valor</div>
-            <div>Garantía (Días)</div>
+            <div>Garantía (Dias)</div>
           </div>
 
           {carrito.map((item) => (
@@ -247,14 +237,14 @@ export default function ConfVenta({
                   type="checkbox"
                   checked={garantias[item._id]?.checked || false}
                   onChange={() => toggleGarantia(item._id)}
-                  disabled={!clienteValido || loading}
+                  disabled={!clienteValido}
                 />
                 <input
                   type="number"
                   value={garantias[item._id]?.dias || ""}
                   onChange={(e) => setDiasGarantia(item._id, e.target.value)}
                   maxLength={3}
-                  disabled={!garantias[item._id]?.checked || loading}
+                  disabled={!garantias[item._id]?.checked}
                   className="confventa-input blanco"
                   style={{ width: "60px", height: "7px" }}
                 />
@@ -266,16 +256,8 @@ export default function ConfVenta({
         </div>
 
         <div className="confventa-acciones">
-          {/* Mensaje de progreso ANTES del botón Cancelar */}
-          {loading && (
-            <span className="confventa-msg">Realizando registro...</span>
-          )}
-          <button onClick={onClose} disabled={loading}>
-            Cancelar
-          </button>
-          <button onClick={confirmar} disabled={loading}>
-            Confirmar
-          </button>
+          <button onClick={onClose}>Cancelar</button>
+          <button onClick={confirmar}>Confirmar</button>
         </div>
       </div>
     </div>
