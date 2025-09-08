@@ -17,7 +17,7 @@ export default function VistaCentral() {
 
   const URLAPI = import.meta.env.VITE_URLAPI;
 
-  // Helpers
+  // Helpers para versiones
   const parsePairs = (versionStr) => {
     if (!versionStr || versionStr.trim() === "") return [];
     const a = versionStr.split("-");
@@ -27,7 +27,6 @@ export default function VistaCentral() {
     }
     return out;
   };
-
   const joinPairs = (pairs) => pairs.map((p) => `${p.name}-${p.qty}`).join("-");
 
   // Cargar productos
@@ -43,7 +42,7 @@ export default function VistaCentral() {
     localStorage.setItem("verAgotados", verAgotados);
   }, [verAgotados]);
 
-  // Agregar producto al carrito
+  // Agregar producto al carrito (manteniendo tu lógica actual) :contentReference[oaicite:3]{index=3}
   const agregarAlCarrito = (producto) => {
     if (producto.stock <= 0) return;
     if (mensaje.texto) setMensaje({ texto: "", tipo: "" });
@@ -61,8 +60,7 @@ export default function VistaCentral() {
       if (!sel || sel.qty <= 0) return;
     }
 
-    // 1) Actualizar stock general y versiones en la lista de productos
-    // 1) Actualizar solo las versiones en productos, no el stock general
+    // Actualizar solo las versiones en productos, no el stock general
     if (hadVersions) {
       setProductos((prev) =>
         prev.map((p) => {
@@ -75,10 +73,10 @@ export default function VistaCentral() {
       );
     }
 
-    // 2) Armar clave versión
+    // Clave versión
     const versionName = hadVersions ? selectedName : "Única versión";
 
-    // 3) Actualizar carrito
+    // Actualizar carrito
     const existe = carrito.find(
       (item) =>
         item._id === producto._id &&
@@ -99,15 +97,13 @@ export default function VistaCentral() {
     }
   };
 
-  // Quitar producto del carrito
+  // Quitar producto del carrito (sin cambios de lógica principal) :contentReference[oaicite:4]{index=4}
   const quitarDelCarrito = (id, versionName) => {
-    // 1) Buscar el item a eliminar
     const item = carrito.find(
       (i) => i._id === id && (i.versionName || "Única versión") === versionName
     );
     if (!item) return;
 
-    // 2) Actualizar productos (solo si tiene versiones)
     if (versionName !== "Única versión") {
       setProductos((prev) =>
         prev.map((p) => {
@@ -115,7 +111,7 @@ export default function VistaCentral() {
           const pairs = parsePairs(p.version);
           const newPairs = pairs.map((pair) =>
             pair.name === versionName
-              ? { ...pair, qty: pair.qty + item.cantidad } // devolvemos cantidad
+              ? { ...pair, qty: pair.qty + item.cantidad }
               : pair
           );
           return { ...p, version: joinPairs(newPairs) };
@@ -123,7 +119,6 @@ export default function VistaCentral() {
       );
     }
 
-    // 3) Quitar del carrito
     setCarrito(
       carrito.filter(
         (i) =>
@@ -132,25 +127,23 @@ export default function VistaCentral() {
     );
   };
 
-  // Calcular total
+  // Total
   const total = carrito.reduce(
     (acc, item) => acc + (item.valorVenta ?? item.precio) * item.cantidad,
     0
   );
 
-  // Filtrar productos
+  // Filtrado de productos (mantengo tu pipeline) :contentReference[oaicite:5]{index=5}
   const productosFiltrados = productos
     .map((p) => {
       const totalEnCarrito = carrito
         .filter((c) => c._id === p._id)
         .reduce((acc, c) => acc + c.cantidad, 0);
-
       return {
         ...p,
         stock: p.stock - totalEnCarrito,
       };
     })
-
     .filter((p) => p.etiqueta !== "Gasto")
     .filter((p) => p.ref?.toLowerCase().includes(filtrar.toLowerCase()))
     .filter((p) => verAgotados || p.stock > 0);
@@ -160,60 +153,30 @@ export default function VistaCentral() {
       setNombreCliente("");
     }
   };
-
   const handleNombreBlur = () => {
     if (nombreCliente.trim() === "") {
       setNombreCliente("Sin Registro");
     }
   };
 
-  const buildUpdatedVersion = (producto, carrito) => {
-    // Parsear pares del producto original
-    const parsePairs = (versionStr) => {
-      if (!versionStr || versionStr.trim() === "") return [];
-      const a = versionStr.split("-");
-      const out = [];
-      for (let i = 0; i < a.length; i += 2) {
-        out.push({ name: a[i], qty: parseInt(a[i + 1] ?? "0", 10) });
-      }
-      return out;
-    };
-    const joinPairs = (pairs) =>
-      pairs.map((p) => `${p.name}-${p.qty}`).join("-");
-
-    const pairs = parsePairs(producto.version);
-
-    // Restar cantidades vendidas de este producto por cada versionName
-    carrito
-      .filter(
-        (c) => c._id === producto._id && c.versionName !== "Única versión"
-      )
-      .forEach((item) => {
-        const pair = pairs.find((p) => p.name === item.versionName);
-        if (pair) {
-          pair.qty = Math.max(0, pair.qty - item.cantidad);
-        }
-      });
-
-    return joinPairs(pairs);
-  };
-
-  // Confirmar venta
-  // Confirmar venta
+  // ✅ Confirmar venta: devuelve true/false y hace POST /api/cred si corresponde
   const handleConfirmar = async (extraData) => {
-    if (carrito.length === 0) return;
+    if (carrito.length === 0) return false;
+
+    let exito = false;
 
     try {
-      // 1) Agrupar ventas por producto (sumar cantidades sin importar la versión)
+      // 1) Agrupar cantidades por producto
       const vendidosPorProducto = carrito.reduce((acc, item) => {
         acc[item._id] = (acc[item._id] || 0) + item.cantidad;
         return acc;
       }, {});
 
-      // 2) Payload de ventas (incluye la versión ACTUALIZADA de cada producto)
+      // 2) Payload de ventas (incluye versión actual del estado) :contentReference[oaicite:6]{index=6}
       const ventasPayload = carrito.map((item) => {
         const prodActual = productos.find((p) => p._id === item._id);
-        const garantiaInfo = extraData?.garantias?.[item._id];
+        const clave = `${item._id}-${item.versionName || "Única versión"}`;
+        const garantiaInfo = extraData?.garantias?.[clave];
         const garantia =
           garantiaInfo?.checked && Number(garantiaInfo?.dias) > 0
             ? Number(garantiaInfo.dias)
@@ -221,20 +184,19 @@ export default function VistaCentral() {
 
         return {
           idProd: item._id,
-          idClient: nombreCliente,
+          idClient: nombreCliente, // aquí va el documento/identificador mostrado
           cantidad: item.cantidad,
           valor: item.valorVenta ?? item.precio,
           factura: `FACT-${Date.now()}`,
           version: prodActual?.version || "",
-          garantia, // 👈 aquí va el nuevo campo numérico
-          ...extraData, // resto de info
+          garantia,
         };
       });
 
-      // 3) Enviar ventas
+      // 3) Crear ventas
       await axios.post(`${URLAPI}/api/vent`, ventasPayload);
 
-      // 4) Actualizar productos existentes en BD con stock y VERSION
+      // 4) Actualizar productos en BD (stock - vendidos, versión ya viene del estado) :contentReference[oaicite:7]{index=7}
       const payloadUpdate = Object.entries(vendidosPorProducto).map(
         ([id, cantVendida]) => {
           const prod = productos.find((p) => p._id === id);
@@ -245,74 +207,78 @@ export default function VistaCentral() {
           };
         }
       );
-
       if (payloadUpdate.length > 0) {
         await axios.put(`${URLAPI}/api/prod`, payloadUpdate);
       }
 
-      // 5) Validar si aplica crédito y actualizar cliente en /api/clie
-      const isISODate = /^\d{4}-\d{2}-\d{2}$/;
-      const creditoOK =
+      // 5) Si hay crédito directo > 0, registrar crédito y (opcional) movimiento del cliente
+      const monto = Number(extraData?.valorFinanciado) || 0;
+      const tieneCredito =
         Boolean(extraData?.clienteValido) &&
         Boolean(extraData?.creditoDirecto) &&
-        Number(extraData?.valorFinanciado) > 0 &&
-        isISODate.test(extraData?.fechaPago || "");
+        monto > 0;
 
-      if (creditoOK) {
-        try {
-          const cli = extraData.cliente; // 👈 ya lo tienes del modal
-          const existentes = Array.isArray(cli.porpagar) ? cli.porpagar : [];
+      if (tieneCredito) {
+        // 5.1 POST /api/cred (lo que solicitaste)
+        const payloadCredito = {
+          idClient: extraData?.cliente?._id, // _id del cliente encontrado
+          monto,
+          plazo: 1,
+          interes: 0,
+        };
+        await axios.post(`${URLAPI}/api/cred`, payloadCredito);
 
-          // 👉 NUEVO: crear crédito
-          const payloadCredito = {
-            idClient: cli._id, // 👈 el _id real del cliente
-            monto: Number(extraData.valorFinanciado),
-            plazo: 1,
-            interes: 0,
-          };
+        // 5.2 (Opcional) Actualizar "porpagar" del cliente si la fecha es válida ISO
+        const isISODate = /^\d{4}-\d{2}-\d{2}$/;
+        if (isISODate.test(extraData?.fechaPago || "")) {
+          try {
+            const cli = extraData.cliente;
+            const existentes = Array.isArray(cli.porpagar) ? cli.porpagar : [];
 
-          await axios.post(`${URLAPI}/api/cred`, payloadCredito);
+            const productosIds = [...new Set(carrito.map((i) => i._id))].join(
+              "-"
+            );
+            const hoyISO = new Date().toISOString().slice(0, 10);
 
-          const productosIds = [...new Set(carrito.map((i) => i._id))].join(
-            "-"
-          );
-          const hoyISO = new Date().toISOString().slice(0, 10);
+            const nuevoMovimiento = {
+              producto: productosIds,
+              diaCredito: hoyISO,
+              proxPago: extraData.fechaPago,
+              valor: Number(extraData.valorFinanciado),
+              abonos: [],
+            };
 
-          const nuevoMovimiento = {
-            producto: productosIds,
-            diaCredito: hoyISO,
-            proxPago: extraData.fechaPago,
-            abonos: [],
-          };
+            const payloadCliente = [
+              {
+                _id: cli._id,
+                porpagar: [...existentes, nuevoMovimiento],
+              },
+            ];
 
-          const payloadCliente = [
-            {
-              _id: cli._id, // 👈 usa el _id real del cliente
-              porpagar: [...existentes, nuevoMovimiento],
-            },
-          ];
-
-          console.log("Enviando payload cliente:", payloadCliente);
-
-          await axios.put(`${URLAPI}/api/clie`, payloadCliente);
-          console.log("Cliente actualizado con porpagar");
-        } catch (err) {
-          console.error("Error actualizando cliente:", err);
+            await axios.put(`${URLAPI}/api/clie`, payloadCliente);
+          } catch (eCli) {
+            console.error("Error actualizando cliente (porpagar):", eCli);
+          }
         }
       }
 
-      // 6) Refrescar lista de productos desde la API
+      // 6) Refrescar productos y estados de UI
       const res = await axios.get(`${URLAPI}/api/prod`);
       setProductos(res.data);
 
-      // 7) Reset de estados
       setMensaje({ texto: "Registro exitoso", tipo: "exito" });
       setCarrito([]);
       setNombreCliente("Sin Registro");
+
+      exito = true;
     } catch (error) {
       console.error("Error al confirmar venta:", error);
       setMensaje({ texto: "Error al realizar el registro", tipo: "error" });
+      exito = false;
     }
+
+    // devolvemos el resultado para que ConfVenta cierre cuando termine
+    return exito;
   };
 
   return (
@@ -321,7 +287,7 @@ export default function VistaCentral() {
       <div className="buscador-con-checkbox">
         <input
           type="text"
-          placeholder="Buscar por referencia..."
+          placeholder="Buscar por referencia."
           value={filtrar}
           onChange={(e) => setFiltrar(e.target.value)}
           className="buscador"
@@ -407,6 +373,7 @@ export default function VistaCentral() {
               </span>
             )}
           </div>
+
           <div className="carrito-scroll">
             {carrito.map((item) => (
               <div
@@ -434,6 +401,7 @@ export default function VistaCentral() {
               </div>
             ))}
           </div>
+
           <div className="carrito-total">Total: ${total}</div>
           <button
             className="btn-confirmar"
@@ -454,7 +422,6 @@ export default function VistaCentral() {
           nombreCliente={nombreCliente}
           setNombreCliente={setNombreCliente}
           handleNombreFocus={handleNombreFocus}
-          handleNombreBlur={handleNombreBlur}
           onClose={() => setMostrarModal(false)}
           onConfirmar={(extraData) => handleConfirmar(extraData)}
         />

@@ -14,6 +14,7 @@ const porPagarSchema = new mongoose.Schema(
     producto: { type: String, required: true },
     diaCredito: { type: String, required: true },
     proxPago: { type: Date, required: true },
+    valor: { type: Number, required: true },
     abonos: { type: [abonoSchema], default: [] },
   },
   { _id: false } // para que no cree un _id en cada objeto porpagar
