@@ -213,14 +213,21 @@ export default function VistaCentral() {
       // 2) Payload de ventas (incluye la versión ACTUALIZADA de cada producto)
       const ventasPayload = carrito.map((item) => {
         const prodActual = productos.find((p) => p._id === item._id);
+        const garantiaInfo = extraData?.garantias?.[item._id];
+        const garantia =
+          garantiaInfo?.checked && Number(garantiaInfo?.dias) > 0
+            ? Number(garantiaInfo.dias)
+            : 0;
+
         return {
           idProd: item._id,
           idClient: nombreCliente,
           cantidad: item.cantidad,
           valor: item.valorVenta ?? item.precio,
           factura: `FACT-${Date.now()}`,
-          version: prodActual?.version || "", // 👈 versión final (ya decrementada por add/remove)
-          ...extraData, // creditoDirecto, fechaPago, etc.
+          version: prodActual?.version || "",
+          garantia, // 👈 aquí va el nuevo campo numérico
+          ...extraData, // resto de info
         };
       });
 
@@ -233,8 +240,8 @@ export default function VistaCentral() {
           const prod = productos.find((p) => p._id === id);
           return {
             _id: id,
-            stock: (prod?.stock ?? 0) - cantVendida, // stock original - vendidos totales
-            version: prod?.version ?? "", // 👈 enviar string de versiones actualizado
+            stock: (prod?.stock ?? 0) - cantVendida,
+            version: prod?.version ?? "",
           };
         }
       );
@@ -243,11 +250,62 @@ export default function VistaCentral() {
         await axios.put(`${URLAPI}/api/prod`, payloadUpdate);
       }
 
-      // 5) Refrescar lista de productos desde la API (para ver los cambios confirmados)
+      // 5) Validar si aplica crédito y actualizar cliente en /api/clie
+      const isISODate = /^\d{4}-\d{2}-\d{2}$/;
+      const creditoOK =
+        Boolean(extraData?.clienteValido) &&
+        Boolean(extraData?.creditoDirecto) &&
+        Number(extraData?.valorFinanciado) > 0 &&
+        isISODate.test(extraData?.fechaPago || "");
+
+      if (creditoOK) {
+        try {
+          const cli = extraData.cliente; // 👈 ya lo tienes del modal
+          const existentes = Array.isArray(cli.porpagar) ? cli.porpagar : [];
+
+          // 👉 NUEVO: crear crédito
+          const payloadCredito = {
+            idClient: cli._id, // 👈 el _id real del cliente
+            monto: Number(extraData.valorFinanciado),
+            plazo: 1,
+            interes: 0,
+          };
+
+          await axios.post(`${URLAPI}/api/cred`, payloadCredito);
+
+          const productosIds = [...new Set(carrito.map((i) => i._id))].join(
+            "-"
+          );
+          const hoyISO = new Date().toISOString().slice(0, 10);
+
+          const nuevoMovimiento = {
+            producto: productosIds,
+            diaCredito: hoyISO,
+            proxPago: extraData.fechaPago,
+            abonos: [],
+          };
+
+          const payloadCliente = [
+            {
+              _id: cli._id, // 👈 usa el _id real del cliente
+              porpagar: [...existentes, nuevoMovimiento],
+            },
+          ];
+
+          console.log("Enviando payload cliente:", payloadCliente);
+
+          await axios.put(`${URLAPI}/api/clie`, payloadCliente);
+          console.log("Cliente actualizado con porpagar");
+        } catch (err) {
+          console.error("Error actualizando cliente:", err);
+        }
+      }
+
+      // 6) Refrescar lista de productos desde la API
       const res = await axios.get(`${URLAPI}/api/prod`);
       setProductos(res.data);
 
-      // 6) Reset de estados
+      // 7) Reset de estados
       setMensaje({ texto: "Registro exitoso", tipo: "exito" });
       setCarrito([]);
       setNombreCliente("Sin Registro");

@@ -15,7 +15,8 @@ export const createVentas = async (req, res) => {
     }
 
     // 2) Filtrar campos permitidos
-    const allowed = ["idProd", "idClient", "cantidad", "valor", "factura", "fecha", "devuelto"];
+    const allowed = ["idProd", "idClient", "cantidad", "valor", "factura", "fecha", "devuelto", "garantia"];
+
     const docs = payload.map((venta) => {
       const doc = {};
       for (const key of allowed) {
@@ -50,11 +51,11 @@ export const createVentas = async (req, res) => {
 export const updateVenta = async (req, res) => {
   try {
     const { id } = req.params;
-    const { idProd, idClient, cantidad, valor, factura, fecha, devuelto } = req.body;
+    const { idProd, idClient, cantidad, valor, garantia, factura, fecha, devuelto } = req.body;
 
     const ventaActualizada = await Vent.findByIdAndUpdate(
       id,
-      { idProd, idClient, cantidad, valor, factura, fecha, devuelto },
+      { idProd, idClient, cantidad, valor, garantia, factura, fecha, devuelto },
       { new: true, runValidators: true }
     );
 
