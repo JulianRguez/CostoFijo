@@ -122,7 +122,12 @@
   color: black;
   padding: 20px;
   border-radius: 8px;
-  min-width: 300px;
+  min-width: 500px; /* 👈 ancho mínimo más grande */
+  max-width: 80vw; /* 👈 no más del 80% de la pantalla */
+  width: 600px; /* 👈 ancho base */
+  max-height: 90vh; /* 👈 evitar que se desborde verticalmente */
+  display: flex;
+  flex-direction: column;
 }
 
 .campo-compra {
@@ -163,20 +168,24 @@
   border-bottom: 1px solid #334155;
   padding: 8px 0;
   margin-bottom: 12px;
+
+  max-height: 300px; /* 👈 altura máxima visible */
+  overflow-y: auto; /* 👈 scroll vertical si hay muchos productos */
+  overflow-x: hidden;
 }
 
 .encabezado-tabla-modal {
   display: grid;
-  grid-template-columns: 25% 25% 25% 25%;
+  grid-template-columns: 10% 40% 20% 25%;
   font-weight: bold;
   font-size: 0.8rem;
-  color: #cbd5e1;
+  color: #059669;
   margin-bottom: 6px;
 }
 
 .fila-tabla-modal {
   display: grid;
-  grid-template-columns: 25% 25% 25% 25%;
+  grid-template-columns: 10% 40% 20% 25%;
   font-size: 0.8rem;
   padding: 2px 0;
   color: #e2e8f0;
@@ -232,4 +241,12 @@
   background-color: #9ca3af; /* gris */
   cursor: not-allowed;
   color: #f3f4f6;
+}
+
+.tabla-productos-modal::-webkit-scrollbar {
+  width: 8px;
+}
+.tabla-productos-modal::-webkit-scrollbar-thumb {
+  background-color: #64748b;
+  border-radius: 4px;
 }

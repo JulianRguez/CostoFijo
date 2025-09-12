@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import VistaCentral from "./VistaCentral";
 import VistaCompras from "./VistaCompras";
+import HojaVida from "./HojaVida";
+import Pdf from "./Pdf"; // 👈 importa Pdf.jsx
 import "./App.css";
 
 export default function App() {
@@ -9,6 +11,10 @@ export default function App() {
   const [placeholder, setPlaceholder] = useState("Contraseña");
   const [vistaActiva, setVistaActiva] = useState(null);
   const [codigoPedido, setCodigoPedido] = useState("");
+
+  // 👇 nuevo estado para manejar datos de la hoja de vida
+  const [datosHojaVida, setDatosHojaVida] = useState(null);
+  const [mostrarPDF, setMostrarPDF] = useState(false);
 
   const manejarAuth = () => {
     if (clave === "109021") {
@@ -26,21 +32,23 @@ export default function App() {
     setVistaActiva(null);
     setClave("");
     setPlaceholder("Contraseña");
+    setMostrarPDF(false);
+    setDatosHojaVida(null);
   };
 
   const manejarClickMenu = (opcion) => {
     if (!auth) return;
     setVistaActiva(opcion);
+    setMostrarPDF(false); // 👈 al cambiar de menú, siempre vuelves al form
   };
 
   const manejarCodigoPedido = (e) => {
-    const val = e.target.value.replace(/\D/g, ""); // Solo números
+    const val = e.target.value.replace(/\D/g, "");
     if (val.length <= 6) {
       setCodigoPedido(val);
       if (val === "101000") {
         setVistaActiva("Pedido Pendiente");
       } else if (vistaActiva === "Pedido Pendiente") {
-        // Si estaba en "Pedido Pendiente" y ya no es válido, se oculta
         setVistaActiva(null);
       }
     }
@@ -206,13 +214,30 @@ export default function App() {
             <h2>Pedido Pendiente</h2>
           </div>
         )}
+
         {auth &&
           vistaActiva &&
           vistaActiva !== "Vender" &&
           vistaActiva !== "Compras" &&
           vistaActiva !== "Pedido Pendiente" && (
             <div className="vista-generica">
-              <h2>{vistaActiva}</h2>
+              {vistaActiva === "Hoja de vida" ? (
+                mostrarPDF ? (
+                  <Pdf
+                    datos={datosHojaVida}
+                    onRegresar={() => setMostrarPDF(false)}
+                  />
+                ) : (
+                  <HojaVida
+                    onGenerarPDF={(datos) => {
+                      setDatosHojaVida(datos);
+                      setMostrarPDF(true);
+                    }}
+                  />
+                )
+              ) : (
+                <h2>{vistaActiva}</h2>
+              )}
             </div>
           )}
       </div>

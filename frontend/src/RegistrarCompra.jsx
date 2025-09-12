@@ -82,7 +82,6 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         version: encontrado.version || "",
       });
 
-      // 👉 Si la referencia ya existe, forzar el registro a "Productos"
       setRegistro("Productos");
       setEsGastoExistente(encontrado.etiqueta === "Gasto");
     } else {
@@ -116,8 +115,8 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
   //        AGREGAR
   // =========================
   const agregarProducto = async () => {
-    if (loadingAgregar) return; // evita doble clic
-    setLoadingAgregar(true); // ✅ empieza loading
+    if (loadingAgregar) return;
+    setLoadingAgregar(true);
 
     try {
       const camposObligatorios = [
@@ -138,7 +137,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
             texto: "Algún dato no es válido",
             tipo: "error",
           });
-          setLoadingAgregar(false); // ✅ libera loading
+          setLoadingAgregar(false);
           return;
         }
       }
@@ -156,7 +155,6 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         return;
       }
 
-      // --- Datos del producto en BD ---
       const encontrado = productosBD.find((p) => p.ref === form1.ref);
       const stockIngresado = parseInt(form1.stock || 0, 10) || 0;
       const stockEnBD = parseInt(encontrado?.stock || 0, 10) || 0;
@@ -169,7 +167,6 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         stockEnBD > 0 &&
         versionForm !== versionBD;
 
-      // --- Validación de versiones ---
       if (encontrado) {
         if (versionForm && versionForm.trim() !== "") {
           let sumaVersion = 0;
@@ -187,11 +184,10 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         }
       }
 
-      // --- Validaciones numéricas ---
       const stockValidoOExcepcion = permitirSoloVersion || stockIngresado > 0;
       const otrosNumerosValidos =
-        parseInt(form1.valor || 0, 10) > 100 &&
-        parseInt(form1.valorVenta || 0, 10) > 100 &&
+        parseInt(form1.valor || 0, 10) > 10 &&
+        parseInt(form1.valorVenta || 0, 10) > 10 &&
         parseInt(form1.minStock || 0, 10) >= 0;
 
       if (!stockValidoOExcepcion || !otrosNumerosValidos) {
@@ -202,15 +198,24 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         return;
       }
 
+      // 🔹 Normalización antes de guardar en lista
+      const toMayusculas = (texto = "") => texto.toUpperCase();
+      const formatearDescripcion = (texto = "") => {
+        const lower = texto.toLowerCase();
+        return lower.charAt(0).toUpperCase() + lower.slice(1);
+      };
+
       const existente = productosBD.find((p) => p.ref === form1.ref);
 
       setProductosAgregados([
         ...productosAgregados,
         {
           ...form1,
+          nombre: toMayusculas(form1.nombre),
           ...form2,
+          descripcion: formatearDescripcion(form2.descripcion),
           stock: form1.stock === "" ? "0" : form1.stock,
-          _id: existente?._id || null, // ✅ si existe en BD guardamos su _id
+          _id: existente?._id || null,
         },
       ]);
 
@@ -228,7 +233,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     } catch (err) {
       console.error(err);
     } finally {
-      setLoadingAgregar(false); // ✅ libera loading siempre
+      setLoadingAgregar(false);
     }
   };
 
@@ -237,12 +242,28 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     nuevos.splice(index, 1);
     setProductosAgregados(nuevos);
   };
+
+  // =========================
+  //        APLICAR
+  // =========================
   const aplicarCambios = async () => {
     try {
+      const toMayusculas = (texto = "") => texto.toUpperCase();
+      const formatearDescripcion = (texto = "") => {
+        const lower = texto.toLowerCase();
+        return lower.charAt(0).toUpperCase() + lower.slice(1);
+      };
+
       const productosFinales = productosAgregados.map((prod) => {
+        let normalizado = {
+          ...prod,
+          nombre: toMayusculas(prod.nombre),
+          descripcion: formatearDescripcion(prod.descripcion),
+        };
+
         if (registro === "Gastos") {
-          return {
-            ...prod,
+          normalizado = {
+            ...normalizado,
             etiqueta: "Gasto",
             stock: "1",
             valorVenta: "0",
@@ -250,7 +271,8 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
             img1: URLIMGASTO,
           };
         }
-        return prod;
+
+        return normalizado;
       });
 
       const compArray = productosFinales
@@ -259,7 +281,6 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
           const stockIngresado = parseInt(prod.stock || 0, 10) || 0;
           const stockEnBD = parseInt(existente?.stock || 0, 10) || 0;
 
-          // 🚨 Caso especial: solo versión → no registrar en comp
           const esSoloVersion =
             existente && stockIngresado === 0 && stockEnBD > 0;
 
@@ -272,7 +293,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
             registro,
             fecha,
             idProd: prod.ref,
-            cantidad: stockIngresado, // ✅ siempre solo el del input
+            cantidad: stockIngresado,
             valor: parseInt(prod.valor || 0, 10) || 0,
           };
         })
@@ -290,13 +311,13 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
 
           const nuevoStock =
             stockIngresado === 0 && stockEnBD > 0
-              ? stockEnBD // ✅ mantener stock de BD
+              ? stockEnBD
               : stockEnBD + stockIngresado;
 
           productosActualizar.push({
             _id: existente._id,
             stock: nuevoStock,
-            version: prod.version, // respeta vacío o cambios
+            version: prod.version,
           });
         } else {
           productosCrear.push({
