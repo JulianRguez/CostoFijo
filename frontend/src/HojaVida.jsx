@@ -1,63 +1,90 @@
-// HojaVida.jsx
-import React, { useState } from "react";
+// HojaVida.jsx (modificado)
+import React, { useState, useEffect } from "react";
 import "./HojaVida.css";
 
-export default function HojaVida({ onGenerarPDF }) {
-  // Datos básicos
-  const [documento, setDocumento] = useState("");
-  const [nombre, setNombre] = useState("");
-  const [profesion, setProfesion] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [telefono2, setTelefono2] = useState("");
-  const [correo, setCorreo] = useState("");
-  const [nacionalidad, setNacionalidad] = useState("");
-  const [direccion, setDireccion] = useState("");
-  const [municipio, setMunicipio] = useState("");
-  const [departamento, setDepartamento] = useState("");
-  const [perfil, setPerfil] = useState("");
+export default function HojaVida({ onGenerarPDF, initialData = null }) {
+  // Datos básicos (inicializados desde initialData si existe)
+  const [documento, setDocumento] = useState(initialData?.documento || "");
+  const [nombre, setNombre] = useState(initialData?.nombre || "");
+  const [profesion, setProfesion] = useState(initialData?.profesion || "");
+  const [telefono, setTelefono] = useState(initialData?.telefono || "");
+  const [telefono2, setTelefono2] = useState(initialData?.telefono2 || "");
+  const [correo, setCorreo] = useState(initialData?.correo || "");
+  const [nacionalidad, setNacionalidad] = useState(
+    initialData?.nacionalidad || ""
+  );
+  const [direccion, setDireccion] = useState(initialData?.direccion || "");
+  const [municipio, setMunicipio] = useState(initialData?.municipio || "");
+  const [departamento, setDepartamento] = useState(
+    initialData?.departamento || ""
+  );
+  const [perfil, setPerfil] = useState(initialData?.perfil || "");
 
-  // Herramientas
+  // Herramientas / listas (inicializar desde initialData si existe)
   const [herramienta, setHerramienta] = useState("");
-  const [herramientas, setHerramientas] = useState([]);
+  const [herramientas, setHerramientas] = useState(
+    initialData?.herramientas || []
+  );
 
-  // Idiomas
   const [idioma, setIdioma] = useState("");
   const [nivel, setNivel] = useState("A1 (Principiante)");
-  const [idiomas, setIdiomas] = useState([]);
+  const [idiomas, setIdiomas] = useState(initialData?.idiomas || []);
 
-  // Estudios
   const [institucion, setInstitucion] = useState("");
   const [titulo, setTitulo] = useState("");
   const [anio, setAnio] = useState("");
-  const [estudios, setEstudios] = useState([]);
+  const [estudios, setEstudios] = useState(initialData?.estudios || []);
 
-  // Experiencia laboral
   const [empresa, setEmpresa] = useState("");
   const [cargo, setCargo] = useState("");
   const [meses, setMeses] = useState("");
   const [contacto, setContacto] = useState("");
-  const [experiencias, setExperiencias] = useState([]);
+  const [experiencias, setExperiencias] = useState(
+    initialData?.experiencias || []
+  );
 
-  // Referencias
   const [refNombre, setRefNombre] = useState("");
   const [refProfesion, setRefProfesion] = useState("");
   const [refTipo, setRefTipo] = useState("Personal");
   const [refContacto, setRefContacto] = useState("");
-  const [referencias, setReferencias] = useState([]);
+  const [referencias, setReferencias] = useState(
+    initialData?.referencias || []
+  );
 
-  // Imagen
-  const [imagenFile, setImagenFile] = useState(null);
+  const [imagenFile, setImagenFile] = useState(initialData?.imagenFile || null);
+
+  // Si quieres que la forma se actualice si initialData cambia mientras el componente está montado:
+  useEffect(() => {
+    if (!initialData) return;
+    setDocumento(initialData.documento || "");
+    setNombre(initialData.nombre || "");
+    setProfesion(initialData.profesion || "");
+    setTelefono(initialData.telefono || "");
+    setTelefono2(initialData.telefono2 || "");
+    setCorreo(initialData.correo || "");
+    setNacionalidad(initialData.nacionalidad || "");
+    setDireccion(initialData.direccion || "");
+    setMunicipio(initialData.municipio || "");
+    setDepartamento(initialData.departamento || "");
+    setPerfil(initialData.perfil || "");
+    setHerramientas(initialData.herramientas || []);
+    setIdiomas(initialData.idiomas || []);
+    setEstudios(initialData.estudios || []);
+    setExperiencias(initialData.experiencias || []);
+    setReferencias(initialData.referencias || []);
+    setImagenFile(initialData.imagenFile || null);
+  }, [initialData]);
 
   // Validaciones
   const validDocumento = documento.length >= 4 && documento.length <= 12;
   const validNombre = nombre.length >= 6 && nombre.length <= 32;
   const validProfesion = profesion.length >= 6 && profesion.length <= 32;
   const validTelefono = telefono.length >= 5 && telefono.length <= 15;
-  const validTelefono2 = telefono2.length >= 5 && telefono2.length <= 25;
-  const validCorreo = correo.length >= 5 && correo.length <= 25;
+  const validTelefono2 = telefono2.length >= 5 && telefono2.length <= 15;
+  const validCorreo = correo.length >= 5 && correo.length <= 40;
   const validNacionalidad =
     nacionalidad.length >= 5 && nacionalidad.length <= 25;
-  const validDireccion = direccion.length >= 5 && direccion.length <= 25;
+  const validDireccion = direccion.length >= 5 && direccion.length <= 40;
   const validMunicipio = municipio.length >= 5 && municipio.length <= 25;
   const validDepartamento =
     departamento.length >= 5 && departamento.length <= 25;
@@ -256,10 +283,16 @@ export default function HojaVida({ onGenerarPDF }) {
             value={documento}
             onChange={(e) => setDocumento(e.target.value)}
           />
+          <span className={`char-count ${validDocumento ? "ok" : "error"}`}>
+            Entre 4 y 12 caracteres ({documento.length})
+          </span>
         </div>
         <div className="campo">
           <label>Nombre completo</label>
           <input value={nombre} onChange={(e) => setNombre(e.target.value)} />
+          <span className={`char-count ${validNombre ? "ok" : "error"}`}>
+            Entre 6 y 32 caracteres ({nombre.length})
+          </span>
         </div>
         <div className="campo">
           <label>Profesión</label>
@@ -267,6 +300,9 @@ export default function HojaVida({ onGenerarPDF }) {
             value={profesion}
             onChange={(e) => setProfesion(e.target.value)}
           />
+          <span className={`char-count ${validProfesion ? "ok" : "error"}`}>
+            Entre 6 y 32 caracteres ({profesion.length})
+          </span>
         </div>
         <div className="campo">
           <label>Teléfono</label>
@@ -274,6 +310,9 @@ export default function HojaVida({ onGenerarPDF }) {
             value={telefono}
             onChange={(e) => setTelefono(e.target.value)}
           />
+          <span className={`char-count ${validTelefono ? "ok" : "error"}`}>
+            Entre 5 y 15 caracteres ({telefono.length})
+          </span>
         </div>
         <div className="campo">
           <label>Teléfono 2</label>
@@ -281,6 +320,9 @@ export default function HojaVida({ onGenerarPDF }) {
             value={telefono2}
             onChange={(e) => setTelefono2(e.target.value)}
           />
+          <span className={`char-count ${validTelefono2 ? "ok" : "error"}`}>
+            Entre 5 y 15 caracteres ({telefono2.length})
+          </span>
         </div>
       </div>
 
@@ -289,6 +331,9 @@ export default function HojaVida({ onGenerarPDF }) {
         <div className="campo">
           <label>Correo electrónico</label>
           <input value={correo} onChange={(e) => setCorreo(e.target.value)} />
+          <span className={`char-count ${validCorreo ? "ok" : "error"}`}>
+            Entre 5 y 40 caracteres ({correo.length})
+          </span>
         </div>
         <div className="campo">
           <label>Nacionalidad</label>
@@ -296,6 +341,9 @@ export default function HojaVida({ onGenerarPDF }) {
             value={nacionalidad}
             onChange={(e) => setNacionalidad(e.target.value)}
           />
+          <span className={`char-count ${validNacionalidad ? "ok" : "error"}`}>
+            Entre 5 y 25 caracteres ({nacionalidad.length})
+          </span>
         </div>
         <div className="campo">
           <label>Dirección</label>
@@ -303,6 +351,9 @@ export default function HojaVida({ onGenerarPDF }) {
             value={direccion}
             onChange={(e) => setDireccion(e.target.value)}
           />
+          <span className={`char-count ${validDireccion ? "ok" : "error"}`}>
+            Entre 5 y 40 caracteres ({direccion.length})
+          </span>
         </div>
         <div className="campo">
           <label>Municipio</label>
@@ -310,6 +361,9 @@ export default function HojaVida({ onGenerarPDF }) {
             value={municipio}
             onChange={(e) => setMunicipio(e.target.value)}
           />
+          <span className={`char-count ${validMunicipio ? "ok" : "error"}`}>
+            Entre 5 y 25 caracteres ({municipio.length})
+          </span>
         </div>
         <div className="campo">
           <label>Departamento</label>
@@ -317,12 +371,15 @@ export default function HojaVida({ onGenerarPDF }) {
             value={departamento}
             onChange={(e) => setDepartamento(e.target.value)}
           />
+          <span className={`char-count ${validDepartamento ? "ok" : "error"}`}>
+            Entre 5 y 25 caracteres ({departamento.length})
+          </span>
         </div>
       </div>
 
       {/* Herramientas */}
       <div className="seccion">
-        <h3>Herramientas tecnológicas</h3>
+        <h3>Habilidades</h3>
         <div className="fila-agregar">
           <input
             value={herramienta}
@@ -355,6 +412,7 @@ export default function HojaVida({ onGenerarPDF }) {
             Agregar
           </button>
         </div>
+
         <div className="lista">
           {idiomas.map((it, i) => (
             <div key={i}>
@@ -365,6 +423,12 @@ export default function HojaVida({ onGenerarPDF }) {
             </div>
           ))}
         </div>
+
+        {/* 👇 Indicador de cantidad */}
+        <span className={`record-count ${idiomas.length > 0 ? "ok" : "error"}`}>
+          {idiomas.length} {idiomas.length === 1 ? "idioma" : "idiomas"}{" "}
+          registrados (mínimo 1)
+        </span>
       </div>
 
       {/* Estudios */}
@@ -390,6 +454,7 @@ export default function HojaVida({ onGenerarPDF }) {
             Agregar
           </button>
         </div>
+
         <div className="lista">
           {estudios.map((it, i) => (
             <div key={i}>
@@ -400,6 +465,14 @@ export default function HojaVida({ onGenerarPDF }) {
             </div>
           ))}
         </div>
+
+        {/* 👇 Indicador de cantidad */}
+        <span
+          className={`record-count ${estudios.length > 0 ? "ok" : "error"}`}
+        >
+          {estudios.length} {estudios.length === 1 ? "estudio" : "estudios"}{" "}
+          registrados (mínimo 1)
+        </span>
       </div>
 
       {/* Experiencia */}
@@ -430,6 +503,7 @@ export default function HojaVida({ onGenerarPDF }) {
             Agregar
           </button>
         </div>
+
         <div className="lista">
           {experiencias.map((it, i) => (
             <div key={i}>
@@ -440,6 +514,15 @@ export default function HojaVida({ onGenerarPDF }) {
             </div>
           ))}
         </div>
+
+        {/* 👇 Indicador de cantidad */}
+        <span
+          className={`record-count ${experiencias.length > 0 ? "ok" : "error"}`}
+        >
+          {experiencias.length}{" "}
+          {experiencias.length === 1 ? "experiencia" : "experiencias"}{" "}
+          registradas (mínimo 1)
+        </span>
       </div>
 
       {/* Referencias */}
@@ -484,25 +567,26 @@ export default function HojaVida({ onGenerarPDF }) {
 
       {/* Perfil */}
       <div className="seccion">
-        <h3>Perfil profesional</h3>
+        <h3>Sobre mi</h3>
         <textarea
           value={perfil}
           onChange={(e) => setPerfil(e.target.value)}
           rows={5}
         ></textarea>
+        <span className={`char-count ${validPerfil ? "ok" : "error"}`}>
+          Entre 100 y 400 caracteres ({perfil.length})
+        </span>
       </div>
 
       {/* Imagen */}
       <div className="seccion">
         <h3>Cargar imagen medio cuerpo</h3>
-        <input type="file" accept="image/*" onChange={handleImagen} />
-        <span>
-          {imagenFile
-            ? imagenFile.name.length > 10
-              ? imagenFile.name.substring(0, 10) + "..."
-              : imagenFile.name
-            : "Sin imagen"}
-        </span>
+        <input
+          id="imgPerfil"
+          type="file"
+          accept="image/*"
+          onChange={handleImagen}
+        />
       </div>
 
       {/* Botones finales */}

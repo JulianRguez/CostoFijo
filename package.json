@@ -9,5 +9,10 @@
   "devDependencies": {
     "concurrently": "^8.2.2",
     "copyfiles": "^2.4.1"
+  },
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.2",
+    "lucide-react": "^0.544.0"
   }
 }

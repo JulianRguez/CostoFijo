@@ -229,6 +229,7 @@ export default function App() {
                   />
                 ) : (
                   <HojaVida
+                    initialData={datosHojaVida} // 👈 se pasa la data guardada
                     onGenerarPDF={(datos) => {
                       setDatosHojaVida(datos);
                       setMostrarPDF(true);

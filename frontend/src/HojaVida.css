@@ -45,9 +45,12 @@
 .seccion textarea {
   font-size: medium;
   border-radius: 4px;
-  height: 24px;
+  height: 30px;
   width: 100%;
   resize: none;
+}
+#imgPerfil {
+  background-color: transparent;
 }
 
 .campo input:focus,
@@ -123,4 +126,22 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+.char-count {
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.char-count.ok,
+.record-count.ok {
+  color: #11b17e; /* verde */
+}
+
+.char-count.error,
+.record-count.error {
+  color: #f07171; /* rojo */
+}
+.record-count {
+  font-size: 12px;
+  margin-top: 6px;
 }

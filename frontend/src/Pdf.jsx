@@ -3,6 +3,8 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import "./Pdf.css";
 
+import { Phone, Mail, Globe, Home, Building, Map, IdCard } from "lucide-react";
+
 export default function Pdf({ datos, onRegresar }) {
   const contRef = useRef();
 
@@ -75,14 +77,46 @@ export default function Pdf({ datos, onRegresar }) {
 
           <div className="sidebar-section">
             <h3>Contacto</h3>
-            <p>📞 {telefono}</p>
-            <p>📞 {telefono2}</p>
-            <p>📧 {correo}</p>
-            <p>🌎 {nacionalidad}</p>
-            <p>🏠 {direccion}</p>
-            <p>🏙️ {municipio}</p>
-            <p>🗺️ {departamento}</p>
-            <p>🆔 {documento}</p>
+            <p>
+              <Phone size={14} color="#d1d5db" style={{ marginRight: "6px" }} />{" "}
+              {telefono}
+            </p>
+            <p>
+              <Phone size={14} color="#d1d5db" style={{ marginRight: "6px" }} />{" "}
+              {telefono2}
+            </p>
+            <p>
+              <Mail size={14} color="#d1d5db" style={{ marginRight: "6px" }} />{" "}
+              {correo}
+            </p>
+            <p>
+              <Globe size={14} color="#d1d5db" style={{ marginRight: "6px" }} />{" "}
+              {nacionalidad}
+            </p>
+            <p>
+              <Home size={14} color="#d1d5db" style={{ marginRight: "6px" }} />{" "}
+              {direccion}
+            </p>
+            <p>
+              <Building
+                size={14}
+                color="#d1d5db"
+                style={{ marginRight: "6px" }}
+              />{" "}
+              {municipio}
+            </p>
+            <p>
+              <Map size={14} color="#d1d5db" style={{ marginRight: "6px" }} />{" "}
+              {departamento}
+            </p>
+            <p>
+              <IdCard
+                size={14}
+                color="#d1d5db"
+                style={{ marginRight: "6px" }}
+              />{" "}
+              {documento}
+            </p>
           </div>
 
           {herramientas && herramientas.length > 0 && (
