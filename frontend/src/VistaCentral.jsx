@@ -134,6 +134,8 @@ export default function VistaCentral() {
   );
 
   // Filtrado de productos (mantengo tu pipeline) :contentReference[oaicite:5]{index=5}
+  const esNumero = /^\d+$/.test(filtrar.trim());
+
   const productosFiltrados = productos
     .map((p) => {
       const totalEnCarrito = carrito
@@ -145,7 +147,14 @@ export default function VistaCentral() {
       };
     })
     .filter((p) => p.etiqueta !== "Gasto")
-    .filter((p) => p.ref?.toLowerCase().includes(filtrar.toLowerCase()))
+    .filter((p) => {
+      if (filtrar.trim() === "") return true; // sin filtro
+      if (esNumero) {
+        return p.ref?.toLowerCase().includes(filtrar.toLowerCase());
+      } else {
+        return p.nombre?.toLowerCase().includes(filtrar.toLowerCase());
+      }
+    })
     .filter((p) => verAgotados || p.stock > 0);
 
   const handleNombreFocus = () => {
