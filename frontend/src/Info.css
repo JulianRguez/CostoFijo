@@ -1,0 +1,49 @@
+.info-container {
+  padding: 20px;
+  color: white;
+}
+
+.titulo-principal {
+  margin: 20px 0;
+  color: #f39c12; /* Amarillo para todos los títulos */
+}
+
+.filtros {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.filtros select {
+  padding: 5px;
+  border-radius: 6px;
+}
+
+.loading {
+  font-style: italic;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.card {
+  border-radius: 12px;
+  padding: 15px;
+  background-color: #1e2a38;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.card h3 {
+  margin-bottom: 10px;
+  color: #f39c12; /* Amarillo fijo */
+}
+
+.card p {
+  font-size: 20px;
+  font-weight: bold;
+}

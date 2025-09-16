@@ -3,6 +3,7 @@ import VistaCentral from "./VistaCentral";
 import VistaCompras from "./VistaCompras";
 import HojaVida from "./HojaVida";
 import Pdf from "./Pdf"; // 👈 importa Pdf.jsx
+import Info from "./Info";
 import "./App.css";
 
 export default function App() {
@@ -206,7 +207,7 @@ export default function App() {
             </ul>
           </div>
         )}
-
+        {auth && !vistaActiva && <Info />}
         {auth && vistaActiva === "Vender" && <VistaCentral />}
         {auth && vistaActiva === "Compras" && <VistaCompras />}
         {vistaActiva === "Pedido Pendiente" && (
