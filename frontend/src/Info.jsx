@@ -13,8 +13,18 @@ export default function Info() {
   const [loading, setLoading] = useState(true);
 
   const meses = [
-    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
   ];
 
   useEffect(() => {
@@ -24,7 +34,7 @@ export default function Info() {
         const [resVent, resCred, resComp] = await Promise.all([
           fetch(`${URLAPI}/api/vent`),
           fetch(`${URLAPI}/api/cred`),
-          fetch(`${URLAPI}/api/comp`)
+          fetch(`${URLAPI}/api/comp`),
         ]);
         const dataVent = await resVent.json();
         const dataCred = await resCred.json();
@@ -98,14 +108,12 @@ export default function Info() {
 
   return (
     <div className="info-container">
-      <h2 className="titulo-principal">
-        Ingresos del mes de {meses[mes - 1]} del año {anio}
-      </h2>
-
       <div className="filtros">
         <select value={mes} onChange={(e) => setMes(Number(e.target.value))}>
           {meses.map((m, i) => (
-            <option key={i} value={i + 1}>{m}</option>
+            <option key={i} value={i + 1}>
+              {m}
+            </option>
           ))}
         </select>
 
@@ -115,6 +123,9 @@ export default function Info() {
         </select>
       </div>
 
+      <h2 className="titulo-principal">
+        Ingresos del mes de {meses[mes - 1]} del año {anio}
+      </h2>
       {loading ? (
         <p className="loading">Cargando información...</p>
       ) : (

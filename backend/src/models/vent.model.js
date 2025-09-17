@@ -8,7 +8,8 @@ const ventSchema = new mongoose.Schema({
   garantia: { type: Number, default:0},
   factura:{type: String, required: true},
   fecha: { type: Date, default: Date.now },
-  devuelto: { type: Boolean, default: false }
+  devuelto: { type: Boolean, default: false},
+  etiqueta:{type: String} 
 });
 
 export default mongoose.model("Vent", ventSchema, "vent");

@@ -51,11 +51,13 @@ export default function Columna1({
           className="lst"
         >
           <option value="Papeleria">Papeleria</option>
-          <option value="Accesorios">Accesorios</option>
-          <option value="Celulares">Celulares</option>
+          <option value="Celulares y accesorios">Celulares y accesorios</option>
+          <option value="Servicios papeleria">Servicios papeleria</option>
           <option value="Hogar">Hogar</option>
-          <option value="Servicios">Servicios</option>
-          <option value="Gasto">Gasto</option>
+          <option value="Tecnico">Tecnico</option>
+          <option value="Vigilancia">Vigilancia</option>
+          <option value="Redes y datos">Redes y datos</option>
+          <option value="Cargo Mensual">Cargo Mensual</option>
         </select>
       </label>
 

@@ -199,6 +199,7 @@ export default function VistaCentral() {
           factura: `FACT-${Date.now()}`,
           version: prodActual?.version || "",
           garantia,
+          etiqueta: item.etiqueta,
         };
       });
 
