@@ -176,7 +176,7 @@
 
 .encabezado-tabla-modal {
   display: grid;
-  grid-template-columns: 10% 40% 20% 25%;
+  grid-template-columns: 15% 40% 15% 25%;
   font-weight: bold;
   font-size: 0.8rem;
   color: #059669;
@@ -185,7 +185,7 @@
 
 .fila-tabla-modal {
   display: grid;
-  grid-template-columns: 10% 40% 20% 25%;
+  grid-template-columns: 15% 40% 15% 25%;
   font-size: 0.8rem;
   padding: 2px 0;
   color: #e2e8f0;

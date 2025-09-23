@@ -33,8 +33,8 @@ export default function Version({
       setMensaje("Falta información en los campos.");
       return;
     }
-    if (versiones.length >= 6) {
-      setMensaje("No se pueden crear más de 6 versiones.");
+    if (versiones.length >= 12) {
+      setMensaje("No se pueden crear más de 12 versiones.");
       return;
     }
     if (isNaN(stock) || stock <= 0) {
