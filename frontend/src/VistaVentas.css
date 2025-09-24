@@ -1,0 +1,88 @@
+.vista-ventas {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.filtros-ventas {
+  display: flex;
+  gap: 10px;
+}
+
+.filtros-ventas input {
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: none;
+  font-size: 14px;
+  width: 100px;
+}
+
+.lista-ventas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background-color: #1e293b;
+  padding: 10px;
+  border-radius: 8px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.item-venta .producto {
+  font-weight: bold;
+  color: #10b981;
+}
+
+.item-venta .etiqueta {
+  font-style: italic;
+  color: #facc15;
+}
+.resumen-ventas {
+  margin-left: 15px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #facc15; /* Amarillo */
+  align-self: center;
+}
+
+.item-venta {
+  display: grid;
+  grid-template-columns: 25% 14% 14% 14% 14% 14%;
+  align-items: center;
+  background-color: #334155;
+  padding: 1px 1px; /* 👈 mínimo espacio */
+  border-radius: 3px;
+  color: white;
+  height: 33px;
+}
+.lista-ventas {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background-color: #1e293b;
+  padding: 6px;
+  border-radius: 6px;
+  max-height: 70vh;
+  overflow-y: auto;
+
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #64748b transparent; /* Firefox */
+}
+
+/* Scroll personalizado en navegadores WebKit (Chrome, Edge, etc.) */
+.lista-ventas::-webkit-scrollbar {
+  width: 8px;
+}
+
+.lista-ventas::-webkit-scrollbar-track {
+  background: transparent; /* 👈 elimina fondo blanco */
+}
+
+.lista-ventas::-webkit-scrollbar-thumb {
+  background-color: #64748b; /* gris oscuro */
+  border-radius: 4px;
+}
+
+.lista-ventas::-webkit-scrollbar-thumb:hover {
+  background-color: #475569; /* más oscuro al pasar el ratón */
+}
