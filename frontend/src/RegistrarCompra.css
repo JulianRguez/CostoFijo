@@ -250,3 +250,16 @@
   background-color: #64748b;
   border-radius: 4px;
 }
+.mensaje-loading {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #facc15; /* amarillo */
+  text-align: center;
+}
+.btn-cancelar-modal:disabled,
+.btn-aplicar-modal:disabled {
+  background-color: #9ca3af; /* gris */
+  cursor: not-allowed;
+  color: #f3f4f6;
+  opacity: 0.7;
+}

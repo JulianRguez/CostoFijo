@@ -38,6 +38,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
   const [productosBD, setProductosBD] = useState([]);
   const [esGastoExistente, setEsGastoExistente] = useState(false);
   const [loadingAgregar, setLoadingAgregar] = useState(false);
+  const [loadingAplicar, setLoadingAplicar] = useState(false);
   const [mensajeValidacion, setMensajeValidacion] = useState({
     texto: "",
     tipo: "",
@@ -247,6 +248,8 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
   //        APLICAR
   // =========================
   const aplicarCambios = async () => {
+    if (loadingAplicar) return; // evita múltiples clics
+  setLoadingAplicar(true);
     try {
       const toMayusculas = (texto = "") => texto.toUpperCase();
       const formatearDescripcion = (texto = "") => {
@@ -399,6 +402,9 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         tipo: "error",
       });
     }
+    finally {
+    setLoadingAplicar(false); // siempre lo reseteamos al final
+  }
   };
 
   return (
@@ -512,16 +518,25 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
             </div>
 
             <div className="acciones-compra">
-              <button
-                className="btn-cancelar-modal"
-                onClick={() => setMostrarDialogo(false)}
-              >
-                Cancelar
-              </button>
-              <button className="btn-aplicar-modal" onClick={aplicarCambios}>
-                Aplicar
-              </button>
-            </div>
+  <button
+    className="btn-cancelar-modal"
+    onClick={() => setMostrarDialogo(false)}
+    disabled={loadingAplicar} // 🔹 deshabilitar cuando aplica
+  >
+    Cancelar
+  </button>
+  <button
+    className="btn-aplicar-modal"
+    onClick={aplicarCambios}
+    disabled={loadingAplicar} // 🔹 deshabilitar cuando aplica
+  >
+    {loadingAplicar ? "Aplicando..." : "Aplicar"}
+  </button>
+</div>
+
+{loadingAplicar && (
+  <div className="mensaje-loading">Registrando la compra, espere...</div>
+)}
           </div>
         </div>
       )}

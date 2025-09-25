@@ -27,7 +27,7 @@ export default function VistaVentas() {
   // Buscar nombre del producto por idProd
   const obtenerNombreProducto = (id) => {
     const prod = productos.find((p) => p._id === id);
-    return prod ? prod.nombre : id;
+    return prod ? prod.nombre : "OTROS PRODUCTOS O SERVICIOS";
   };
 
   // Calcular días restantes de garantía
@@ -139,9 +139,9 @@ export default function VistaVentas() {
                 {obtenerNombreProducto(venta.idProd)}
               </span>
               <span>Cantidad: {venta.cantidad}</span>
-              <span>Valor: ${venta.valor}</span>
+              <span>${venta.valor}</span>
               <span>
-                Garantía:{" "}
+                {" "}
                 {calcularGarantiaRestante(venta.fecha, venta.garantia)}
               </span>
               <span>
