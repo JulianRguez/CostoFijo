@@ -1,0 +1,115 @@
+.vista-stock {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.filtro-etiqueta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lista-stock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background-color: #1e293b;
+  padding: 6px;
+  border-radius: 6px;
+  max-height: 65vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #64748b transparent;
+}
+
+.lista-stock::-webkit-scrollbar {
+  width: 8px;
+}
+.lista-stock::-webkit-scrollbar-track {
+  background: transparent;
+}
+.lista-stock::-webkit-scrollbar-thumb {
+  background-color: #64748b;
+  border-radius: 4px;
+}
+.lista-stock::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: 25% 8% 12% 8% 10% 25% 12%;
+  align-items: center;
+  background-color: #334155;
+  padding: 4px 6px;
+  border-radius: 3px;
+  font-size: 13px;
+  color: white;
+  line-height: 1.2;
+}
+
+.fila.header {
+  font-weight: bold;
+  background-color: #1e293b;
+  border-bottom: 2px solid #475569;
+}
+
+.btn-actualizar {
+  padding: 8px 16px;
+  background-color: #059669;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  align-self: flex-end;
+}
+
+.btn-actualizar:disabled {
+  background-color: #64748b;
+  cursor: not-allowed;
+}
+.input-minstock {
+  width: 60px;
+  padding: 2px 4px;
+  font-size: 13px;
+  border-radius: 3px;
+  border: 1px solid #475569;
+  background-color: #1e293b;
+  color: white;
+}
+/* Quitar flechas de los inputs numéricos (Chrome, Safari, Edge) */
+.input-minstock::-webkit-outer-spin-button,
+.input-minstock::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.msg-actualizacion {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-align: center;
+  width: fit-content;
+}
+
+/* Estados */
+.msg-actualizacion.info {
+  color: #facc15; /* Amarillo */
+}
+
+.msg-actualizacion.exito {
+  color: #10b981; /* Verde */
+}
+
+.msg-actualizacion.error {
+  color: #dc2626; /* Rojo */
+}
+.acciones-actualizar {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* espacio entre mensaje y botón */
+  margin-top: 10px;
+}

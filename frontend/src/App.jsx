@@ -4,6 +4,7 @@ import VistaCompras from "./VistaCompras";
 import HojaVida from "./HojaVida";
 import Pdf from "./Pdf"; // 👈 importa Pdf.jsx
 import VistaVentas from "./VistaVentas";
+import Stock from "./Stock";
 import Info from "./Info";
 import "./App.css";
 
@@ -212,6 +213,7 @@ export default function App() {
         {auth && vistaActiva === "Vender" && <VistaCentral />}
         {auth && vistaActiva === "Compras" && <VistaCompras />}
         {auth && vistaActiva === "Ventas" && <VistaVentas />}
+        {auth && vistaActiva === "Bajo stock" && <Stock />}
         {vistaActiva === "Pedido Pendiente" && (
           <div className="vista-generica">
             <h2>Pedido Pendiente</h2>
@@ -223,7 +225,8 @@ export default function App() {
           vistaActiva !== "Vender" &&
           vistaActiva !== "Compras" &&
           vistaActiva !== "Pedido Pendiente" &&
-          vistaActiva !== "Ventas" && (
+          vistaActiva !== "Ventas" &&
+          vistaActiva !== "Bajo stock" && (
             <div className="vista-generica">
               {vistaActiva === "Hoja de vida" ? (
                 mostrarPDF ? (
