@@ -204,3 +204,16 @@ body {
   pointer-events: none; /* no permite clics */
   opacity: 0.5; /* se ve grisado */
 }
+.btn-inicio {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: transform 0.2s ease;
+}
+
+.btn-inicio:hover {
+  transform: scale(1.2);
+}

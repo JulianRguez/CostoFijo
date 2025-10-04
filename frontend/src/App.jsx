@@ -6,6 +6,7 @@ import Pdf from "./Pdf"; // 👈 importa Pdf.jsx
 import VistaVentas from "./VistaVentas";
 import Stock from "./Stock";
 import Info from "./Info";
+import { Home, Bell, User, UserX } from "lucide-react";
 import "./App.css";
 
 export default function App() {
@@ -156,11 +157,31 @@ export default function App() {
             costofijo.com
           </div>
           <div className="estado-usuario">
+            {/* Botón de Inicio */}
+            <button
+              className="btn-inicio"
+              onClick={() => setVistaActiva("Info")}
+              title="Volver al inicio"
+            >
+              <Home size={22} strokeWidth={2} />
+            </button>
             <div className="notificacion">
               <span className="contador">0</span>
-              <span className="icono">🔔</span>
+              <Bell size={22} strokeWidth={2} className="icono" />
             </div>
-            <span>{auth ? "👤 Julián Rodríguez" : "🙈 No autenticado"}</span>
+            <span className="estado-usuario">
+              {auth ? (
+                <>
+                  <span>Julián Rodríguez</span>
+                  <User size={18} strokeWidth={2} />{" "}
+                </>
+              ) : (
+                <>
+                  <span>No autenticado</span>
+                  <UserX size={18} strokeWidth={2} />{" "}
+                </>
+              )}
+            </span>
             {!auth && (
               <input
                 type="password"
@@ -214,6 +235,7 @@ export default function App() {
         {auth && vistaActiva === "Compras" && <VistaCompras />}
         {auth && vistaActiva === "Ventas" && <VistaVentas />}
         {auth && vistaActiva === "Bajo stock" && <Stock />}
+        {auth && vistaActiva === "Info" && <Info />}
         {vistaActiva === "Pedido Pendiente" && (
           <div className="vista-generica">
             <h2>Pedido Pendiente</h2>
@@ -225,6 +247,7 @@ export default function App() {
           vistaActiva !== "Vender" &&
           vistaActiva !== "Compras" &&
           vistaActiva !== "Pedido Pendiente" &&
+          vistaActiva !== "Info" &&
           vistaActiva !== "Ventas" &&
           vistaActiva !== "Bajo stock" && (
             <div className="vista-generica">

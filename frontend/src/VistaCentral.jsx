@@ -150,8 +150,10 @@ export default function VistaCentral() {
     .filter((p) => {
       if (filtrar.trim() === "") return true; // sin filtro
       if (esNumero) {
-        return p.ref?.toLowerCase().includes(filtrar.toLowerCase());
+        // Coincidencia exacta por referencia
+        return p.ref?.toLowerCase() === filtrar.toLowerCase();
       } else {
+        // Coincidencia parcial por nombre
         return p.nombre?.toLowerCase().includes(filtrar.toLowerCase());
       }
     })

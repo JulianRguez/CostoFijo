@@ -37,11 +37,10 @@ export default function Version({
       setMensaje("No se pueden crear más de 12 versiones.");
       return;
     }
-    if (isNaN(stock) || stock <= 0) {
-      setMensaje("El stock debe ser un número válido.");
+    if (isNaN(stock) || stock < 0) {
+      setMensaje("El stock no puede ser negativo.");
       return;
     }
-
     const nuevaVersion = {
       version,
       stock: parseInt(stock, 10),
@@ -68,7 +67,7 @@ export default function Version({
   const handleDecrementar = (index) => {
     setVersiones((prev) =>
       prev.map((v, i) =>
-        i === index && v.stock > 1 ? { ...v, stock: v.stock - 1 } : v
+        i === index && v.stock > 0 ? { ...v, stock: v.stock - 1 } : v
       )
     );
   };
