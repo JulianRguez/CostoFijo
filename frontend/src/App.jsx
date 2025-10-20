@@ -6,6 +6,7 @@ import Pdf from "./Pdf"; // 👈 importa Pdf.jsx
 import VistaVentas from "./VistaVentas";
 import Stock from "./Stock";
 import Info from "./Info";
+import Clientes from "./Clientes";
 import { Home, Bell, User, UserX } from "lucide-react";
 import "./App.css";
 
@@ -235,6 +236,7 @@ export default function App() {
         {auth && vistaActiva === "Compras" && <VistaCompras />}
         {auth && vistaActiva === "Ventas" && <VistaVentas />}
         {auth && vistaActiva === "Bajo stock" && <Stock />}
+        {auth && vistaActiva === "Clientes" && <Clientes />}
         {auth && vistaActiva === "Info" && <Info />}
         {vistaActiva === "Pedido Pendiente" && (
           <div className="vista-generica">
@@ -249,7 +251,8 @@ export default function App() {
           vistaActiva !== "Pedido Pendiente" &&
           vistaActiva !== "Info" &&
           vistaActiva !== "Ventas" &&
-          vistaActiva !== "Bajo stock" && (
+          vistaActiva !== "Bajo stock" &&
+          vistaActiva !== "Clientes" && (
             <div className="vista-generica">
               {vistaActiva === "Hoja de vida" ? (
                 mostrarPDF ? (

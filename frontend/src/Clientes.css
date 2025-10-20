@@ -1,0 +1,322 @@
+:root {
+  --bg-card: #1e293b;
+  --bg-input: #ffffff;
+  --bg-input-dark: #2c2c2c;
+  --accent: #059669;
+  --muted: #d6d6d6;
+  --highlight: #059669;
+  --danger: #ff7070;
+}
+
+/* Contenedor principal */
+.clientes-contenedor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  height: 88vh;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Título */
+.titulo-clientes {
+  text-align: center;
+  color: var(--accent);
+  margin: 0 0 6px 0;
+}
+
+/* Filtro superior */
+.filtro-clientes {
+  display: flex;
+}
+
+.input-filtro {
+  width: 30%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+}
+
+.input-filtro:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Header del cliente */
+.cliente-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.cliente-nombre {
+  margin: 0;
+  color: var(--highlight);
+  font-size: 16px;
+  display: inline;
+}
+
+.btn-eliminar {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 18px;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.btn-eliminar:hover {
+  transform: scale(1.15);
+  color: #ff9a9a;
+}
+.cliente-info-linea {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+/* Info del cliente */
+.cliente-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.icono-ver {
+  cursor: pointer;
+  margin-left: 8px;
+  vertical-align: middle;
+  color: var(--highlight);
+}
+
+/* Créditos y abonos */
+.credito-card {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.credito-linea {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--highlight);
+}
+
+.credito-text {
+  font-weight: 600;
+  color: var(--highlight);
+}
+
+.abono-item {
+  font-size: 13px;
+  color: #cbd5e1;
+  white-space: nowrap;
+}
+
+.btn-x {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 13px;
+  margin-left: 4px;
+}
+
+.btn-x:hover {
+  color: #ff9a9a;
+}
+/* Contenedor con scroll */
+.lista-clientes-scroll {
+  overflow-y: auto;
+  height: 80%;
+}
+/* Tarjeta de cliente */
+.card-cliente {
+  background-color: var(--bg-card);
+  padding: 12px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  margin-bottom: 10px;
+  width: 97%;
+}
+/* ===========================
+   CLIENTE NUEVO
+   =========================== */
+.cliente-nuevo-linea {
+  bottom: 70px;
+  background-color: var(--bg-card);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  display: flex;
+  gap: 12px;
+  width: 96%;
+  margin-top: 70px;
+}
+
+.cliente-nuevo-titulo {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 14px;
+  min-width: 100px;
+  white-space: nowrap;
+}
+
+.cliente-nuevo-campos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  width: 100%;
+}
+
+.cliente-nuevo-campos input {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: none;
+  background-color: var(--bg-input);
+  width: 120px;
+  max-width: 160px;
+  font-size: 13px;
+}
+
+/* Quitar borde blanco al enfocar */
+input:focus,
+select:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Quitar flechas numéricas */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.btn-crear-cliente {
+  background-color: var(--accent);
+  color: #0b1220;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  transition: background-color 0.15s ease;
+}
+
+.btn-crear-cliente:hover:not(:disabled) {
+  background-color: #04b07a;
+}
+
+.btn-crear-cliente:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+
+/* ===========================
+   BARRA INFERIOR - Registrar Abono
+   =========================== */
+.bottom-bar {
+  bottom: 70px;
+  background-color: var(--bg-card);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  display: flex;
+  gap: 12px;
+  width: 96%;
+}
+
+.fila-abono-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.titulo-abono {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 14px;
+  min-width: 110px;
+  white-space: nowrap;
+}
+
+.fila-abono-bottom input,
+.fila-abono-bottom select {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: none;
+  background-color: var(--bg-input);
+  width: 120px;
+  max-width: 160px;
+  font-size: 13px;
+}
+
+.fila-abono-bottom select {
+  min-width: 160px;
+}
+
+.btn-registrar {
+  background-color: var(--accent);
+  color: #0b1220;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  transition: background-color 0.15s ease;
+}
+
+.btn-registrar:hover:not(:disabled) {
+  background-color: #04b07a;
+}
+
+.btn-registrar:disabled {
+  background-color: var(--muted);
+  cursor: not-allowed;
+}
+
+/* ===========================
+   Scrollbars oscuros (sin fondo blanco)
+   =========================== */
+.lista-clientes-scroll::-webkit-scrollbar,
+.cliente-nuevo-campos::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.lista-clientes-scroll::-webkit-scrollbar-thumb,
+.cliente-nuevo-campos::-webkit-scrollbar-thumb {
+  background-color: var(--muted);
+  border-radius: 6px;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+  .cliente-campo {
+    min-width: 90px;
+    max-width: 140px;
+    font-size: 12px;
+  }
+  .cliente-nuevo-campos input,
+  .fila-abono-bottom input,
+  .fila-abono-bottom select {
+    min-width: 100px;
+  }
+  .fila-abono-bottom select {
+    min-width: 120px;
+  }
+}

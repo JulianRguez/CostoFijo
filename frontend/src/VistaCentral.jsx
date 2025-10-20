@@ -254,10 +254,11 @@ export default function VistaCentral() {
 
             const nuevoMovimiento = {
               producto: productosIds,
-              diaCredito: hoyISO,
-              proxPago: extraData.fechaPago,
+              diaCredito: new Date().toISOString().slice(0, 10), // fecha actual
+              proxPago: new Date(extraData.fechaPago).toISOString(), // formato ISO completo
               valor: Number(extraData.valorFinanciado),
-              abonos: [],
+              clave: "1234", // requerido por el esquema del backend
+              abonos: [], // sin abonos iniciales
             };
 
             const payloadCliente = [
@@ -266,7 +267,10 @@ export default function VistaCentral() {
                 porpagar: [...existentes, nuevoMovimiento],
               },
             ];
-
+            console.log(
+              "📦 Enviando payloadCliente:",
+              JSON.stringify(payloadCliente, null, 2)
+            );
             await axios.put(`${URLAPI}/api/clie`, payloadCliente);
           } catch (eCli) {
             console.error("Error actualizando cliente (porpagar):", eCli);

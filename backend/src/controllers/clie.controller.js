@@ -20,7 +20,7 @@ export const createClients = async (req, res) => {
       return res.status(400).json({ mensaje: "El body está vacío. Envía uno o varios clientes." });
     }
 
-    const allowed = ["doc", "nombre", "dire", "tel", "mail", "porpagar"];
+    const allowed = ["doc", "nombre", "dire", "tel", "mail", "porpagar","clave"];
 
     const docs = payload.map((c) => {
       const doc = {};
@@ -62,7 +62,7 @@ export const updateClients = async (req, res) => {
       });
     }
 
-    const allowed = ["doc", "nombre", "dire", "tel", "mail", "porpagar"];
+    const allowed = ["doc", "nombre", "dire", "tel", "mail", "porpagar","clave"];
 
     const results = [];
     for (const c of payload) {
@@ -96,11 +96,30 @@ export const updateClients = async (req, res) => {
     });
   }
 };
-// GET: obtener cliente por documento
-export const getClientByDoc = async (req, res) => {
+// GET: obtener cliente por teléfono o correo
+export const getClientByDato = async (req, res) => {
   try {
-    const { doc } = req.params;
-    const cliente = await Clie.findOne({ doc: doc });
+    const { dato } = req.params;
+
+    if (!dato) {
+      return res.status(400).json({ mensaje: "Falta el parámetro de búsqueda" });
+    }
+
+    // Detectar si es correo o teléfono
+    const esEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dato);
+    const esNumero = /^\d+$/.test(dato);
+
+    let filtro = null;
+
+    if (esEmail) {
+      filtro = { mail: dato };
+    } else if (esNumero) {
+      filtro = { tel: dato };
+    } else {
+      return res.status(400).json({ mensaje: "Formato no válido (debe ser teléfono o email)" });
+    }
+
+    const cliente = await Clie.findOne(filtro);
 
     if (!cliente) {
       return res.status(404).json({ mensaje: "Cliente no encontrado" });
@@ -108,6 +127,28 @@ export const getClientByDoc = async (req, res) => {
 
     res.json(cliente);
   } catch (error) {
+    console.error("❌ Error al buscar cliente:", error);
+    res.status(500).json({ mensaje: "Error al buscar cliente", error });
+  }
+};
+// GET: obtener cliente por cedula
+export const getClientByDoc = async (req, res) => {
+  try {
+    const { doc } = req.params; 
+
+    if (!doc) {
+      return res.status(400).json({ mensaje: "Falta el parámetro de búsqueda" });
+    }
+
+    const cliente = await Clie.findOne({ doc }); 
+
+    if (!cliente) {
+      return res.status(404).json({ mensaje: "Cliente no encontrado" });
+    }
+
+    res.json(cliente);
+  } catch (error) {
+    console.error("❌ Error al buscar cliente:", error);
     res.status(500).json({ mensaje: "Error al buscar cliente", error });
   }
 };

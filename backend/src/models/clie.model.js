@@ -16,6 +16,7 @@ const porPagarSchema = new mongoose.Schema(
     proxPago: { type: Date, required: true },
     valor: { type: Number, required: true },
     abonos: { type: [abonoSchema], default: [] },
+    clave: { type: String, required: true },
   },
   { _id: false } // para que no cree un _id en cada objeto porpagar
 );
@@ -27,6 +28,7 @@ const clieSchema = new mongoose.Schema({
   tel: { type: String },
   mail: { type: String },
   porpagar: { type: [porPagarSchema], default: [] }, // arreglo de objetos
+  clave: { type: String, default: "" },
 });
 
 export default mongoose.model("Clie", clieSchema, "clie");

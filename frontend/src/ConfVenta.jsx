@@ -1,4 +1,3 @@
-//confVenta.jsx
 import React, { useState, useEffect, useRef } from "react";
 import "./ConfVenta.css";
 
@@ -21,15 +20,10 @@ export default function ConfVenta({
   const [mensajeCliente, setMensajeCliente] = useState(
     "Para crédito y garantía el cliente debe estar registrado; ingrese el documento de identidad."
   );
-
-  // Estado de carga para controlar el flujo
   const [loading, setLoading] = useState(false);
-
-  // Estado de garantía por producto+versión
   const [garantias, setGarantias] = useState({});
   const debounceRef = useRef(null);
 
-  // 👉 Función para obtener mañana
   const getTomorrow = () => {
     const hoy = new Date();
     hoy.setDate(hoy.getDate() + 1);
@@ -40,22 +34,32 @@ export default function ConfVenta({
     setFechaPago(getTomorrow());
   }, []);
 
-  // 👉 Validar cliente contra API
+  // ✅ Validar cliente con nueva ruta y excluir inactivos (Xdoc)
   const validarClienteAPI = async (doc) => {
     try {
-      const res = await fetch(`${URLAPI}/api/clie/${doc}`);
+      const res = await fetch(`${URLAPI}/api/clie/cc/${doc}`);
       if (!res.ok) {
         setClienteValido(false);
         setClienteData(null);
-        setMensajeCliente(
-          "Para crédito y garantía el cliente debe estar registrado; ingrese el documento de identidad."
-        );
+        setMensajeCliente("Cliente no encontrado o inactivo.");
         setCreditoDirecto(false);
         setGarantias({});
         return;
       }
 
       const cliente = await res.json();
+
+      if (cliente.doc?.startsWith("X")) {
+        setClienteValido(false);
+        setClienteData(null);
+        setMensajeCliente(
+          "El cliente está inactivo y no puede registrar crédito."
+        );
+        setCreditoDirecto(false);
+        setGarantias({});
+        return;
+      }
+
       setClienteValido(true);
       setClienteData(cliente);
       setMensajeCliente(cliente.nombre);
@@ -63,13 +67,12 @@ export default function ConfVenta({
       console.error("Error validando cliente:", err);
       setClienteValido(false);
       setClienteData(null);
-      setMensajeCliente("Error consultando clientes, intente nuevamente.");
+      setMensajeCliente("Error consultando cliente, intente nuevamente.");
       setCreditoDirecto(false);
       setGarantias({});
     }
   };
 
-  // 👉 Manejar cambios con debounce
   const handleDocumentoChange = (value) => {
     setNombreCliente(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -88,7 +91,6 @@ export default function ConfVenta({
     }
   };
 
-  // 👉 Cambiar garantía de un producto+versión
   const toggleGarantia = (clave) => {
     setGarantias((prev) => {
       const actual = prev[clave] || { checked: false, dias: 0 };
@@ -102,7 +104,6 @@ export default function ConfVenta({
   const setDiasGarantia = (clave, dias) => {
     const numDias = parseInt(dias, 10) || 0;
     if (String(numDias).length > 3) return;
-
     setGarantias((prev) => {
       const actual = prev[clave] || { checked: false, dias: 0 };
       return {
@@ -112,26 +113,22 @@ export default function ConfVenta({
     });
   };
 
-  // 👉 Total final restando valor financiado
   const totalFinal = total - (creditoDirecto ? Number(valorFinanciado) : 0);
 
-  // 👉 Confirmar venta (asíncrono y controlado)
   const confirmar = async () => {
     if (loading) return;
     setLoading(true);
-
     try {
       await onConfirmar({
         creditoDirecto,
         fechaPago,
         valorFinanciado: Number(valorFinanciado),
-        garantias, // garantías por producto+versión
+        garantias,
         totalFinal,
         clienteValido,
         cliente: clienteData,
       });
     } finally {
-      // al terminar (éxito o error), cerramos y reseteamos
       setLoading(false);
       setCreditoDirecto(false);
       setValorFinanciado("0");
@@ -147,9 +144,7 @@ export default function ConfVenta({
 
         {/* Documento cliente */}
         <div className="confventa-campo">
-          <label className="confventa-label">
-            Documento de identidad del cliente:
-          </label>
+          <label className="confventa-label">Documento de identidad:</label>
           <input
             type="text"
             value={nombreCliente}
@@ -161,7 +156,6 @@ export default function ConfVenta({
         </div>
 
         <p className="confventa-aviso">{mensajeCliente}</p>
-
         <hr className="confventa-separador" />
 
         {/* Crédito directo */}
@@ -209,13 +203,14 @@ export default function ConfVenta({
             className="confventa-input blanco"
           />
         </div>
+
         <p className="confventa-totalparcial">
           Total a pagar ahora: ${totalFinal}
         </p>
 
         <hr className="confventa-separador" />
 
-        {/* Lista de productos con garantías */}
+        {/* Productos con garantías */}
         <div className="confventa-detalle">
           <div
             style={{
@@ -267,7 +262,7 @@ export default function ConfVenta({
                     maxLength={3}
                     disabled={!garantias[clave]?.checked || loading}
                     className="confventa-input blanco"
-                    style={{ width: "60px", height: "7px" }}
+                    style={{ width: "60px" }}
                   />
                 </div>
               </div>
@@ -278,9 +273,7 @@ export default function ConfVenta({
         </div>
 
         <div className="confventa-acciones">
-          {loading && (
-            <span className="confventa-msg">Realizando registro...</span>
-          )}
+          {loading && <span className="confventa-msg">Registrando...</span>}
           <button onClick={onClose} disabled={loading}>
             Cancelar
           </button>

@@ -128,3 +128,24 @@ export const updateProducts = async (req, res) => {
   }
 };
 
+// GET: obtener un producto por _id
+export const getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ mensaje: "Falta el parámetro _id" });
+    }
+
+    const producto = await Prod.findById(id);
+
+    if (!producto) {
+      return res.status(404).json({ mensaje: "Producto no encontrado" });
+    }
+
+    res.json(producto);
+  } catch (error) {
+    console.error("❌ Error al obtener producto:", error);
+    res.status(500).json({ mensaje: "Error al obtener producto", error });
+  }
+};
