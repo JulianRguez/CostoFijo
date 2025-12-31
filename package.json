@@ -1,37 +1,21 @@
 {
-  "name": "frontend",
-  "version": "1.0.0",
+  "name": "proyecto-fullstack",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend && npx copyfiles -u 1 \"frontend/dist/**/*\" backend/dist",
+    "start": "NODE_ENV=production npm run start --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "copyfiles": "^2.4.1"
   },
   "dependencies": {
     "@react-oauth/google": "^0.12.2",
-    "lucide-react": "^0.544.0",
-    "@turf/turf": "^7.2.0",
-    "@vitejs/plugin-react": "^4.4.1",
-    "axios": "^1.11.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.2",
-    "leaflet": "^1.9.4",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-icons": "^5.5.0",
-    "react-leaflet": "^5.0.0",
-    "vite": "^6.3.5"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.2",
-    "vite": "^5.4.3",
-    "@eslint/js": "^9.25.0",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
-    "eslint": "^9.25.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
-    "globals": "^16.0.0"
+    "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.544.0",
+    "react-router-dom": "^7.11.0"
   }
 }
