@@ -1,0 +1,151 @@
+/*/src/Menu.jsx*/
+.menu-container {
+  padding: 12px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.menu-header {
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--orange-dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.menu-section {
+  margin-bottom: 10px;
+}
+
+.menu-title {
+  width: 100%;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.menu-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--orange-dark);
+}
+
+.menu-title.active {
+  background: var(--orange);
+  color: white;
+}
+.menu-title.active .menu-icon {
+  color: white;
+}
+
+.menu-title:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.menu-content {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-top: 6px;
+  padding: 8px 12px;
+  line-height: 1.4;
+}
+
+.menu-content label {
+  display: block;
+  margin-bottom: 6px;
+}
+.menu-apply-btn {
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  width: 100%;
+}
+#menu-apply,
+#menu-apply2 {
+  display: inline;
+  width: 46%;
+  padding: 8px 0px;
+  justify-content: center;
+  padding: 4px 8px;
+  border: 1px solid #eee;
+  margin-right: 8%;
+  margin-top: 3%;
+  border-radius: 8px;
+  font-weight: bold;
+  color: var(--orange);
+  background-color: #ff7a00;
+  color: white;
+}
+#menu-apply2 {
+  background-color: #ffffff;
+  color: #ff7a00;
+  margin-right: 0%;
+}
+#menu-apply:hover,
+#menu-apply2 {
+  cursor: pointer;
+}
+
+/* --- Modo móvil --- */
+.menu-mobile {
+  background: white;
+  width: 80vw; /* ✅ ancho fijo del 95% de la pantalla */
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  margin: 0 auto; /* ✅ centrado horizontal */
+  transition: none; /* evita que cambie de tamaño al abrir/cerrar */
+}
+/* ---- Inputs de autenticación ---- */
+.menu-input {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 8px;
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background-color: #fff;
+  color: var(--text-color, #333);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.menu-input:focus {
+  border-color: #ff7a00; /* naranja suave para mantener coherencia */
+  box-shadow: 0 0 4px rgba(255, 122, 0, 0.4);
+}
+
+/* Extra separación debajo del encabezado de sesión */
+.menu-header {
+  margin-bottom: 16px !important;
+}
+
+/* ---- Botones dentro de la sección autenticar ---- */
+.menu-content button.menu-apply-btn {
+  background-color: #fff;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  justify-content: flex-start;
+}
+
+.menu-content button.menu-apply-btn:hover {
+  color: #ff7a00;
+}
+.menu-mobile {
+  position: relative; /* 👈 necesario para que la X se posicione dentro */
+}

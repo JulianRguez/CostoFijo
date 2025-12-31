@@ -1,0 +1,31 @@
+/* AutGoogle.css */
+.autgoogle-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fffdfc;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.autgoogle-text {
+  color: var(--muted-text); /* gris igual a los mensajes de autenticación */
+  font-size: 13px; /* mismo tamaño que los textos de Menu.jsx y AutWpp */
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+/* Estilo del botón nativo de Google */
+iframe[title="Sign in with Google Button"] {
+  border-radius: 6px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+iframe[title="Sign in with Google Button"]:hover {
+  transform: scale(1.03);
+}

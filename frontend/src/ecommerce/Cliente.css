@@ -1,0 +1,177 @@
+/*Cliente.jsx*/
+.cliente-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 10px; /* evita que pegue en bordes */
+  overflow: hidden; /* evita desplazamientos dobles */
+}
+
+.cliente-modal {
+  width: 92%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px 22px;
+  position: relative;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+  animation: pop 0.25s ease;
+  max-height: 100vh; /* ⬅ ALTURA MÁXIMA IGUAL A LA PANTALLA */
+  overflow-y: auto; /* ⬅ SCROLL INTERNO AUTOMÁTICO */
+  -webkit-overflow-scrolling: touch; /* ⬅ scroll suave en móvil */
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.7;
+}
+
+.close-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.cliente-title {
+  margin: 0;
+  margin-bottom: 25px;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.cliente-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.cliente-form label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #444;
+  padding: 0;
+  margin: 0; /* ⬅ quita separación */
+  line-height: 1.1; /* ⬅ hace que quede más pegado */
+}
+
+.cliente-form input {
+  width: 100%;
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fafafa;
+  font-size: 0.95rem;
+  transition: 0.15s ease;
+}
+
+.cliente-form input:focus {
+  border-color: #ff7a00;
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(255, 122, 0, 0.25);
+  outline: none;
+}
+
+.cliente-form input:disabled {
+  background: #eaeaea;
+  color: #666;
+}
+
+.cliente-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: var(--orange, #ff7a00);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.cliente-btn:hover {
+  transform: scale(1.03);
+  opacity: 0.9;
+}
+
+.cliente-alerta {
+  margin-top: 12px;
+  text-align: center;
+  color: #ff7a00;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.cliente-legal {
+  margin-top: 12px;
+  font-size: 0.82rem;
+  color: #666; /* gris suave */
+  line-height: 1.25;
+  text-align: justify;
+  padding: 0 6px;
+}
+
+.cliente-legal-link {
+  text-decoration: underline;
+  color: #666; /* mismo tono gris claro */
+  cursor: pointer;
+}
+
+.cliente-legal-link:hover {
+  color: #444; /* ligeramente más oscuro al pasar */
+}
+.fila {
+  display: flex;
+  align-items: flex-start; /* ⬅ ALINEA ARRIBA EL LABEL */
+  gap: 10px;
+}
+
+.fila label {
+  width: 90px; /* Ajusta el ancho según necesites */
+  margin: 0;
+  align-items: flex-start;
+  padding-top: 0;
+}
+
+.fila input {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  flex: 1;
+}
+.direccion-info {
+  flex: 1;
+  padding: 10px 12px;
+  background: #fafafa;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  display: block;
+  align-items: flex-start; /* texto arranca arriba */
+  white-space: normal; /* permite múltiples líneas */
+  overflow-wrap: break-word; /* parte las palabras largas */
+  margin: 0;
+}

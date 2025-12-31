@@ -1,0 +1,76 @@
+/* Fondo oscuro */
+.alerta-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* Modal */
+.alerta-modal {
+  background: white;
+  padding: 20px 24px;
+  width: 85%;
+  max-width: 380px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  animation: zoomIn 0.18s ease-out;
+}
+
+/* Header (icono + título) */
+.alerta-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alerta-icon {
+  color: #f97316; /* naranja */
+}
+
+.alerta-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: bold;
+}
+
+/* Texto del mensaje */
+.alerta-text {
+  margin: 14px 0 20px 0;
+  font-size: 0.95rem;
+  color: #444;
+}
+
+/* Botón */
+.alerta-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.alerta-btn {
+  background: #f97316;
+  color: white;
+  padding: 10px 26px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+}
+
+.alerta-btn:hover {
+  background: #ea640d;
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

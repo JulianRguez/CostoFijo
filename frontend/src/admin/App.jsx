@@ -1,3 +1,4 @@
+//src/admin/App.jsx
 import React, { useState } from "react";
 import VistaCentral from "./VistaCentral";
 import VistaCompras from "./VistaCompras";

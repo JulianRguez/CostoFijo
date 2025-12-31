@@ -1,0 +1,331 @@
+.detalle-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1200;
+}
+
+.detalle-modal {
+  background: #fff;
+  border-radius: 10px;
+  width: 94%;
+  max-width: 1000px;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 20px;
+  position: relative;
+}
+
+/* Cerrar (X) */
+.detalle-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #f8f8f8;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.detalle-close:hover {
+  background: #ff7b00;
+  color: white;
+}
+
+/* Estructura principal */
+.detalle-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 768px) {
+  /* 1. X fija */
+  .detalle-close {
+    position: fixed !important;
+    top: 12px;
+    right: 12px;
+    z-index: 3000;
+  }
+
+  /* 2. Modal adaptado a móvil */
+  .detalle-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-top: 30px !important; /* antes 55 → ahora más pegado a la X */
+  }
+
+  /* 3. Una sola columna */
+  .detalle-main {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 4. Imagen principal más pequeña y centrada */
+  .detalle-img-principal img {
+    max-height: 200px !important; /* antes 350px */
+    width: auto;
+    display: block;
+    margin: 0 auto; /* centra la imagen */
+    object-fit: contain;
+  }
+
+  /* 5. Galería centrada */
+  .detalle-thumbs {
+    justify-content: center !important;
+  }
+}
+
+/* Galería */
+.detalle-img-principal img {
+  max-width: 100%;
+  max-height: 350px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.detalle-thumbs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-top: 8px;
+  justify-content: flex-start;
+}
+.detalle-thumbs img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  opacity: 0.7;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: 0.2s;
+}
+.detalle-thumbs img.activa {
+  opacity: 1;
+  border-color: #ff7b00;
+}
+
+/* Información */
+.detalle-info h2 {
+  margin: 0 0 6px; /* menos espacio debajo del título */
+  font-size: 1.25rem;
+}
+.detalle-info label {
+  display: block;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+.detalle-descuento {
+  color: #ff7b00;
+  font-weight: bold;
+}
+.detalle-precio {
+  font-size: 1.3em;
+  margin: 4px 0;
+  color: #333;
+}
+.detalle-precio .tachado {
+  text-decoration: line-through;
+  color: gray;
+  margin-right: 8px;
+}
+.detalle-info select {
+  width: 100%;
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin: 4px 0;
+}
+.detalle-info p {
+  margin: 4px 0; /* reduce espacio entre líneas: stock, calificación, descripción */
+  line-height: 1.15;
+  font-size: 0.95rem;
+}
+
+/* Botones */
+.detalle-botones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.detalle-botones button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 600;
+}
+.detalle-botones button:hover {
+  opacity: 0.9;
+}
+.btn-naranja {
+  background: #ff7b00;
+}
+.btn-gris {
+  background: #444;
+  color: #fff; /* <--- AGRÉGALO */
+}
+/* Recomendados */
+.detalle-recomendados {
+  margin-top: 14px;
+}
+.detalle-reco-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+.reco-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 6px;
+  background: #fafafa;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.reco-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.reco-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.reco-nombre {
+  font-size: 0.9em;
+  margin: 6px 0 2px;
+}
+.reco-precio {
+  color: #ff7b00;
+  font-weight: bold;
+  margin-top: 4px;
+  margin-bottom: 0;
+  line-height: 1.25;
+}
+.detalle-botones button:first-child {
+  color: #333; /* gris oscuro legible */
+  background: #eee; /* mantiene el fondo gris claro */
+}
+.reco-precio span {
+  display: inline-block;
+  line-height: 1.2;
+}
+.reco-antes {
+  color: gray;
+  font-size: 0.85em;
+  margin-right: 4px;
+}
+.reco-tachado {
+  color: gray;
+  font-size: 0.85em;
+  text-decoration: line-through;
+  margin-right: 6px;
+}
+/* ===== estilos para botones de carrito con look "grisado" cuando no autenticado ===== */
+.btn-grayed {
+  opacity: 0.55;
+  filter: grayscale(0.45);
+  cursor: pointer; /* sigue siendo clicable */
+  transition: opacity 0.15s ease, transform 0.12s ease;
+}
+.btn-grayed:hover {
+  transform: translateY(-2px);
+  opacity: 0.7;
+}
+
+/* Toasts simples (emergente discreto abajo a la derecha) */
+.app-toast {
+  position: fixed;
+  right: 18px;
+  bottom: 78px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  z-index: 3000;
+  font-size: 0.95rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.app-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Modal simple para pedir login (discreto) */
+.login-prompt-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4000;
+}
+.login-prompt {
+  background: #fff;
+  padding: 16px;
+  border-radius: 10px;
+  min-width: 280px;
+  max-width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+.login-prompt h4 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+}
+.login-prompt .lp-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.login-prompt .lp-btn {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 0;
+  cursor: pointer;
+}
+.login-prompt .lp-btn.secondary {
+  background: #eee;
+  color: #333;
+}
+.login-prompt .lp-btn.primary {
+  background: #ff7b00;
+  color: white;
+}
+/* Contenedor alineado a la derecha */
+.detalle-copy-wrap {
+  text-align: right;
+  margin-top: 10px;
+}
+
+/* Botón tipo enlace */
+.detalle-copy-btn {
+  background: none;
+  border: none;
+  color: #ff7b00;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 4px 0;
+}
+
+/* Hover */
+.detalle-copy-btn:hover {
+  color: #ffac5e;
+}

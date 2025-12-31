@@ -1,0 +1,66 @@
+.autwpp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.autwpp-input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.autwpp-input:focus {
+  border-color: #ff6600;
+}
+
+/* 🔸 Botones */
+#menu-apply,
+#menu-apply2,
+#menu-apply3 {
+  display: inline;
+  width: 46%;
+  padding: 8px 0px;
+  justify-content: center;
+  padding: 4px 8px;
+  border: 1px solid #eee;
+  margin-right: 8%;
+  margin-top: 3%;
+  border-radius: 8px;
+  font-weight: bold;
+  color: var(--orange);
+  background-color: #ff7a00;
+  color: white;
+}
+#menu-apply2 {
+  background-color: #ffffff;
+  color: #ff7a00;
+  margin-right: 0%;
+}
+#menu-apply3 {
+  width: 100%;
+}
+
+/* 🔹 Mensajes */
+.autwpp-msg {
+  margin-top: 6px;
+  margin-left: 6px;
+  font-size: 13px; /* igual que el mensaje en Menu.jsx */
+  font-weight: 500;
+  color: var(--muted-text); /* gris por defecto */
+}
+
+.autwpp-msg-success {
+  color: #1fa87a; /* verde */
+}
+
+.autwpp-msg-warning {
+  color: #e6a500; /* amarillo */
+}
+
+.autwpp-msg-error {
+  color: #ff7a00; /* rojo/naranja */
+}

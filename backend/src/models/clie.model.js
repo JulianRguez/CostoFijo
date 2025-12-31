@@ -6,7 +6,7 @@ const abonoSchema = new mongoose.Schema(
     fecha: { type: Date, required: true },
     valor: { type: Number, required: true },
   },
-  { _id: false } // para que no cree un _id en cada abono
+  { _id: false }
 );
 
 const porPagarSchema = new mongoose.Schema(
@@ -18,17 +18,30 @@ const porPagarSchema = new mongoose.Schema(
     abonos: { type: [abonoSchema], default: [] },
     clave: { type: String, required: true },
   },
-  { _id: false } // para que no cree un _id en cada objeto porpagar
+  { _id: false }
+);
+
+// Subesquema para elementos del carrito
+const carritoItemSchema = new mongoose.Schema(
+  {
+    productoId: { type: String, required: true },
+    cantidad: { type: Number, default: 1 },
+    version: { type: String, default: "" },
+  },
+  { _id: false }
 );
 
 const clieSchema = new mongoose.Schema({
-  doc: { type: String, required: true },
-  nombre: { type: String, required: true },
-  dire: { type: String },
-  tel: { type: String },
-  mail: { type: String },
-  porpagar: { type: [porPagarSchema], default: [] }, // arreglo de objetos
+  doc: { type: String, default: "" },
+  nombre: { type: String, default: "" },
+  dire: { type: String, default: "" },
+  tel: { type: String, default: "" },
+  mail: { type: String, default: "" },
+  porpagar: { type: [porPagarSchema], default: [] },
   clave: { type: String, default: "" },
+  favoritos: { type: [String], default: [] },     
+  carrito: { type: [carritoItemSchema], default: [] },
+  compras: { type: [String], default: [] },
 });
 
 export default mongoose.model("Clie", clieSchema, "clie");

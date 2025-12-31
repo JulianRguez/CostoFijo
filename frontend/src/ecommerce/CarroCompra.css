@@ -1,0 +1,282 @@
+/* ===========================
+   VARIABLES
+=========================== */
+:root {
+  --orange: #f97316;
+  --bg-grupo: #fafafa;
+}
+
+/* ===========================
+   OVERLAY Y MODAL
+=========================== */
+.carro-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.carro-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 95%;
+  max-width: 480px;
+  padding: 16px;
+  position: relative;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===========================
+   HEADER FIJO
+=========================== */
+.carro-close {
+  background-color: transparent;
+  border: 0;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.carro-header-fijo {
+  margin-top: 11px;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  padding-bottom: 8px;
+}
+
+.carro-title {
+  text-align: center;
+  margin-top: 0;
+  color: var(--orange);
+}
+
+/* Lista productos */
+.carro-lista {
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 10px;
+  background: #f8f8f8;
+  max-height: 150px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.carro-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.carro-item:last-child {
+  border-bottom: none;
+}
+
+/* ===========================
+   MENSAJE STICKY
+=========================== */
+.carro-info-fixed {
+  position: sticky;
+  top: 72px;
+  z-index: 9;
+  padding: 0px 1px 10px 8px;
+  margin: 8px 0;
+  background: transparent;
+  font-size: 0.95em;
+  border-bottom: 2px solid #eee;
+}
+
+/* ===========================
+   SCROLL DEL CONTENIDO
+=========================== */
+.carro-scroll {
+  overflow-y: auto;
+  flex: 1;
+  padding-top: 10px;
+}
+
+/* ===========================
+   GRUPOS
+=========================== */
+.carro-grupo {
+  background: var(--bg-grupo);
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding-left: 16px;
+  padding-right: 16px;
+  margin-bottom: 5px;
+}
+
+.carro-subtitle {
+  color: var(--orange);
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ===========================
+   INPUTS — LABEL ARRIBA SIEMPRE
+=========================== */
+.campo-linea {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 10px;
+}
+
+.campo-linea label {
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+.campo-linea select,
+.campo-linea input {
+  width: 100%;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.9em;
+  box-sizing: border-box;
+}
+
+.campo-linea select:focus,
+.campo-linea input:focus {
+  outline: none;
+  border-color: var(--orange);
+  box-shadow: 0 0 3px rgba(249, 115, 22, 0.5);
+}
+
+/* ===========================
+   DOS COLUMNAS
+=========================== */
+.dos-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Para inputs mas estrechos */
+.mini-gap select,
+.mini-gap input {
+  width: 100%;
+}
+
+/* ===========================
+   TOTALES
+=========================== */
+.carro-totales {
+  background: var(--bg-grupo);
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.carro-totales p {
+  margin: 3px 0;
+  margin-left: 4%;
+}
+
+.carro-total {
+  color: var(--orange);
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+/* ===========================
+   BOTÓN FINAL
+=========================== */
+.btn-pago-final {
+  background: var(--orange);
+  color: white;
+  border: 0;
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  margin-top: 16px;
+  cursor: pointer;
+}
+.carro-delete {
+  margin-left: auto;
+  width: 22px; /* cuadrado */
+  height: 22px; /* cuadrado */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px; /* opcional */
+  background: transparent;
+  border: none;
+  color: #f97316;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+}
+
+.carro-delete:hover {
+  background: #fc964d;
+  color: white;
+}
+/* ===========================
+   BOTONES +  Y  -
+=========================== */
+
+.carro-cantidad-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  /* Para que no se bajen de línea */
+  margin-left: auto;
+}
+
+.btn-cant {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 0px solid #d0d0d0;
+  background: transparent;
+  color: var(--orange);
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  transition: 0.15s ease;
+}
+
+.btn-cant:hover {
+  background: var(--orange);
+  color: #fff;
+  border-color: var(--orange);
+}
+
+.cant-num {
+  min-width: 22px;
+  text-align: center;
+  font-weight: bold;
+  color: #444;
+}
+.carro-item-info {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+}
+
+.carro-item-info b {
+  flex: 1; /* el nombre ocupa lo disponible */
+  font-size: 14px;
+}

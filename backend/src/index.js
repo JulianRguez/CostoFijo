@@ -26,6 +26,7 @@ import ventRoutes from "./routes/vent.routes.js";
 import provRoutes from "./routes/prov.routes.js";
 import clieRoutes from "./routes/clie.routes.js";
 import credRoutes from "./routes/cred.routes.js";
+import sistRoutes from "./routes/sist.routes.js";
 
 app.use("/api/prod", prodRoutes);
 app.use("/api/comp", compRoutes);
@@ -33,6 +34,7 @@ app.use("/api/vent", ventRoutes);
 app.use("/api/prov", provRoutes);
 app.use("/api/clie", clieRoutes);
 app.use("/api/cred", credRoutes);
+app.use("/api/sist", sistRoutes);
 
 // Paths útiles
 const __filename = fileURLToPath(import.meta.url);

@@ -37,7 +37,23 @@ export default function VistaCompras() {
   };
 
   const filtrados = items
-    .filter((p) => p.idProd?.toLowerCase().includes(filtro.toLowerCase()))
+    .filter((item) => {
+      if (!filtro) return true;
+
+      const esNumerico = !isNaN(filtro);
+
+      if (esNumerico) {
+        // 🔹 Buscar por referencia (idProd)
+        return item.idProd
+          ?.toString()
+          .toLowerCase()
+          .includes(filtro.toLowerCase());
+      } else {
+        // 🔹 Buscar por nombre del producto
+        const prod = productos.find((p) => p.ref === item.idProd);
+        return prod?.nombre?.toLowerCase().includes(filtro.toLowerCase());
+      }
+    })
     .filter((p) => (!verGastos ? p.registro !== "Gastos" : true));
 
   const agrupados = Object.values(

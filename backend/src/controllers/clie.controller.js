@@ -20,7 +20,8 @@ export const createClients = async (req, res) => {
       return res.status(400).json({ mensaje: "El body está vacío. Envía uno o varios clientes." });
     }
 
-    const allowed = ["doc", "nombre", "dire", "tel", "mail", "porpagar","clave"];
+    const allowed = ["doc", "nombre", "dire", "tel", "mail", "porpagar", "clave", "favoritos", "carrito","compras"];
+
 
     const docs = payload.map((c) => {
       const doc = {};
@@ -62,7 +63,8 @@ export const updateClients = async (req, res) => {
       });
     }
 
-    const allowed = ["doc", "nombre", "dire", "tel", "mail", "porpagar","clave"];
+    const allowed = ["doc", "nombre", "dire", "tel", "mail", "porpagar", "clave", "favoritos", "carrito","compras"];
+
 
     const results = [];
     for (const c of payload) {
@@ -150,5 +152,26 @@ export const getClientByDoc = async (req, res) => {
   } catch (error) {
     console.error("❌ Error al buscar cliente:", error);
     res.status(500).json({ mensaje: "Error al buscar cliente", error });
+  }
+};
+// GET: obtener cliente por _id
+export const getClientById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ mensaje: "Falta el parámetro ID" });
+    }
+
+    const cliente = await Clie.findById(id);
+
+    if (!cliente) {
+      return res.status(404).json({ mensaje: "Cliente no encontrado" });
+    }
+
+    res.json(cliente);
+  } catch (error) {
+    console.error("❌ Error al buscar cliente por ID:", error);
+    res.status(500).json({ mensaje: "Error al buscar cliente por ID", error });
   }
 };

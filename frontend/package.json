@@ -1,8 +1,7 @@
 {
-  "name": "internet-prepago",
+  "name": "frontend",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -10,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.12.2",
+    "lucide-react": "^0.544.0",
     "@turf/turf": "^7.2.0",
     "@vitejs/plugin-react": "^4.4.1",
     "axios": "^1.11.0",
@@ -23,6 +24,8 @@
     "vite": "^6.3.5"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.2",
+    "vite": "^5.4.3",
     "@eslint/js": "^9.25.0",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
