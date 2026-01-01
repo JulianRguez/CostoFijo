@@ -22,7 +22,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import Alerta from "./Alerta";
 import "./Inicio.css";
 
-const URLAPI = import.meta.env.VITE_URLAPI || "http://localhost:5000";
+const URLAPI = import.meta.env.VITE_URLAPI;
 const WPP_LINK = import.meta.env.VITE_WPP_LINK;
 function formatPrice(n) {
   if (typeof n !== "number") return n;
@@ -74,6 +74,8 @@ export default function Inicio() {
     useState("Buscar por Nombre");
   const [searchClearSignal, setSearchClearSignal] = useState(0);
   const [infoPedido, setInfoPedido] = useState(null);
+
+  console.log(data); // para producion
 
   useEffect(() => {
     const path = window.location.pathname;
