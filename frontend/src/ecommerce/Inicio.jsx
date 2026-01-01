@@ -75,8 +75,6 @@ export default function Inicio() {
   const [searchClearSignal, setSearchClearSignal] = useState(0);
   const [infoPedido, setInfoPedido] = useState(null);
 
-  console.log(data); // para producion
-
   useEffect(() => {
     const path = window.location.pathname;
     if (path.startsWith("/P")) {

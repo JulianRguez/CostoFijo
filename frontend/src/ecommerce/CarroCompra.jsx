@@ -4,7 +4,7 @@ import axios from "axios";
 import { X } from "lucide-react";
 import "./CarroCompra.css";
 
-const URLAPI = import.meta.env.VITE_URLAPI || "http://localhost:5000";
+const URLAPI = import.meta.env.VITE_URLAPI;
 const zonasPorMunicipio = {
   "Santa Fe Ant": [
     "San Antonio",

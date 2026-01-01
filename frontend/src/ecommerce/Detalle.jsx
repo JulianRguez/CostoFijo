@@ -5,7 +5,7 @@ import axios from "axios";
 import CarroCompra from "./CarroCompra";
 import "./Detalle.css";
 
-const URLAPI = import.meta.env.VITE_URLAPI || "http://localhost:5000";
+const URLAPI = import.meta.env.VITE_URLAPI;
 
 export default function Detalle({
   productoId,

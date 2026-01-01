@@ -6,7 +6,7 @@ import axios from "axios";
 import "./AutGoogle.css";
 
 export default function AutGoogle({ setAutenticado, setUsuario }) {
-  const URLAPI = import.meta.env.VITE_URLAPI || "http://localhost:3000";
+  const URLAPI = import.meta.env.VITE_URLAPI;
 
   // ✅ Manejar inicio de sesión con Google
   const handleGoogleSuccess = async (credentialResponse) => {

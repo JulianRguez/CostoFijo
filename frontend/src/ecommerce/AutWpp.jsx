@@ -4,7 +4,7 @@ import axios from "axios";
 import "./AutWpp.css";
 
 export default function AutWpp({ setAutenticado, setUsuario, onCancelar }) {
-  const URLAPI = import.meta.env.VITE_URLAPI || "http://localhost:3000";
+  const URLAPI = import.meta.env.VITE_URLAPI;
   const WPP_LINK = import.meta.env.VITE_WPP_LINK;
 
   const [codigo, setCodigo] = useState("");

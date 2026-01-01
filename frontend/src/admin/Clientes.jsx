@@ -125,8 +125,6 @@ export default function Clientes() {
         { _id: clienteCompleto._id, porpagar: porpagarActualizado },
       ];
 
-      console.log("📦 Enviando payload:", payload);
-
       await axios.put(`${URLAPI}/api/clie`, payload);
 
       await cargarClientes();
@@ -213,8 +211,6 @@ export default function Clientes() {
           })),
         },
       ];
-
-      console.log("📦 Eliminando crédito:", payload);
 
       await axios.put(`${URLAPI}/api/clie`, payload);
       await cargarClientes();

@@ -17,7 +17,7 @@ import AutWpp from "./AutWpp";
 import "./Inicio.css";
 import "./Menu.css";
 
-const URLAPI = import.meta.env.VITE_URLAPI || "http://localhost:5000";
+const URLAPI = import.meta.env.VITE_URLAPI;
 
 export default function MenuLateral({
   isMobile = false,
@@ -88,8 +88,6 @@ export default function MenuLateral({
         setMensaje("Autenticado correctamente");
         setDato("");
         setClave("");
-
-        console.log("✅ Cliente autenticado (correo/tel):", data);
       } else {
         setMensaje("Clave incorrecta");
       }
@@ -118,9 +116,6 @@ export default function MenuLateral({
     if (usuario.nombre && usuario.nombre.trim() !== "") return usuario.nombre;
     if (usuario.mail && usuario.mail.trim() !== "") return usuario.mail;
     return usuario.tel || "Usuario desconocido";
-  };
-  const Vercliente = () => {
-    console.log(usuario);
   };
 
   return (
@@ -156,12 +151,7 @@ export default function MenuLateral({
         ) : (
           <UserX size={20} color="orange" />
         )}
-        <span
-          style={{ fontWeight: 500, cursor: "pointer" }}
-          onClick={() => {
-            Vercliente();
-          }}
-        >
+        <span style={{ fontWeight: 500, cursor: "pointer" }}>
           {obtenerTextoUsuario()}
         </span>
       </div>

@@ -97,8 +97,6 @@ export default function Cliente({
     // VALIDACIONES MODO VENTA
     // -------------------------
     if (modo === "venta") {
-      console.log(clave);
-
       if (!doc || doc.length < 5 || isNaN(doc))
         return setErrorMsg("Documento inválido");
 
@@ -147,7 +145,6 @@ export default function Cliente({
           Nombre: ${nombre}
           Teléfono: ${tel}
           Correo: ${mail}`;
-        console.log(texto);
       }
 
       return; // ⛔ NO seguir
@@ -223,14 +220,8 @@ export default function Cliente({
           cupon: ${infoPedido.cupon}
           descuento: ${infoPedido.descuento}
           envio: ${infoPedido.envio}
-          total a pagar: ${infoPedido.total}
-
-
-
-
-          
+          total a pagar: ${infoPedido.total}          
           `;
-        console.log(texto);
       }
     } catch (e) {
       setErrorMsg("Error al actualizar");

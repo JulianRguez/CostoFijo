@@ -17,9 +17,6 @@ export default function VistaCentral() {
 
   const URLAPI = import.meta.env.VITE_URLAPI;
 
-  console.log(productos); //para produccion
-  console.log(URLAPI);
-
   // Helpers para versiones
   const parsePairs = (versionStr) => {
     if (!versionStr || versionStr.trim() === "") return [];
@@ -270,10 +267,6 @@ export default function VistaCentral() {
                 porpagar: [...existentes, nuevoMovimiento],
               },
             ];
-            console.log(
-              "📦 Enviando payloadCliente:",
-              JSON.stringify(payloadCliente, null, 2)
-            );
             await axios.put(`${URLAPI}/api/clie`, payloadCliente);
           } catch (eCli) {
             console.error("Error actualizando cliente (porpagar):", eCli);
