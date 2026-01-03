@@ -20,9 +20,9 @@ import {
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import Alerta from "./Alerta";
+import { useParams, useNavigate } from "react-router-dom";
 import "./Inicio.css";
 
-const URLAPI = import.meta.env.VITE_URLAPI;
 const WPP_LINK = import.meta.env.VITE_WPP_LINK;
 function formatPrice(n) {
   if (typeof n !== "number") return n;
@@ -57,12 +57,12 @@ export default function Inicio() {
   const containerRef = useRef(null);
   const [autenticado, setAutenticado] = useState(false);
   const [opcionOrden, setOpcionOrden] = useState("Aleatorio");
-  const [detalleId, setDetalleId] = useState(null);
-  const [detalleProducto, setDetalleProducto] = useState(null);
   const [usuario, setUsuario] = useState(null);
   const [mostrarCarro, setMostrarCarro] = useState(false);
   const [productoCompraDirecta, setProductoCompraDirecta] = useState(null);
   const [versionesSeleccionadas, setVersionesSeleccionadas] = useState({});
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [alertaInicio, setAlertaInicio] = useState({
     visible: false,
     titulo: "",
@@ -74,27 +74,6 @@ export default function Inicio() {
     useState("Buscar por Nombre");
   const [searchClearSignal, setSearchClearSignal] = useState(0);
   const [infoPedido, setInfoPedido] = useState(null);
-
-  useEffect(() => {
-    const path = window.location.pathname;
-    if (path.startsWith("/P")) {
-      const id = path.slice(2);
-      setDetalleId(id);
-    }
-
-    const handlePopState = () => {
-      const newPath = window.location.pathname;
-      if (newPath.startsWith("/P")) {
-        const id = newPath.slice(2);
-        setDetalleId(id);
-      } else {
-        setDetalleId(null);
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
 
   useEffect(() => {
     window.dispararAlerta = mostrarAlertaInicio;
@@ -145,7 +124,7 @@ export default function Inicio() {
     let cancelled = false;
     (async () => {
       try {
-        const { data } = await axios.get(`${URLAPI}/api/prod`);
+        const { data } = await axios.get(`/api/prod`);
         if (cancelled) return;
 
         const exclude = new Set(["Servicios papeleria", "Servicios técnicos"]);
@@ -165,7 +144,7 @@ export default function Inicio() {
       }
     })();
     return () => (cancelled = true);
-  }, [URLAPI]);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => {
@@ -298,7 +277,7 @@ export default function Inicio() {
     ];
 
     try {
-      await axios.put(`${URLAPI}/api/clie`, payload);
+      await axios.put(`/api/clie`, payload);
       setUsuario((u) => ({ ...u, carrito: nuevoCarrito }));
       mostrarAlertaInicio(
         "Proceso exitoso",
@@ -352,7 +331,7 @@ export default function Inicio() {
         },
       ];
 
-      await axios.put(`${URLAPI}/api/clie`, payload);
+      await axios.put(`/api/clie`, payload);
     } catch (error) {
       console.error("❌ Error al actualizar favoritos:", error);
       mostrarAlertaInicio("Algo salio mal", "Error al actualizar favoritos.");
@@ -416,9 +395,9 @@ export default function Inicio() {
   };
 
   const abrirDetalleDesdeRecomendado = (id) => {
-    setDetalleId(id);
-    window.history.pushState({}, "", `/P${id}`);
+    navigate(`/p/${id}`);
   };
+
   // ✔ Mostrar solo los productos favoritos del usuario
   const mostrarSoloFavoritos = () => {
     if (!autenticado || !usuario?.favoritos?.length) {
@@ -437,7 +416,7 @@ export default function Inicio() {
     setTagPageIndex(0); // Reset paginado de categorías si quieres
   };
   const copiarLinkProducto = async (id) => {
-    const url = `${window.location.origin}/P${id}`;
+    const url = `${window.location.origin}/p/${id}`;
 
     try {
       await navigator.clipboard.writeText(url);
@@ -547,9 +526,7 @@ export default function Inicio() {
                     alt={p.nombre}
                     loading="lazy"
                     onClick={() => {
-                      setDetalleProducto(p);
-                      setDetalleId(p._id);
-                      window.history.pushState({}, "", `/P${p._id}`);
+                      navigate(`/p/${p._id}`);
                     }}
                   />
                   <button
@@ -852,21 +829,17 @@ export default function Inicio() {
         </div>
       )}
 
-      {detalleId && (
+      {id && (
         <Detalle
-          productoId={detalleId}
-          onClose={() => {
-            setDetalleId(null);
-            setDetalleProducto(null);
-            window.history.pushState({}, "", "/");
-          }}
+          productoId={id}
+          onClose={() => navigate("/")}
           usuario={usuario}
           autenticado={autenticado}
           setUsuario={setUsuario}
           setInfoPedido={setInfoPedido}
           setMostrarCliente={setMostrarCliente}
           setModoCliente={setModoCliente}
-          mostrarAlertaInicio={mostrarAlertaInicio} // ✔ agregado
+          mostrarAlertaInicio={mostrarAlertaInicio}
           abrirDetalleDesdeRecomendado={abrirDetalleDesdeRecomendado}
         />
       )}

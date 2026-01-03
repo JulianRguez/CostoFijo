@@ -9,17 +9,15 @@ export default function VistaVentas() {
   const [filtroMes, setFiltroMes] = useState(new Date().getMonth() + 1);
   const [filtroDia, setFiltroDia] = useState("");
 
-  const URLAPI = import.meta.env.VITE_URLAPI;
-
   // Cargar ventas y productos
   useEffect(() => {
     axios
-      .get(`${URLAPI}/api/vent`)
+      .get(`/api/vent`)
       .then((res) => setVentas(res.data))
       .catch((err) => console.error("Error al obtener ventas:", err));
 
     axios
-      .get(`${URLAPI}/api/prod`)
+      .get(`/api/prod`)
       .then((res) => setProductos(res.data))
       .catch((err) => console.error("Error al obtener productos:", err));
   }, []);

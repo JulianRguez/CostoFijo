@@ -37,7 +37,7 @@ export default function ConfVenta({
   // ✅ Validar cliente con nueva ruta y excluir inactivos (Xdoc)
   const validarClienteAPI = async (doc) => {
     try {
-      const res = await fetch(`${URLAPI}/api/clie/cc/${doc}`);
+      const res = await fetch(`/api/clie/cc/${doc}`);
       if (!res.ok) {
         setClienteValido(false);
         setClienteData(null);

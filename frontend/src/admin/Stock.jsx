@@ -8,7 +8,6 @@ export default function Stock() {
   const [cambios, setCambios] = useState({});
   const [mensaje, setMensaje] = useState("");
   const [actualizando, setActualizando] = useState(false);
-  const URLAPI = import.meta.env.VITE_URLAPI;
 
   // 🔹 Cargar productos
   useEffect(() => {
@@ -17,7 +16,7 @@ export default function Stock() {
 
   const cargarProductos = async () => {
     try {
-      const { data } = await axios.get(`${URLAPI}/api/prod`);
+      const { data } = await axios.get(`/api/prod`);
       setProductos(data);
     } catch (err) {
       console.error("Error al obtener productos:", err);
@@ -91,7 +90,7 @@ export default function Stock() {
     setMensaje("Actualizando...");
 
     try {
-      await axios.put(`${URLAPI}/api/prod`, payload);
+      await axios.put(`/api/prod`, payload);
       setMensaje("Actualización Exitosa");
       setCambios({});
       await cargarProductos();

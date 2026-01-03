@@ -15,8 +15,6 @@ export default function VistaCentral() {
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
   const [selecciones, setSelecciones] = useState({});
 
-  const URLAPI = import.meta.env.VITE_URLAPI;
-
   // Helpers para versiones
   const parsePairs = (versionStr) => {
     if (!versionStr || versionStr.trim() === "") return [];

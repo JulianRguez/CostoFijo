@@ -4,7 +4,6 @@ import "./Clientes.css";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function Clientes() {
-  const URLAPI = import.meta.env.VITE_URLAPI;
   const [clientes, setClientes] = useState([]);
   const [filtroDoc, setFiltroDoc] = useState("");
   const [busquedaAbono, setBusquedaAbono] = useState("");
@@ -28,7 +27,7 @@ export default function Clientes() {
 
   const cargarClientes = async () => {
     try {
-      const res = await axios.get(`${URLAPI}/api/clie`);
+      const res = await axios.get(`/api/clie`);
       setClientes(res.data);
     } catch (err) {
       console.error("Error al cargar clientes", err);
@@ -55,12 +54,12 @@ export default function Clientes() {
 
   const buscarClienteAbono = async (doc) => {
     try {
-      const res = await axios.get(`${URLAPI}/api/clie/cc/${doc}`);
+      const res = await axios.get(`/api/clie/cc/${doc}`);
       const cliente = res.data;
       const creditosConNombre = await Promise.all(
         cliente.porpagar.map(async (p) => {
           try {
-            const prodRes = await axios.get(`${URLAPI}/api/prod/${p.producto}`);
+            const prodRes = await axios.get(`/api/prod/${p.producto}`);
             return { ...p, nombreProd: prodRes.data.nombre };
           } catch {
             return { ...p, nombreProd: "Producto desconocido" };
@@ -125,7 +124,7 @@ export default function Clientes() {
         { _id: clienteCompleto._id, porpagar: porpagarActualizado },
       ];
 
-      await axios.put(`${URLAPI}/api/clie`, payload);
+      await axios.put(`/api/clie`, payload);
 
       await cargarClientes();
       setBusquedaAbono("");
@@ -161,7 +160,7 @@ export default function Clientes() {
       mail: newMail.trim(),
     };
     try {
-      await axios.post(`${URLAPI}/api/clie`, payload);
+      await axios.post(`/api/clie`, payload);
       await cargarClientes();
       setNewDoc("");
       setNewNombre("");
@@ -181,7 +180,7 @@ export default function Clientes() {
       const nuevoDoc = cliente.doc.startsWith("X")
         ? cliente.doc
         : `X${cliente.doc}`;
-      await axios.put(`${URLAPI}/api/clie`, [
+      await axios.put(`/api/clie`, [
         { _id: id, doc: nuevoDoc, porpagar: cliente.porpagar },
       ]);
       await cargarClientes();
@@ -212,7 +211,7 @@ export default function Clientes() {
         },
       ];
 
-      await axios.put(`${URLAPI}/api/clie`, payload);
+      await axios.put(`/api/clie`, payload);
       await cargarClientes();
     } catch (err) {
       console.error("Error eliminando crédito:", err);
@@ -227,9 +226,7 @@ export default function Clientes() {
           ? { ...p, abonos: p.abonos.filter((a) => a.fecha !== fecha) }
           : p
       );
-      await axios.put(`${URLAPI}/api/clie`, [
-        { _id: clienteId, porpagar: nuevos },
-      ]);
+      await axios.put(`/api/clie`, [{ _id: clienteId, porpagar: nuevos }]);
       cargarClientes();
     } catch (err) {
       console.error("Error eliminando abono", err);

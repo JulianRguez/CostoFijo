@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./Info.css";
 
-const URLAPI = import.meta.env.VITE_URLAPI;
-
 export default function Info() {
   const fechaActual = new Date();
   const [mes, setMes] = useState(fechaActual.getMonth() + 1);

@@ -11,10 +11,10 @@ export default function VistaCompras() {
     localStorage.getItem("verGastos") === "true"
   );
   const [agruparFacturas, setAgruparFacturas] = useState(false);
-  const URLAPI = import.meta.env.VITE_URLAPI;
+
   const cargarCompras = () => {
     axios
-      .get(`${URLAPI}/api/comp`)
+      .get(`/api/comp`)
       .then((res) => setItems(res.data))
       .catch((err) => console.error("Error al obtener compras:", err));
   };
@@ -22,7 +22,7 @@ export default function VistaCompras() {
   useEffect(() => {
     cargarCompras();
     axios
-      .get(`${URLAPI}/api/prod`)
+      .get(`/api/prod`)
       .then((res) => setProductos(res.data))
       .catch((err) => console.error("Error al obtener productos:", err));
   }, []);

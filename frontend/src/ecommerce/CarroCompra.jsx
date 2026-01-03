@@ -4,7 +4,6 @@ import axios from "axios";
 import { X } from "lucide-react";
 import "./CarroCompra.css";
 
-const URLAPI = import.meta.env.VITE_URLAPI;
 const zonasPorMunicipio = {
   "Santa Fe Ant": [
     "San Antonio",
@@ -78,7 +77,7 @@ export default function CarroCompra({
     if (clienteId) {
       // Cargar cliente y luego mapear cada item del carrito a su producto completo
       axios
-        .get(`${URLAPI}/api/clie/id/${clienteId}`)
+        .get(`/api/clie/id/${clienteId}`)
         .then(async (res) => {
           setCliente(res.data);
 
@@ -97,7 +96,7 @@ export default function CarroCompra({
               carrito.map(async (item) => {
                 try {
                   const { data: prod } = await axios.get(
-                    `${URLAPI}/api/prod/${item.productoId}`
+                    `/api/prod/${item.productoId}`
                   );
                   // combinar: devolver todos los campos del producto + cantidad y version del carrito
                   return {
@@ -245,7 +244,7 @@ export default function CarroCompra({
       let mountedLocal = true;
       (async () => {
         try {
-          const { data } = await axios.get(`${URLAPI}/api/sist/${cupon}`);
+          const { data } = await axios.get(`/api/sist/${cupon}`);
 
           if (!mountedLocal) return;
           if (!data) {
@@ -373,7 +372,7 @@ export default function CarroCompra({
           (item) => item.productoId !== productoId
         );
 
-        await axios.put(`${URLAPI}/api/clie`, [
+        await axios.put(`/api/clie`, [
           { _id: clienteId, carrito: nuevoCarrito },
         ]);
 
@@ -390,7 +389,7 @@ export default function CarroCompra({
       if (cliente?.favoritos?.length) {
         const nuevosFavs = cliente.favoritos.filter((f) => f !== productoId);
 
-        await axios.put(`${URLAPI}/api/clie`, [
+        await axios.put(`/api/clie`, [
           { _id: cliente._id, favoritos: nuevosFavs },
         ]);
 

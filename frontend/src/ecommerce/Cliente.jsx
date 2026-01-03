@@ -4,8 +4,6 @@ import "./Cliente.css";
 import axios from "axios";
 import { X } from "lucide-react";
 
-const URLAPI = import.meta.env.VITE_URLAPI;
-
 export default function Cliente({
   onClose,
   clienteId,
@@ -45,7 +43,7 @@ export default function Cliente({
     // Si SÍ tiene clienteId → cargar datos de la API
     const cargar = async () => {
       try {
-        const { data } = await axios.get(`${URLAPI}/api/clie/id/${clienteId}`);
+        const { data } = await axios.get(`/api/clie/id/${clienteId}`);
         setForm({
           doc: data.doc || "",
           nombre: data.nombre || "",
@@ -70,7 +68,7 @@ export default function Cliente({
 
   const validarTelefonoDisponible = async (tel) => {
     try {
-      const { data } = await axios.get(`${URLAPI}/api/clie/${tel}`);
+      const { data } = await axios.get(`/api/clie/${tel}`);
       if (data && data._id && data._id !== clienteId) return false;
       return true;
     } catch {
@@ -80,7 +78,7 @@ export default function Cliente({
 
   const validarMailDisponible = async (mail) => {
     try {
-      const { data } = await axios.get(`${URLAPI}/api/clie/${mail}`);
+      const { data } = await axios.get(`/api/clie/${mail}`);
       if (data && data._id && data._id !== clienteId) return false;
       return true;
     } catch {
@@ -189,10 +187,10 @@ export default function Cliente({
         },
       ];
 
-      await axios.put(`${URLAPI}/api/clie`, payload);
+      await axios.put(`/api/clie`, payload);
 
       const { data: actualizado } = await axios.get(
-        `${URLAPI}/api/clie/id/${clienteId}`
+        `/api/clie/id/${clienteId}`
       );
 
       setUsuario(actualizado);

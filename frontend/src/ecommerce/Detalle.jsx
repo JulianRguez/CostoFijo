@@ -5,8 +5,6 @@ import axios from "axios";
 import CarroCompra from "./CarroCompra";
 import "./Detalle.css";
 
-const URLAPI = import.meta.env.VITE_URLAPI;
-
 export default function Detalle({
   productoId,
   onClose,
@@ -48,7 +46,7 @@ export default function Detalle({
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await axios.get(`${URLAPI}/api/prod`);
+        const { data } = await axios.get(`/api/prod`);
         setTodos(data || []);
         const actual = data.find((p) => p._id === productoId);
         setProducto(actual || null);
@@ -61,7 +59,7 @@ export default function Detalle({
   useEffect(() => {
     if (!producto && productoId) {
       axios
-        .get(`${URLAPI}/api/prod/${productoId}`)
+        .get(`/api/prod/${productoId}`)
         .then((res) => setProducto(res.data))
         .catch((err) => console.error(err));
     }
@@ -225,7 +223,7 @@ export default function Detalle({
     }
 
     try {
-      await axios.put(`${URLAPI}/api/clie`, [
+      await axios.put(`/api/clie`, [
         { _id: usuario._id, carrito: nuevoCarrito },
       ]);
 
@@ -343,7 +341,7 @@ export default function Detalle({
               <button
                 className="detalle-copy-btn"
                 onClick={() => {
-                  const url = `${window.location.origin}/P${producto._id}`;
+                  const url = `${window.location.origin}/p/${producto._id}`;
                   navigator.clipboard.writeText(url);
                   mostrarAlertaInicio(
                     "Copiado",

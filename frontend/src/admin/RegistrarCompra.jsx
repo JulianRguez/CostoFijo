@@ -28,7 +28,6 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
     version: "",
   });
 
-  const URLAPI = import.meta.env.VITE_URLAPI;
   const [factura, setFactura] = useState("");
   const [proveedor, setProveedor] = useState("");
   const [registro, setRegistro] = useState("Productos");
@@ -54,7 +53,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
   };
 
   useEffect(() => {
-    fetch(`${URLAPI}/api/prod`)
+    fetch(`/api/prod`)
       .then((res) => res.json())
       .then((data) => setProductosBD(data))
       .catch((err) => console.error("Error cargando productos:", err));
@@ -115,54 +114,69 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
   // =========================
   //        AGREGAR
   // =========================
-// ---------- Helper: obtiene las 3 primeras consonantes de un texto ----------
-const obtenerTresConsonantes = (texto = "") => {
-  if (!texto) return "";
-  // Normalizar: convertir a mayúsculas, quitar acentos y caracteres no letras
-  const sinAcentos = texto
-    .toUpperCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, ""); // quita acentos
-  const soloLetras = sinAcentos.replace(/[^A-ZÑ\s]/g, ""); // deja A-Z y Ñ y espacios
+  // ---------- Helper: obtiene las 3 primeras consonantes de un texto ----------
+  const obtenerTresConsonantes = (texto = "") => {
+    if (!texto) return "";
+    // Normalizar: convertir a mayúsculas, quitar acentos y caracteres no letras
+    const sinAcentos = texto
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, ""); // quita acentos
+    const soloLetras = sinAcentos.replace(/[^A-ZÑ\s]/g, ""); // deja A-Z y Ñ y espacios
 
-  // Vocales (incluye Ñ como no vocal)
-  const vocales = new Set(["A", "E", "I", "O", "U"]);
-  const consonantes = [];
+    // Vocales (incluye Ñ como no vocal)
+    const vocales = new Set(["A", "E", "I", "O", "U"]);
+    const consonantes = [];
 
-  for (let ch of soloLetras) {
-    if (ch === " " || ch === "\t" || ch === "\n") continue;
-    if (!vocales.has(ch)) {
-      consonantes.push(ch);
-      if (consonantes.length === 3) break;
+    for (let ch of soloLetras) {
+      if (ch === " " || ch === "\t" || ch === "\n") continue;
+      if (!vocales.has(ch)) {
+        consonantes.push(ch);
+        if (consonantes.length === 3) break;
+      }
     }
-  }
 
-  // Si hay menos de 3 consonantes, no rellenamos (se usan las existentes).
-  return consonantes.join("");
-};
+    // Si hay menos de 3 consonantes, no rellenamos (se usan las existentes).
+    return consonantes.join("");
+  };
 
-// =========================
-//        AGREGAR
-// =========================
-const agregarProducto = async () => {
-  if (loadingAgregar) return;
-  setLoadingAgregar(true);
+  // =========================
+  //        AGREGAR
+  // =========================
+  const agregarProducto = async () => {
+    if (loadingAgregar) return;
+    setLoadingAgregar(true);
 
-  try {
-    const camposObligatorios = [
-      { valor: form1.ref, ref: refs.ref },
-      { valor: form1.nombre, ref: refs.nombre },
-      { valor: form1.etiqueta, ref: refs.etiqueta },
-      { valor: form1.valor, ref: refs.valor },
-      { valor: form1.valorVenta, ref: null },
-      { valor: form1.minStock, ref: null },
-      { valor: form2.descripcion, ref: refs.descripcion },
-      { valor: form2.img1, ref: refs.img1 },
-    ];
+    try {
+      const camposObligatorios = [
+        { valor: form1.ref, ref: refs.ref },
+        { valor: form1.nombre, ref: refs.nombre },
+        { valor: form1.etiqueta, ref: refs.etiqueta },
+        { valor: form1.valor, ref: refs.valor },
+        { valor: form1.valorVenta, ref: null },
+        { valor: form1.minStock, ref: null },
+        { valor: form2.descripcion, ref: refs.descripcion },
+        { valor: form2.img1, ref: refs.img1 },
+      ];
 
-    for (const campo of camposObligatorios) {
-      if (!campo.valor || campo.valor.toString().trim() === "") {
-        campo.ref?.current?.focus();
+      for (const campo of camposObligatorios) {
+        if (!campo.valor || campo.valor.toString().trim() === "") {
+          campo.ref?.current?.focus();
+          setMensajeValidacion({
+            texto: "Algún dato no es válido",
+            tipo: "error",
+          });
+          setLoadingAgregar(false);
+          return;
+        }
+      }
+
+      const yaExisteEnLista = productosAgregados.some(
+        (prod) => prod.ref.toLowerCase() === (form1.ref || "").toLowerCase()
+      );
+      if (yaExisteEnLista) {
+        setForm1((prev) => ({ ...prev, ref: "" }));
+        refs.ref.current?.focus();
         setMensajeValidacion({
           texto: "Algún dato no es válido",
           tipo: "error",
@@ -170,117 +184,102 @@ const agregarProducto = async () => {
         setLoadingAgregar(false);
         return;
       }
-    }
 
-    const yaExisteEnLista = productosAgregados.some(
-      (prod) => prod.ref.toLowerCase() === (form1.ref || "").toLowerCase()
-    );
-    if (yaExisteEnLista) {
-      setForm1((prev) => ({ ...prev, ref: "" }));
-      refs.ref.current?.focus();
-      setMensajeValidacion({
-        texto: "Algún dato no es válido",
-        tipo: "error",
-      });
-      setLoadingAgregar(false);
-      return;
-    }
+      const encontrado = productosBD.find((p) => p.ref === form1.ref);
+      const stockIngresado = parseInt(form1.stock || 0, 10) || 0;
+      const stockEnBD = parseInt(encontrado?.stock || 0, 10) || 0;
+      const versionBD = encontrado?.version || "";
+      const versionForm = form2.version ?? "";
 
-    const encontrado = productosBD.find((p) => p.ref === form1.ref);
-    const stockIngresado = parseInt(form1.stock || 0, 10) || 0;
-    const stockEnBD = parseInt(encontrado?.stock || 0, 10) || 0;
-    const versionBD = encontrado?.version || "";
-    const versionForm = form2.version ?? "";
+      const permitirSoloVersion =
+        !!encontrado &&
+        stockIngresado === 0 &&
+        stockEnBD > 0 &&
+        versionForm !== versionBD;
 
-    const permitirSoloVersion =
-      !!encontrado &&
-      stockIngresado === 0 &&
-      stockEnBD > 0 &&
-      versionForm !== versionBD;
-
-    if (encontrado) {
-      if (versionForm && versionForm.trim() !== "") {
-        let sumaVersion = 0;
-        const partes = versionForm.split("-");
-        for (let i = 1; i < partes.length; i += 2) {
-          sumaVersion += parseInt(partes[i] || 0, 10) || 0;
-        }
-        if (stockIngresado + stockEnBD !== sumaVersion) {
-          setMensajeValidacion({
-            texto: `El campo "Versión" no es válido`,
-            tipo: "error",
-          });
-          setLoadingAgregar(false);
-          return;
+      if (encontrado) {
+        if (versionForm && versionForm.trim() !== "") {
+          let sumaVersion = 0;
+          const partes = versionForm.split("-");
+          for (let i = 1; i < partes.length; i += 2) {
+            sumaVersion += parseInt(partes[i] || 0, 10) || 0;
+          }
+          if (stockIngresado + stockEnBD !== sumaVersion) {
+            setMensajeValidacion({
+              texto: `El campo "Versión" no es válido`,
+              tipo: "error",
+            });
+            setLoadingAgregar(false);
+            return;
+          }
         }
       }
-    }
 
-    const stockValidoOExcepcion = permitirSoloVersion || stockIngresado > 0;
-    const otrosNumerosValidos =
-      parseInt(form1.valor || 0, 10) > 10 &&
-      parseInt(form1.valorVenta || 0, 10) > 10 &&
-      parseInt(form1.minStock || 0, 10) >= 0;
+      const stockValidoOExcepcion = permitirSoloVersion || stockIngresado > 0;
+      const otrosNumerosValidos =
+        parseInt(form1.valor || 0, 10) > 10 &&
+        parseInt(form1.valorVenta || 0, 10) > 10 &&
+        parseInt(form1.minStock || 0, 10) >= 0;
 
-    if (!stockValidoOExcepcion || !otrosNumerosValidos) {
-      setMensajeValidacion({
-        texto: "Algún dato no es válido",
-        tipo: "error",
+      if (!stockValidoOExcepcion || !otrosNumerosValidos) {
+        setMensajeValidacion({
+          texto: "Algún dato no es válido",
+          tipo: "error",
+        });
+        setLoadingAgregar(false);
+        return;
+      }
+
+      // 🔹 Normalización antes de guardar en lista
+      const toMayusculas = (texto = "") => texto.toUpperCase();
+      const formatearDescripcion = (texto = "") => {
+        const lower = texto.toLowerCase();
+        return lower.charAt(0).toUpperCase() + lower.slice(1);
+      };
+
+      const existente = productosBD.find((p) => p.ref === form1.ref);
+
+      // ===== NUEVO: crear la sigla de 3 consonantes y el nombre final =====
+      const sigla = obtenerTresConsonantes(form1.nombre);
+      const nombreOriginal = (form1.nombre || "").trim();
+      const nombreConSigla =
+        sigla && nombreOriginal ? `${nombreOriginal} ${sigla}` : nombreOriginal;
+
+      // Opcional: mostrar momentáneamente en el input el nombre con sigla
+      // (si quieres que el usuario lo vea antes de limpiar)
+      setForm1((prev) => ({ ...prev, nombre: nombreConSigla }));
+
+      // Añadir a la lista usando el nombre con sigla
+      setProductosAgregados((prev) => [
+        ...prev,
+        {
+          ...form1,
+          nombre: toMayusculas(nombreConSigla),
+          ...form2,
+          descripcion: formatearDescripcion(form2.descripcion),
+          stock: form1.stock === "" ? "0" : form1.stock,
+          _id: existente?._id || null,
+        },
+      ]);
+
+      // Limpiar formulario (igual que antes)
+      setForm1({
+        nombre: "",
+        ref: "",
+        etiqueta: "Papeleria",
+        stock: "",
+        valor: "",
+        valorVenta: "",
+        minStock: "",
       });
+      setForm2({ descripcion: "", img1: "", img2: "", img3: "", version: "" });
+      setMensajeValidacion({ texto: "", tipo: "" });
+    } catch (err) {
+      console.error(err);
+    } finally {
       setLoadingAgregar(false);
-      return;
     }
-
-    // 🔹 Normalización antes de guardar en lista
-    const toMayusculas = (texto = "") => texto.toUpperCase();
-    const formatearDescripcion = (texto = "") => {
-      const lower = texto.toLowerCase();
-      return lower.charAt(0).toUpperCase() + lower.slice(1);
-    };
-
-    const existente = productosBD.find((p) => p.ref === form1.ref);
-
-    // ===== NUEVO: crear la sigla de 3 consonantes y el nombre final =====
-    const sigla = obtenerTresConsonantes(form1.nombre);
-    const nombreOriginal = (form1.nombre || "").trim();
-    const nombreConSigla =
-      sigla && nombreOriginal ? `${nombreOriginal} ${sigla}` : nombreOriginal;
-
-    // Opcional: mostrar momentáneamente en el input el nombre con sigla
-    // (si quieres que el usuario lo vea antes de limpiar)
-    setForm1((prev) => ({ ...prev, nombre: nombreConSigla }));
-
-    // Añadir a la lista usando el nombre con sigla
-    setProductosAgregados((prev) => [
-      ...prev,
-      {
-        ...form1,
-        nombre: toMayusculas(nombreConSigla),
-        ...form2,
-        descripcion: formatearDescripcion(form2.descripcion),
-        stock: form1.stock === "" ? "0" : form1.stock,
-        _id: existente?._id || null,
-      },
-    ]);
-
-    // Limpiar formulario (igual que antes)
-    setForm1({
-      nombre: "",
-      ref: "",
-      etiqueta: "Papeleria",
-      stock: "",
-      valor: "",
-      valorVenta: "",
-      minStock: "",
-    });
-    setForm2({ descripcion: "", img1: "", img2: "", img3: "", version: "" });
-    setMensajeValidacion({ texto: "", tipo: "" });
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoadingAgregar(false);
-  }
-};
+  };
 
   const eliminarProducto = (index) => {
     const nuevos = [...productosAgregados];
@@ -293,7 +292,7 @@ const agregarProducto = async () => {
   // =========================
   const aplicarCambios = async () => {
     if (loadingAplicar) return; // evita múltiples clics
-  setLoadingAplicar(true);
+    setLoadingAplicar(true);
     try {
       const toMayusculas = (texto = "") => texto.toUpperCase();
       const formatearDescripcion = (texto = "") => {
@@ -387,7 +386,7 @@ const agregarProducto = async () => {
       });
 
       if (compArray.length > 0) {
-        const resComp = await fetch(`${URLAPI}/api/comp`, {
+        const resComp = await fetch(`/api/comp`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(compArray),
@@ -396,7 +395,7 @@ const agregarProducto = async () => {
       }
 
       if (productosActualizar.length > 0) {
-        const resPut = await fetch(`${URLAPI}/api/prod`, {
+        const resPut = await fetch(`/api/prod`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(productosActualizar),
@@ -406,7 +405,7 @@ const agregarProducto = async () => {
       }
 
       if (productosCrear.length > 0) {
-        const resPost = await fetch(`${URLAPI}/api/prod`, {
+        const resPost = await fetch(`/api/prod`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(productosCrear),
@@ -432,7 +431,7 @@ const agregarProducto = async () => {
       setFecha(new Date().toISOString().substr(0, 10));
       setProductosAgregados([]);
 
-      const resProd = await fetch(`${URLAPI}/api/prod`);
+      const resProd = await fetch(`/api/prod`);
       const dataProd = await resProd.json();
       setProductosBD(dataProd);
 
@@ -445,10 +444,9 @@ const agregarProducto = async () => {
         texto: error.message || "No pudo ser guardado",
         tipo: "error",
       });
+    } finally {
+      setLoadingAplicar(false); // siempre lo reseteamos al final
     }
-    finally {
-    setLoadingAplicar(false); // siempre lo reseteamos al final
-  }
   };
 
   return (
@@ -562,25 +560,27 @@ const agregarProducto = async () => {
             </div>
 
             <div className="acciones-compra">
-  <button
-    className="btn-cancelar-modal"
-    onClick={() => setMostrarDialogo(false)}
-    disabled={loadingAplicar} // 🔹 deshabilitar cuando aplica
-  >
-    Cancelar
-  </button>
-  <button
-    className="btn-aplicar-modal"
-    onClick={aplicarCambios}
-    disabled={loadingAplicar} // 🔹 deshabilitar cuando aplica
-  >
-    {loadingAplicar ? "Aplicando..." : "Aplicar"}
-  </button>
-</div>
+              <button
+                className="btn-cancelar-modal"
+                onClick={() => setMostrarDialogo(false)}
+                disabled={loadingAplicar} // 🔹 deshabilitar cuando aplica
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn-aplicar-modal"
+                onClick={aplicarCambios}
+                disabled={loadingAplicar} // 🔹 deshabilitar cuando aplica
+              >
+                {loadingAplicar ? "Aplicando..." : "Aplicar"}
+              </button>
+            </div>
 
-{loadingAplicar && (
-  <div className="mensaje-loading">Registrando la compra, espere...</div>
-)}
+            {loadingAplicar && (
+              <div className="mensaje-loading">
+                Registrando la compra, espere...
+              </div>
+            )}
           </div>
         </div>
       )}

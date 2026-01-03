@@ -17,8 +17,6 @@ import AutWpp from "./AutWpp";
 import "./Inicio.css";
 import "./Menu.css";
 
-const URLAPI = import.meta.env.VITE_URLAPI;
-
 export default function MenuLateral({
   isMobile = false,
   onOrdenar,
@@ -73,7 +71,7 @@ export default function MenuLateral({
         return;
       }
 
-      const { data } = await axios.get(`${URLAPI}/api/clie/${dato}`);
+      const { data } = await axios.get(`/api/clie/${dato}`);
 
       if (!data) {
         setMensaje("Datos no válidos");

@@ -4,7 +4,6 @@ import axios from "axios";
 import "./AutWpp.css";
 
 export default function AutWpp({ setAutenticado, setUsuario, onCancelar }) {
-  const URLAPI = import.meta.env.VITE_URLAPI;
   const WPP_LINK = import.meta.env.VITE_WPP_LINK;
 
   const [codigo, setCodigo] = useState("");
@@ -54,7 +53,7 @@ export default function AutWpp({ setAutenticado, setUsuario, onCancelar }) {
 
       const newTimer = setTimeout(async () => {
         try {
-          const res = await axios.get(`${URLAPI}/api/clie/${telefono}`);
+          const res = await axios.get(`/api/clie/${telefono}`);
 
           if (res.data && res.data.tel === telefono) {
             setNumeroExiste(true);
@@ -162,7 +161,7 @@ export default function AutWpp({ setAutenticado, setUsuario, onCancelar }) {
 
     try {
       const payload = [{ tel: numeroLimpio, clave: clave.toString() }];
-      const { data } = await axios.post(`${URLAPI}/api/clie`, payload);
+      const { data } = await axios.post(`/api/clie`, payload);
 
       if (data && (Array.isArray(data) || typeof data === "object")) {
         // 🔸 Incrementar contador local al registrarse con éxito

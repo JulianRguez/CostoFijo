@@ -6,8 +6,6 @@ import axios from "axios";
 import "./AutGoogle.css";
 
 export default function AutGoogle({ setAutenticado, setUsuario }) {
-  const URLAPI = import.meta.env.VITE_URLAPI;
-
   // ✅ Manejar inicio de sesión con Google
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
@@ -22,7 +20,7 @@ export default function AutGoogle({ setAutenticado, setUsuario }) {
 
       // 🔹 Verificar si el cliente ya existe
       try {
-        const { data } = await axios.get(`${URLAPI}/api/clie/${correo}`);
+        const { data } = await axios.get(`/api/clie/${correo}`);
 
         // ✅ Cliente encontrado: iniciar sesión directamente
         setUsuario(data);
@@ -37,7 +35,7 @@ export default function AutGoogle({ setAutenticado, setUsuario }) {
         ) {
           try {
             const payload = [{ nombre, mail: correo }];
-            const { data } = await axios.post(`${URLAPI}/api/clie`, payload);
+            const { data } = await axios.post(`/api/clie`, payload);
 
             if (data && (Array.isArray(data) || typeof data === "object")) {
               const userData = data.clients?.[0] || data;
