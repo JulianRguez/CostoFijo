@@ -84,7 +84,7 @@
 .x {
   cursor: pointer;
   margin-left: 8px;
-  color: #ef4444;
+  color: #8a2020;
   font-weight: bold;
 }
 
@@ -139,7 +139,7 @@
 
 .char-count.error,
 .record-count.error {
-  color: #f07171; /* rojo */
+  color: #fbffc4; /* rojo */
 }
 .record-count {
   font-size: 12px;
