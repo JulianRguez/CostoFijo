@@ -1,3 +1,4 @@
+// server.js
 import path from "path";
 import { fileURLToPath } from "url";
 import express from "express";
@@ -36,50 +37,48 @@ app.use(express.json());
 // UTILIDAD: LIMPIAR NOMBRE
 // =====================
 function limpiarNombreProducto(nombre = "") {
-
   const regex = /\s([A-Z]{3})(\d{2})?$/;
   const match = nombre.match(regex);
 
   let descuento = null;
-
   if (match && match[2]) {
     descuento = parseInt(match[2], 10);
   }
 
   const nombreLimpio = nombre.replace(regex, "").trim();
-
   if (descuento) {
     return `${nombreLimpio} con ${descuento}% Off`;
   }
-
   return nombreLimpio;
 }
 
 // =====================
 // RUTA SOCIAL /p/:id
-// ⚠️ DEBE IR ANTES DEL STATIC
+// ⚠️ SOLO PARA BOTS - Usuarios normales cargan SPA
 // =====================
 app.get("/p/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const producto = await Prod.findById(id).lean();
+    const ua = req.get("user-agent") || "";
+    const isBot = /facebookexternalhit|WhatsApp|Twitterbot|Slackbot|Pinterest/i.test(
+      ua
+    );
 
-    if (!producto) {
-      return res.redirect("/");
-    }
+    if (isBot) {
+      const producto = await Prod.findById(id).lean();
+      if (!producto) return res.redirect("/");
 
-    const nombreRedes = limpiarNombreProducto(producto.nombre);
-    const imagen = producto.urlFoto1 || "";
+      const nombreRedes = limpiarNombreProducto(producto.nombre);
+      const imagen = producto.urlFoto1 || "";
+      const urlFinal = `${req.protocol}://${req.get("host")}/p/${id}`;
 
-    const urlFinal = `${req.protocol}://${req.get("host")}/p/${id}`;
-
-    const html = `
+      const html = `
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Ventas de Patiño Claro Servicios</title>
+  <title>${nombreRedes}</title>
 
   <!-- Open Graph -->
   <meta property="og:type" content="product" />
@@ -87,20 +86,18 @@ app.get("/p/:id", async (req, res) => {
   <meta property="og:description" content="${nombreRedes}" />
   <meta property="og:image" content="${imagen}" />
   <meta property="og:url" content="${urlFinal}" />
-
-  <!-- WhatsApp / Facebook -->
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-
-  <!-- Redirección REAL para el usuario -->
-  <meta http-equiv="refresh" content="0; url=${urlFinal}" />
 </head>
 <body></body>
 </html>
-    `;
+      `;
+      res.set("Content-Type", "text/html");
+      return res.send(html);
+    }
 
-    res.set("Content-Type", "text/html");
-    res.send(html);
+    // Usuario normal → SPA
+    res.sendFile(path.join(__dirname, "../dist", "index.html"));
   } catch (error) {
     console.error("Error en /p/:id", error);
     res.redirect("/");
@@ -133,9 +130,9 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../dist")));
 
   // ⚠️ CATCH-ALL AL FINAL
- app.use((req, res) => {
-  res.sendFile(path.resolve(__dirname, "../dist", "index.html"));
-});
+  app.use((req, res) => {
+    res.sendFile(path.resolve(__dirname, "../dist", "index.html"));
+  });
 }
 
 // =====================
