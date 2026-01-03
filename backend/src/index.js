@@ -7,15 +7,11 @@ import cors from "cors";
 import connectDB from "./db.js";
 import Prod from "./models/prod.model.js";
 
-// =====================
-// CONFIG BÁSICA
-// =====================
 dotenv.config();
 connectDB();
 
 const app = express();
 
-// Paths útiles
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -54,8 +50,8 @@ function limpiarNombreProducto(nombre = "") {
 
 // =====================
 // RUTA SOCIAL /p/:id
-// ⚠️ SOLO PARA BOTS - Usuarios normales cargan SPA
 // =====================
+// Sirve OG tags para bots y SPA para usuarios normales
 app.get("/p/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -66,6 +62,7 @@ app.get("/p/:id", async (req, res) => {
     );
 
     if (isBot) {
+      // Obtenemos info del producto
       const producto = await Prod.findById(id).lean();
       if (!producto) return res.redirect("/");
 
@@ -82,12 +79,18 @@ app.get("/p/:id", async (req, res) => {
 
   <!-- Open Graph -->
   <meta property="og:type" content="product" />
-  <meta property="og:title" content="Ventas de Patiño Claro Servicios" />
-  <meta property="og:description" content="${nombreRedes}" />
+  <meta property="og:title" content="${nombreRedes}" />
+  <meta property="og:description" content="${producto.descripcion || nombreRedes}" />
   <meta property="og:image" content="${imagen}" />
   <meta property="og:url" content="${urlFinal}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${nombreRedes}" />
+  <meta name="twitter:description" content="${producto.descripcion || nombreRedes}" />
+  <meta name="twitter:image" content="${imagen}" />
 </head>
 <body></body>
 </html>
