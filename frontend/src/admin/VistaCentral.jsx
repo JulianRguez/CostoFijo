@@ -32,7 +32,7 @@ export default function VistaCentral() {
   // Cargar productos
   useEffect(() => {
     axios
-      .get(`${URLAPI}/api/prod`)
+      .get(`/api/prod`)
       .then((res) => setProductos(res.data))
       .catch((err) => console.error("Error al obtener productos:", err));
   }, []);
@@ -206,7 +206,7 @@ export default function VistaCentral() {
       });
 
       // 3) Crear ventas
-      await axios.post(`${URLAPI}/api/vent`, ventasPayload);
+      await axios.post(`/api/vent`, ventasPayload);
 
       // 4) Actualizar productos en BD (stock - vendidos, versión ya viene del estado) :contentReference[oaicite:7]{index=7}
       const payloadUpdate = Object.entries(vendidosPorProducto).map(
@@ -220,7 +220,7 @@ export default function VistaCentral() {
         }
       );
       if (payloadUpdate.length > 0) {
-        await axios.put(`${URLAPI}/api/prod`, payloadUpdate);
+        await axios.put(`/api/prod`, payloadUpdate);
       }
 
       // 5) Si hay crédito directo > 0, registrar crédito y (opcional) movimiento del cliente
@@ -238,7 +238,7 @@ export default function VistaCentral() {
           plazo: 1,
           interes: 0,
         };
-        await axios.post(`${URLAPI}/api/cred`, payloadCredito);
+        await axios.post(`/api/cred`, payloadCredito);
 
         // 5.2 (Opcional) Actualizar "porpagar" del cliente si la fecha es válida ISO
         const isISODate = /^\d{4}-\d{2}-\d{2}$/;
@@ -267,7 +267,7 @@ export default function VistaCentral() {
                 porpagar: [...existentes, nuevoMovimiento],
               },
             ];
-            await axios.put(`${URLAPI}/api/clie`, payloadCliente);
+            await axios.put(`/api/clie`, payloadCliente);
           } catch (eCli) {
             console.error("Error actualizando cliente (porpagar):", eCli);
           }
@@ -275,7 +275,7 @@ export default function VistaCentral() {
       }
 
       // 6) Refrescar productos y estados de UI
-      const res = await axios.get(`${URLAPI}/api/prod`);
+      const res = await axios.get(`/api/prod`);
       setProductos(res.data);
 
       setMensaje({ texto: "Registro exitoso", tipo: "exito" });

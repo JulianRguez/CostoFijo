@@ -32,9 +32,9 @@ export default function Info() {
       setLoading(true);
       try {
         const [resVent, resCred, resComp] = await Promise.all([
-          fetch(`${URLAPI}/api/vent`),
-          fetch(`${URLAPI}/api/cred`),
-          fetch(`${URLAPI}/api/comp`),
+          fetch(`/api/vent`),
+          fetch(`/api/cred`),
+          fetch(`/api/comp`),
         ]);
         const dataVent = await resVent.json();
         const dataCred = await resCred.json();
