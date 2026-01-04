@@ -463,6 +463,36 @@ export default function CarroCompra({
     });
   };
 
+  // ======================================
+  // AUTOCARGAR DIRECCIÓN DEL CLIENTE
+  // (solo si está autenticado y es válida)
+  // ======================================
+  useEffect(() => {
+    if (!cliente || !cliente.dire) return;
+
+    // No sobrescribir si el usuario ya escribió
+    if (direccion && direccion.length > 0) return;
+
+    const partes = cliente.dire.split(",").map((p) => p.trim());
+    if (partes.length !== 4) return;
+
+    const [dep, mun, zon, dir] = partes;
+
+    // Validación mínima de dirección
+    if (!dir || dir.length < 8) return;
+
+    setDepartamento(dep);
+    setMunicipio(mun);
+
+    const zonas = zonasPorMunicipio[mun] || [];
+    const zonaFinal = zonas.includes(zon) ? zon : zonas[0] || "";
+
+    setZona(zonaFinal);
+    setDireccion(dir);
+
+    actualizarInfoDireccion(dep, mun, zonaFinal, dir, true);
+  }, [cliente]);
+
   return (
     <div className="carro-overlay" onClick={onClose}>
       <div className="carro-modal" onClick={(e) => e.stopPropagation()}>
