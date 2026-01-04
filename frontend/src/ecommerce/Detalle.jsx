@@ -27,6 +27,9 @@ export default function Detalle({
   const initializedFor = useRef(null);
   const [mostrarCarro, setMostrarCarro] = useState(false);
 
+  // 🔒 imagen por defecto desde .env
+  const IMG_DEF = import.meta.env.VITE_IMG_DEF;
+
   // --------------------------------------------
   // Parseo de versiones tipo “blanca-2-negra-1”
   // --------------------------------------------
@@ -263,7 +266,14 @@ export default function Detalle({
                   }
                   style={{ cursor: "pointer" }}
                 >
-                  <img src={imagenes[indice]} alt={producto.nombre} />
+                  <img
+                    src={imagenes[indice]}
+                    alt={producto.nombre}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = IMG_DEF;
+                    }}
+                  />
                 </div>
 
                 <div className="detalle-thumbs">
@@ -274,6 +284,10 @@ export default function Detalle({
                       alt="thumb"
                       onClick={() => setIndice(i)}
                       className={i === indice ? "activa" : ""}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = IMG_DEF;
+                      }}
                     />
                   ))}
                 </div>
@@ -336,7 +350,7 @@ export default function Detalle({
                 Compra rápida
               </button>
             </div>
-            {/* COPIAR LINK DEL PRODUCTO */}
+
             <div className="detalle-copy-wrap">
               <button
                 className="detalle-copy-btn"
@@ -375,7 +389,14 @@ export default function Detalle({
                     className="reco-card"
                     onClick={() => abrirDetalleDesdeRecomendado(p._id)}
                   >
-                    <img src={p.urlFoto1} alt={stripCodigo(p.nombre)} />
+                    <img
+                      src={p.urlFoto1}
+                      alt={stripCodigo(p.nombre)}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = IMG_DEF;
+                      }}
+                    />
                     <p className="reco-nombre">{stripCodigo(p.nombre)}</p>
 
                     {tieneDesc ? (
@@ -399,7 +420,6 @@ export default function Detalle({
         </div>
       </div>
 
-      {/* Carrito */}
       {mostrarCarro && (
         <CarroCompra
           visible={mostrarCarro}

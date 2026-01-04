@@ -21,6 +21,7 @@ import {
 import { FaWhatsapp } from "react-icons/fa";
 import Alerta from "./Alerta";
 import { useParams, useNavigate } from "react-router-dom";
+const IMG_DEF = import.meta.env.VITE_IMG_DEF;
 import "./Inicio.css";
 
 const WPP_LINK = import.meta.env.VITE_WPP_LINK;
@@ -525,6 +526,10 @@ export default function Inicio() {
                     src={p.urlFoto1}
                     alt={p.nombre}
                     loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null; // evita loop
+                      e.currentTarget.src = IMG_DEF;
+                    }}
                     onClick={() => {
                       navigate(`/p/${p._id}`);
                     }}

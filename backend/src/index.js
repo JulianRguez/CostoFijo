@@ -68,8 +68,8 @@ app.get("/p/:id", async (req, res) => {
 
       const nombreRedes = limpiarNombreProducto(producto.nombre);
       const imagen = producto.urlFoto1 || "";
-      const urlFinal = `${req.protocol}://${req.get("host")}/p/${id}`;
-
+      //const urlFinal = `${req.protocol}://${req.get("host")}/p/${id}`;
+      //<meta property="og:url" content="${urlFinal}" />
       const html = `
 <!doctype html>
 <html lang="es">
@@ -79,18 +79,18 @@ app.get("/p/:id", async (req, res) => {
 
   <!-- Open Graph -->
   <meta property="og:type" content="product" />
-  <meta property="og:title" content="${nombreRedes}" />
-  <meta property="og:description" content="${producto.descripcion || nombreRedes}" />
-  <meta property="og:image" content="${imagen}" />
-  <meta property="og:url" content="${urlFinal}" />
+  <meta property="og:title" content="${nombreRedes || "https://res.cloudinary.com/ddjdox6b0/image/upload/v1767477076/ImgDefault_f76tba.png"}" />
+  <meta property="og:description" content="$${producto.precio || ""}" />
+  <meta property="og:image" content="${imagen || ""}" />
+  <meta property="og:url" content="Vendido por Patiño Claro Servicios" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${nombreRedes}" />
-  <meta name="twitter:description" content="${producto.descripcion || nombreRedes}" />
-  <meta name="twitter:image" content="${imagen}" />
+  <meta name="twitter:title" content="${nombreRedes || ""}" />
+  <meta name="twitter:description" content="$${producto.precio || ""}" />
+  <meta name="twitter:image" content="${imagen || "https://res.cloudinary.com/ddjdox6b0/image/upload/v1767477076/ImgDefault_f76tba.png"}" />
 </head>
 <body></body>
 </html>
