@@ -40,7 +40,7 @@ export default function VistaCentral() {
     localStorage.setItem("verAgotados", verAgotados);
   }, [verAgotados]);
 
-  // Agregar producto al carrito (manteniendo tu lógica actual) :contentReference[oaicite:3]{index=3}
+  // Agregar producto al carrito
   const agregarAlCarrito = (producto) => {
     if (producto.stock <= 0) return;
     if (mensaje.texto) setMensaje({ texto: "", tipo: "" });
@@ -95,7 +95,7 @@ export default function VistaCentral() {
     }
   };
 
-  // Quitar producto del carrito (sin cambios de lógica principal) :contentReference[oaicite:4]{index=4}
+  // Quitar producto del carrito
   const quitarDelCarrito = (id, versionName) => {
     const item = carrito.find(
       (i) => i._id === id && (i.versionName || "Única versión") === versionName
