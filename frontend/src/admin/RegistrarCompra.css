@@ -54,7 +54,8 @@
   white-space: nowrap;
 }
 
-.label-inline input {
+.label-inline input,
+.label-inline select {
   flex: 1;
   text-align: right;
   max-width: 160px;
@@ -70,7 +71,7 @@
   cursor: pointer;
   background-color: #059669;
   color: white;
-  max-width: 174px;
+  max-width: 160px;
   width: 100%;
   align-self: flex-end;
   box-sizing: border-box;

@@ -1,6 +1,7 @@
 // RegistrarCompra.jsx
 import React, { useState, useEffect, useRef } from "react";
 import "./RegistrarCompra.css";
+const URLAPI = import.meta.env.VITE_URLAPI;
 
 import Columna1 from "./Columna1";
 import Columna2 from "./Columna2";

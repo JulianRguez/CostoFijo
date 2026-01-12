@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./ConfVenta.css";
 
-const URLAPI = import.meta.env.VITE_URLAPI;
-
 export default function ConfVenta({
   carrito,
   total,
@@ -34,7 +32,7 @@ export default function ConfVenta({
     setFechaPago(getTomorrow());
   }, []);
 
-  // ✅ Validar cliente con nueva ruta y excluir inactivos (Xdoc)
+  // ✅ Validar cliente con nueva ruta y excluir inactivos
   const validarClienteAPI = async (doc) => {
     try {
       const res = await fetch(`/api/clie/cc/${doc}`);
