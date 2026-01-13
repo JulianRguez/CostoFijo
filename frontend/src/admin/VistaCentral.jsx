@@ -11,7 +11,7 @@ export default function VistaCentral() {
     localStorage.getItem("verAgotados") === "true"
   );
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [nombreCliente, setNombreCliente] = useState("Sin Registro");
+  const [nombreCliente, setNombreCliente] = useState("000000");
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
   const [selecciones, setSelecciones] = useState({});
 
@@ -158,14 +158,17 @@ export default function VistaCentral() {
     .filter((p) => verAgotados || p.stock > 0);
 
   const handleNombreFocus = () => {
-    if (nombreCliente === "Sin Registro") {
+    if (nombreCliente === "000000") {
       setNombreCliente("");
     }
   };
-  const handleNombreBlur = () => {
-    if (nombreCliente.trim() === "") {
-      setNombreCliente("Sin Registro");
-    }
+  const generarFactura = () => {
+    const now = new Date();
+    const ss = String(now.getSeconds()).padStart(2, "0");
+    const ml = String(now.getMilliseconds()).padStart(2, "0");
+    const rnd = String(Math.floor(Math.random() * 1000)).padStart(3, "0");
+
+    return `FRA-${ss}${ml}${rnd}`;
   };
 
   // ✅ Confirmar venta: devuelve true/false y hace POST /api/cred si corresponde
@@ -180,28 +183,37 @@ export default function VistaCentral() {
         acc[item._id] = (acc[item._id] || 0) + item.cantidad;
         return acc;
       }, {});
-
+      const factura = generarFactura();
       // 2) Payload de ventas (incluye versión actual del estado) :contentReference[oaicite:6]{index=6}
-      const ventasPayload = carrito.map((item) => {
-        const prodActual = productos.find((p) => p._id === item._id);
-        const clave = `${item._id}-${item.versionName || "Única versión"}`;
-        const garantiaInfo = extraData?.garantias?.[clave];
-        const garantia =
-          garantiaInfo?.checked && Number(garantiaInfo?.dias) > 0
-            ? Number(garantiaInfo.dias)
-            : 0;
+      // 2) Payload correcto de venta (UNA venta con MUCHOS productos)
+      const ventasPayload = {
+        idClient: nombreCliente,
+        factura: factura,
+        fecha: new Date().toISOString(),
+        pago: extraData?.formaPago || "efectivo",
+        otrosCobros: Number(extraData?.otrosCobros) || 0,
+        descuentos: Number(extraData?.descuentos) || 0,
+        productos: carrito.map((item) => {
+          const prodActual = productos.find((p) => p._id === item._id);
+          const clave = `${item._id}-${item.versionName || "Única versión"}`;
+          const garantiaInfo = extraData?.garantias?.[clave];
 
-        return {
-          idProd: item._id,
-          idClient: nombreCliente, // aquí va el documento/identificador mostrado
-          cantidad: item.cantidad,
-          valor: item.valorVenta ?? item.precio,
-          factura: `FACT-${Date.now()}`,
-          version: prodActual?.version || "",
-          garantia,
-          etiqueta: item.etiqueta,
-        };
-      });
+          const garantia =
+            garantiaInfo?.checked && Number(garantiaInfo?.dias) > 0
+              ? Number(garantiaInfo.dias)
+              : 0;
+
+          return {
+            idProd: item._id,
+            cantidad: item.cantidad,
+            valor: item.valorVenta ?? item.precio,
+            version: prodActual?.version || "",
+            garantia,
+            etiqueta: item.etiqueta,
+            devuelto: false,
+          };
+        }),
+      };
 
       // 3) Crear ventas
       await axios.post(`/api/vent`, ventasPayload);
@@ -278,7 +290,7 @@ export default function VistaCentral() {
 
       setMensaje({ texto: "Registro exitoso", tipo: "exito" });
       setCarrito([]);
-      setNombreCliente("Sin Registro");
+      setNombreCliente("000000");
 
       exito = true;
     } catch (error) {

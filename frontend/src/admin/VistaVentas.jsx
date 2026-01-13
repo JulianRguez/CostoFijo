@@ -5,6 +5,7 @@ import "./VistaVentas.css";
 export default function VistaVentas() {
   const [ventas, setVentas] = useState([]);
   const [productos, setProductos] = useState([]);
+
   const [filtroAnio, setFiltroAnio] = useState(new Date().getFullYear());
   const [filtroMes, setFiltroMes] = useState(new Date().getMonth() + 1);
   const [filtroDia, setFiltroDia] = useState("");
@@ -12,7 +13,7 @@ export default function VistaVentas() {
   // Cargar ventas y productos
   useEffect(() => {
     axios
-      .get(`/api/vent`)
+      .get(`/api/vent/detalle`)
       .then((res) => setVentas(res.data))
       .catch((err) => console.error("Error al obtener ventas:", err));
 
@@ -31,6 +32,7 @@ export default function VistaVentas() {
   // Calcular días restantes de garantía
   const calcularGarantiaRestante = (fechaVenta, diasGarantia) => {
     if (!diasGarantia || diasGarantia === 0) return "Sin garantía";
+
     const fechaVentaDate = new Date(fechaVenta);
     const fechaExpira = new Date(fechaVentaDate);
     fechaExpira.setDate(fechaExpira.getDate() + diasGarantia);
@@ -41,14 +43,27 @@ export default function VistaVentas() {
     return diff > 0 ? `${diff} días restantes` : "Garantía vencida";
   };
 
-  // Filtrar ventas por fecha (año, mes, día)
-  const ventasFiltradas = ventas.filter((venta) => {
-    if (venta.devuelto) return false;
+  // 🔹 Aplanar ventas → productos
+  const productosVendidos = ventas.flatMap((venta) =>
+    (venta.productos || []).map((prod) => ({
+      ventaId: venta._id,
+      fecha: venta.fecha,
+      factura: venta.factura,
+      idProd: prod.idProd,
+      cantidad: prod.cantidad,
+      valor: prod.valor,
+      garantia: prod.garantia,
+      etiqueta: prod.etiqueta,
+      devuelto: prod.devuelto,
+    }))
+  );
 
-    const fechaVenta = new Date(venta.fecha);
-    const anio = fechaVenta.getFullYear();
-    const mes = fechaVenta.getMonth() + 1;
-    const dia = fechaVenta.getDate();
+  // Filtrar productos por fecha
+  const ventasFiltradas = productosVendidos.filter((item) => {
+    if (item.devuelto) return false;
+
+    const fechaISO = item.fecha.split("T")[0];
+    const [anio, mes, dia] = fechaISO.split("-").map(Number);
 
     if (filtroAnio && anio !== Number(filtroAnio)) return false;
     if (filtroMes && Number(filtroMes) !== mes) return false;
@@ -56,12 +71,13 @@ export default function VistaVentas() {
 
     return true;
   });
+
   const totalMostrado = ventasFiltradas.reduce(
     (acc, v) => acc + v.cantidad * v.valor,
     0
   );
 
-  // Nombres de meses en español
+  // Nombres de meses
   const meses = [
     "enero",
     "febrero",
@@ -76,18 +92,14 @@ export default function VistaVentas() {
     "noviembre",
     "diciembre",
   ];
+
   const construirResumen = () => {
     if (!filtroAnio) return "";
 
     let partes = [];
 
-    if (filtroDia) {
-      partes.push(`del día ${filtroDia}`);
-    }
-    if (filtroMes) {
-      const mesTexto = meses[Number(filtroMes) - 1];
-      partes.push(`del mes de ${mesTexto}`);
-    }
+    if (filtroDia) partes.push(`del día ${filtroDia}`);
+    if (filtroMes) partes.push(`del mes de ${meses[Number(filtroMes) - 1]}`);
     partes.push(`del año ${filtroAnio}`);
 
     return `El valor de las ventas ${partes.join(
@@ -131,21 +143,18 @@ export default function VistaVentas() {
         {ventasFiltradas.length === 0 ? (
           <p>No hay ventas para los filtros seleccionados.</p>
         ) : (
-          ventasFiltradas.map((venta) => (
-            <div key={venta._id} className="item-venta fila">
+          ventasFiltradas.map((item, idx) => (
+            <div key={idx} className="item-venta fila">
               <span className="producto">
-                {obtenerNombreProducto(venta.idProd)}
+                {obtenerNombreProducto(item.idProd)}
               </span>
-              <span>Cantidad: {venta.cantidad}</span>
-              <span>${venta.valor}</span>
+              <span>Cantidad: {item.cantidad}</span>
+              <span>${item.valor}</span>
+              <span>{calcularGarantiaRestante(item.fecha, item.garantia)}</span>
               <span>
-                {" "}
-                {calcularGarantiaRestante(venta.fecha, venta.garantia)}
+                Fecha: {new Date(item.fecha).toISOString().split("T")[0]}
               </span>
-              <span>
-                Fecha: {new Date(venta.fecha).toISOString().split("T")[0]}
-              </span>
-              <span className="etiqueta">{venta.etiqueta}</span>
+              <span className="etiqueta">{item.etiqueta}</span>
             </div>
           ))
         )}

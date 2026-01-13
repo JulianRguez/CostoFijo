@@ -1,13 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import "./Info.css";
 
 export default function Info() {
   const fechaActual = new Date();
   const [mes, setMes] = useState(fechaActual.getMonth() + 1);
   const [anio, setAnio] = useState(fechaActual.getFullYear());
-  const [ventas, setVentas] = useState([]);
+
   const [creditos, setCreditos] = useState([]);
   const [compras, setCompras] = useState([]);
+
+  const [resumenVentas, setResumenVentas] = useState({
+    ingresosPorEtiqueta: {},
+    totalIngresos: 0,
+  });
+
   const [loading, setLoading] = useState(true);
 
   const meses = [
@@ -29,39 +35,28 @@ export default function Info() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [resVent, resCred, resComp] = await Promise.all([
-          fetch(`/api/vent`),
+        const [resCred, resComp, resResumen] = await Promise.all([
           fetch(`/api/cred`),
           fetch(`/api/comp`),
+          fetch(`/api/vent/resumen?mes=${mes}&anio=${anio}`),
         ]);
-        const dataVent = await resVent.json();
+
         const dataCred = await resCred.json();
         const dataComp = await resComp.json();
-        setVentas(dataVent);
+        const dataResumen = await resResumen.json();
+
         setCreditos(dataCred);
         setCompras(dataComp);
+        setResumenVentas(dataResumen);
       } catch (err) {
         console.error("Error cargando datos:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
 
-  // 🎯 Función para calcular totales de ingresos por etiqueta y periodo
-  const calcularTotal = (etiqueta) => {
-    return ventas
-      .filter((v) => {
-        const fecha = new Date(v.fecha);
-        return (
-          fecha.getMonth() + 1 === mes &&
-          fecha.getFullYear() === anio &&
-          v.etiqueta?.toLowerCase() === etiqueta.toLowerCase()
-        );
-      })
-      .reduce((acc, v) => acc + v.valor * v.cantidad, 0);
-  };
+    fetchData();
+  }, [mes, anio]);
 
   // 🎯 Calcular cuentas por cobrar
   const calcularCreditos = () => {
@@ -70,7 +65,7 @@ export default function Info() {
       .reduce((acc, c) => acc + c.monto, 0);
   };
 
-  // 🎯 Calcular total gastos (usa registro en lugar de etiqueta)
+  // 🎯 Calcular total gastos
   const calcularGastos = () => {
     return compras
       .filter((c) => {
@@ -96,13 +91,8 @@ export default function Info() {
     { titulo: "Cargo mensual", etiqueta: "Cargo Mensual" },
   ];
 
-  // 🎯 Totales
-  const totalIngresos = categoriasIngresos.reduce(
-    (acc, cat) => acc + calcularTotal(cat.etiqueta),
-    0
-  );
-  const totalCreditos = calcularCreditos();
-  const totalGastos = calcularGastos();
+  const totalCreditos = useMemo(() => calcularCreditos(), [creditos]);
+  const totalGastos = useMemo(() => calcularGastos(), [compras, mes, anio]);
 
   return (
     <div className="info-container">
@@ -124,6 +114,7 @@ export default function Info() {
       <h2 className="titulo-principal">
         Ingresos del mes de {meses[mes - 1]} del año {anio}
       </h2>
+
       {loading ? (
         <p className="loading">Cargando información...</p>
       ) : (
@@ -133,7 +124,12 @@ export default function Info() {
             {categoriasIngresos.map((cat, idx) => (
               <div key={idx} className="card">
                 <h3>{cat.titulo}</h3>
-                <p>${calcularTotal(cat.etiqueta).toLocaleString()}</p>
+                <p>
+                  $
+                  {(
+                    resumenVentas.ingresosPorEtiqueta?.[cat.etiqueta] || 0
+                  ).toLocaleString()}
+                </p>
               </div>
             ))}
           </div>
@@ -147,7 +143,7 @@ export default function Info() {
             </div>
             <div className="card">
               <h3>Total Ingresos</h3>
-              <p>${totalIngresos.toLocaleString()}</p>
+              <p>${(resumenVentas.totalIngresos || 0).toLocaleString()}</p>
             </div>
             <div className="card">
               <h3>Total Gastos</h3>
