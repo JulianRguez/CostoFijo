@@ -692,11 +692,11 @@ export default function CarroCompra({
                   return; // 🚫 DETIENE AVANCE
                 }
 
-                const productosTexto = productos.map((p) => `${p.nombre}`);
+                //const productosTexto = productos.map((p) => `${p.nombre}`);
                 const direccionCompleta = `${departamento}, ${municipio}, ${zona}, ${direccion}`;
 
                 const resumen = {
-                  productos: productosTexto,
+                  productos, // 👈 AQUÍ ESTÁ LA CLAVE
                   direccion: direccionCompleta,
                   pago: metodoPago,
                   subtotal,

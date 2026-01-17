@@ -1,4 +1,4 @@
-// Detalle.jsx — versión final unificada con alerta global de Inicio
+// Detalle.jsx
 import React, { useEffect, useState, useRef } from "react";
 import { X, ShoppingCart } from "lucide-react";
 import axios from "axios";
@@ -345,7 +345,31 @@ export default function Detalle({
 
               <button
                 className="btn-gris"
-                onClick={() => setMostrarCarro(true)}
+                onClick={() => {
+                  // 1️⃣ Copia del producto original
+                  let productoDirecto = { ...producto };
+
+                  // 2️⃣ Si hay versiones, usar la seleccionada (o la primera)
+                  if (versionesParsed.length) {
+                    const v =
+                      versionesParsed.find((x) => x.nombre === versionSel) ||
+                      versionesParsed[0];
+
+                    if (v) {
+                      // Formato correcto: "verde-3"
+                      productoDirecto.version = `${v.nombre}-${v.stock}`;
+                    }
+                  }
+
+                  console.log(
+                    "Producto enviado a compra rápida desde Detalle:",
+                    productoDirecto
+                  );
+
+                  // 3️⃣ Abrir carro con el producto ya corregido
+                  setProducto(productoDirecto);
+                  setMostrarCarro(true);
+                }}
               >
                 Compra rápida
               </button>

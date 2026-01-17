@@ -7,7 +7,8 @@ const productoSchema = new mongoose.Schema(
     valor: { type: Number, required: true },
     garantia: { type: Number, default: 0 },
     devuelto: { type: Boolean, default: false },
-    etiqueta: { type: String }
+    etiqueta: { type: String },
+    version: { type: String, default: "" },
   },
   { _id: false }
 );

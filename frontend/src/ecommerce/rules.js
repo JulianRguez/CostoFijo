@@ -1,10 +1,14 @@
 // rules.js
 export let nombreUsuario = "Usuario";
+export let notaUsuario = "";
 // 🧠 variable global compartida entre rules
 export let respuesta = null;
-// funcion para actualizar nombre
+// funcion para actualizar nombre y nota
 export function setNombreUsuario(nombre) {
   nombreUsuario = nombre || "Usuario";
+}
+export function setNotaUsuario(nota) {
+  notaUsuario = nota || "";
 }
 // 👉 función que se ejecuta desde el chat
 function buscarFra(valor) {
@@ -80,7 +84,7 @@ export const rules = {
   },
   
   fraSi: {
-    resp: () => `Para realizar el pago de la factura debe realizar la transferencia a nuestra cuenta de Ahorros de Bancolombia 24083017828 o con nuestra llave Pre-B 0090625768, y cargar la imagen del comprobante de pago en el botón “Cargar Imagen”.`,
+    resp: () => `Para realizar el pago de la factura ${notaUsuario} debe realizar la transferencia a nuestra cuenta de Ahorros de Bancolombia 24083017828 o con nuestra llave Pre-B 0090625768, y cargar la imagen del comprobante de pago en el botón “Cargar Imagen”.`,
     options: [
       { label: "Cargar Imagen",
         action: GuardarImg,

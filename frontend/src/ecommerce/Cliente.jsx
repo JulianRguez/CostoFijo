@@ -17,6 +17,7 @@ export default function Cliente({
   const [mostrarZeus, setMostrarZeus] = useState(false);
   const [tnombre, setTnombre] = useState("");
   const [tTel, setTtel] = useState("");
+  const [nota, setNota] = useState("");
 
   const [form, setForm] = useState({
     doc: "",
@@ -89,6 +90,14 @@ export default function Cliente({
       return true;
     }
   };
+  const generarFactura = () => {
+    const now = new Date();
+    const ss = String(now.getSeconds()).padStart(2, "0");
+    const ml = String(now.getMilliseconds()).padStart(2, "0");
+    const rnd = String(Math.floor(Math.random() * 1000)).padStart(3, "0");
+
+    return `FRA-${ss}${ml}${rnd}`;
+  };
 
   // inicio de actualizar -----------------------------------------------------------------
   const actualizar = async () => {
@@ -126,7 +135,7 @@ export default function Cliente({
           Teléfono: ${tel}
           Correo: ${mail}
           Clave: ${clave} 
-          productos: ${infoPedido.productos.join("\n")}
+          productos: ${infoPedido.productos}
           subtotal: ${infoPedido.subtotal}
           medio pago: ${infoPedido.pago}
           costoTrans: ${infoPedido.costoTrans}
@@ -135,11 +144,37 @@ export default function Cliente({
           envio: ${infoPedido.envio}
           total a pagar: ${infoPedido.total}          
           `;
-      console.log(texto);
-      if (modo === "venta") {
-        setMostrarZeus(true); // ✅ ABRE ZEUSBOT
-        return; // ⛔ no sigas no esta guardando ojooooooooooooooooooooooooooooooooooooooo
-      }
+
+      const productosPayload = infoPedido.productos.map((p) => ({
+        idProd: p._id,
+        cantidad: p.cantidad || 1,
+        valor: p.valorVenta,
+        etiqueta: p.etiqueta,
+        version: p.version || "",
+      }));
+
+      const payloadVenta = {
+        idClient: doc,
+        factura: generarFactura(),
+        pago: "pendiente",
+        otrosCobros:
+          Number(infoPedido.costoTrans || 0) + Number(infoPedido.envio || 0),
+        descuentos:
+          Number(infoPedido.descuento || 0) + Number(infoPedido.cupon || 0),
+        productos: productosPayload,
+      };
+
+      console.log(payloadVenta);
+      setNota(payloadVenta.factura);
+
+      /*try {
+        await axios.post("/api/vent", payloadVenta);
+      } catch (err) {
+        console.error("Error creando la venta:", err);
+        return setErrorMsg("No se pudo registrar la venta");
+      }*/
+
+      setMostrarZeus(true); // ✅ ABRE ZEUSBOT
     }
 
     //SI EL CLINTE NO ESTA AUTENTICADO NO SE ACTUALIZA LA INFO EN LA API
@@ -272,8 +307,9 @@ export default function Cliente({
       </div>
       {mostrarZeus && (
         <ZeusBot
-          inicio="menu"
+          inicio="fraSi"
           userName={tnombre || Ttel}
+          nota={nota}
           onClose={() => {
             setMostrarZeus(false); // cierra Zeus
             onClose(); // cierra Cliente

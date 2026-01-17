@@ -638,7 +638,38 @@ export default function Inicio() {
                     <button
                       className={`buy-btn ${hasDiscount ? "discount" : ""}`}
                       onClick={() => {
-                        setProductoCompraDirecta(p);
+                        // Copia local del producto (NO mutamos p directamente)
+                        let producto = { ...p };
+
+                        if (producto.version !== "") {
+                          // valor del listBox (puede venir vacío)
+                          let versionSeleccionada =
+                            versionesSeleccionadas[producto._id] || "";
+
+                          const partes = producto.version.split("-");
+
+                          // si no hay selección, usar la primera
+                          if (!versionSeleccionada) {
+                            versionSeleccionada = partes[0];
+                          }
+
+                          // buscar el stock de esa versión
+                          for (let i = 0; i < partes.length; i += 2) {
+                            if (partes[i] === versionSeleccionada) {
+                              producto.version = `${partes[i]}-${
+                                partes[i + 1]
+                              }`;
+                              break;
+                            }
+                          }
+                        }
+
+                        console.log(
+                          "Producto enviado a compra rápida:",
+                          producto
+                        );
+
+                        setProductoCompraDirecta(producto);
                         setMostrarCarro(true);
                       }}
                     >

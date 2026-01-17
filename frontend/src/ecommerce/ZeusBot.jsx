@@ -1,10 +1,10 @@
 // ZeusBot.jsx
 import React, { useEffect, useState, useRef } from "react";
 import "./ZeusBot.css";
-import { rules, setNombreUsuario } from "./rules";
+import { rules, setNombreUsuario, setNotaUsuario } from "./rules";
 import { X } from "lucide-react";
 
-export default function ZeusBot({ inicio, userName, onClose }) {
+export default function ZeusBot({ inicio, userName, nota, onClose }) {
   const [messages, setMessages] = useState([]);
   const [currentRule, setCurrentRule] = useState(inicio);
   const [inputValue, setInputValue] = useState("");
@@ -20,6 +20,10 @@ export default function ZeusBot({ inicio, userName, onClose }) {
   useEffect(() => {
     setNombreUsuario(userName);
   }, [userName]);
+  // actualiza nota
+  useEffect(() => {
+    setNotaUsuario(nota);
+  }, [nota]);
 
   // mensaje inicial
   useEffect(() => {
