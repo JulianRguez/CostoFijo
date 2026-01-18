@@ -175,3 +175,22 @@
   overflow-wrap: break-word; /* parte las palabras largas */
   margin: 0;
 }
+.fila-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ff7a00;
+}
+
+.fila-checkbox input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  background-color: #ff7a00;
+}
+
+.fila-checkbox label {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}

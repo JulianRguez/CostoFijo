@@ -18,7 +18,7 @@ export default function Cliente({
   const [tnombre, setTnombre] = useState("");
   const [tTel, setTtel] = useState("");
   const [nota, setNota] = useState("");
-
+  const [guardarDatos, setGuardarDatos] = useState(false);
   const [form, setForm] = useState({
     doc: "",
     nombre: "",
@@ -28,6 +28,7 @@ export default function Cliente({
     clave: "",
   });
   const [docBloqueado, setDocBloqueado] = useState(false);
+
   // Cargar datos del cliente por ID
   useEffect(() => {
     if (!clienteId) {
@@ -71,9 +72,26 @@ export default function Cliente({
     cargar();
   }, [clienteId, modo, infoPedido]);
 
+  useEffect(() => {
+    setGuardarDatos(!!clienteId); // ✔️ si hay clienteId inicia chuleado
+  }, [clienteId]);
+
+  const textoCheckbox = clienteId
+    ? "Actualizar datos personales"
+    : "Guardar datos personales";
+
   const validarTelefonoDisponible = async (tel) => {
     try {
       const { data } = await axios.get(`/api/clie/${tel}`);
+      if (data && data._id && data._id !== clienteId) return false;
+      return true;
+    } catch {
+      return true;
+    }
+  };
+  const validarCcDisponible = async (doc) => {
+    try {
+      const { data } = await axios.get(`/api/clie/cc/${doc}`);
       if (data && data._id && data._id !== clienteId) return false;
       return true;
     } catch {
@@ -119,6 +137,10 @@ export default function Cliente({
       if (clave && (clave.length !== 4 || isNaN(clave)))
         return setErrorMsg("Clave inválida");
     }
+    // validar cc  existe y no es del autenticado
+    const dispCc = await validarCcDisponible(doc);
+    if (!dispCc)
+      return setErrorMsg("El documento de identidad ya está registrado");
     // validar teléfono existe y no es del autenticado
     const dispTel = await validarTelefonoDisponible(tel);
     if (!dispTel) return setErrorMsg("El teléfono ya está registrado");
@@ -135,7 +157,7 @@ export default function Cliente({
           Teléfono: ${tel}
           Correo: ${mail}
           Clave: ${clave} 
-          productos: ${infoPedido.productos}
+          productos: ${infoPedido.productos[0].version}
           subtotal: ${infoPedido.subtotal}
           medio pago: ${infoPedido.pago}
           costoTrans: ${infoPedido.costoTrans}
@@ -144,6 +166,7 @@ export default function Cliente({
           envio: ${infoPedido.envio}
           total a pagar: ${infoPedido.total}          
           `;
+      console.log(texto);
 
       const productosPayload = infoPedido.productos.map((p) => ({
         idProd: p._id,
@@ -163,8 +186,6 @@ export default function Cliente({
           Number(infoPedido.descuento || 0) + Number(infoPedido.cupon || 0),
         productos: productosPayload,
       };
-
-      console.log(payloadVenta);
       setNota(payloadVenta.factura);
 
       /*try {
@@ -178,29 +199,52 @@ export default function Cliente({
     }
 
     //SI EL CLINTE NO ESTA AUTENTICADO NO SE ACTUALIZA LA INFO EN LA API
-    if (!clienteId) {
-      return; // ⛔ NO seguir
-    }
+    // 👉 SOLO si el checkbox está marcado
+    if (!guardarDatos) return;
+    console.log("Guardo");
     try {
-      const payload = [
-        {
-          _id: clienteId,
-          doc,
-          nombre,
-          dire,
-          tel,
-          mail,
-          ...(clave ? { clave } : {}), // 👈 SOLO SI EXISTE
-        },
-      ];
-      await axios.put(`/api/clie`, payload);
-      const { data: actualizado } = await axios.get(
-        `/api/clie/id/${clienteId}`
-      );
-      setUsuario(actualizado);
-      setErrorMsg("Actualizado correctamente");
+      // 🟢 ACTUALIZAR
+      if (clienteId) {
+        const payload = [
+          {
+            _id: clienteId,
+            doc,
+            nombre,
+            dire,
+            tel,
+            mail,
+            ...(clave ? { clave } : {}),
+          },
+        ];
+
+        await axios.put("/api/clie", payload);
+
+        const { data: actualizado } = await axios.get(
+          `/api/clie/id/${clienteId}`
+        );
+
+        setUsuario(actualizado);
+        setErrorMsg("Datos actualizados correctamente");
+      }
+
+      // 🟢 CREAR
+      if (!clienteId) {
+        const payload = [
+          {
+            doc,
+            nombre,
+            dire,
+            tel,
+            mail,
+          },
+        ];
+
+        await axios.post("/api/clie", payload);
+        setErrorMsg("Datos guardados correctamente");
+      }
     } catch (e) {
-      setErrorMsg("Error al actualizar");
+      console.error(e);
+      setErrorMsg("Error al guardar la información");
     }
   };
   // Fin de actualizar --------------------------------------------------------------
@@ -281,6 +325,15 @@ export default function Cliente({
                 setForm({ ...form, clave: val });
               }}
             />
+          </div>
+          <div className="fila-checkbox">
+            <input
+              type="checkbox"
+              checked={guardarDatos}
+              disabled={modo === "inicio"}
+              onChange={(e) => setGuardarDatos(e.target.checked)}
+            />
+            <label>{textoCheckbox}</label>
           </div>
         </div>
 

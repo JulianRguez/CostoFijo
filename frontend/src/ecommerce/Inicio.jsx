@@ -664,11 +664,6 @@ export default function Inicio() {
                           }
                         }
 
-                        console.log(
-                          "Producto enviado a compra rápida:",
-                          producto
-                        );
-
                         setProductoCompraDirecta(producto);
                         setMostrarCarro(true);
                       }}
@@ -691,7 +686,7 @@ export default function Inicio() {
                   </div>
 
                   <div className="card-footer">
-                    <span>Envió Gratis según el valor comprado</span>
+                    <span>Envió Gratis, aplica condiciones.</span>
                     <Truck className="mini-cart" />
                   </div>
                 </div>
