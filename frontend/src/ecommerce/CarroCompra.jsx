@@ -70,16 +70,27 @@ export default function CarroCompra({
   }, []);
   useEffect(() => {
     if (!visible) return;
+
+    // 🟠 1️⃣ Compra rápida: setear SOLO el producto directo
     if (productoDirecto) {
-      setProductos([productoDirecto]);
-      return;
+      setProductos([
+        {
+          ...productoDirecto,
+          cantidad: productoDirecto.cantidad || 1, // ✅ INICIALIZA
+        },
+      ]);
     }
+
+    // 🟢 2️⃣ Si está autenticado, SIEMPRE cargar cliente (para la dirección)
     if (clienteId) {
-      // Cargar cliente y luego mapear cada item del carrito a su producto completo
       axios
         .get(`/api/clie/id/${clienteId}`)
         .then(async (res) => {
           setCliente(res.data);
+
+          // 🚫 IMPORTANTE:
+          // Si es compra rápida, NO cargar productos del carrito
+          if (productoDirecto) return;
 
           const carrito = Array.isArray(res.data.carrito)
             ? res.data.carrito
@@ -91,25 +102,23 @@ export default function CarroCompra({
           }
 
           try {
-            // Para cada item del carrito solicitamos el producto completo al endpoint /api/prod/:id
+            // 🔄 Cargar productos completos del carrito
             const productosCompletos = await Promise.all(
               carrito.map(async (item) => {
                 try {
                   const { data: prod } = await axios.get(
-                    `/api/prod/${item.productoId}`
+                    `/api/prod/${item.productoId}`,
                   );
-                  // combinar: devolver todos los campos del producto + cantidad y version del carrito
                   return {
                     ...prod,
                     cantidad: item.cantidad || 1,
                     version: item.version || "",
                   };
                 } catch (err) {
-                  // Si falla la carga del producto, devolvemos un fallback con el productoId
                   console.error(
                     "Error cargando producto:",
                     item.productoId,
-                    err
+                    err,
                   );
                   return {
                     productoId: item.productoId,
@@ -117,7 +126,7 @@ export default function CarroCompra({
                     version: item.version || "",
                   };
                 }
-              })
+              }),
             );
 
             setProductos(productosCompletos);
@@ -137,7 +146,7 @@ export default function CarroCompra({
 
   const subtotal = productos.reduce(
     (acc, p) => acc + (p.valorVenta || 0) * (p.cantidad || 1),
-    0
+    0,
   );
 
   const descuento = productos.reduce((acc, p) => {
@@ -170,7 +179,7 @@ export default function CarroCompra({
     newMun,
     newZona,
     newDir,
-    triggerBySelect = false
+    triggerBySelect = false,
   ) => {
     const dir = (newDir ?? direccion).trim();
     const dirLen = dir.length;
@@ -236,47 +245,105 @@ export default function CarroCompra({
 
   // Validar cupón automáticamente
   useEffect(() => {
-    if (cupon.length === 0) {
+    // 1️⃣ Sin cupón
+    if (!cupon || cupon.length === 0) {
       setCuponValor(0);
       return;
     }
-    if (cupon.length === 6) {
-      let mountedLocal = true;
-      (async () => {
-        try {
-          const { data } = await axios.get(`/api/sist/${cupon}`);
 
-          if (!mountedLocal) return;
-          if (!data) {
-            setCuponValor(0);
-            setInfoGlobal({ text: "Cupón No Valido", color: "#f97316" });
-            return;
-          }
-          const nombreValor = parseInt(data.nombre, 10) || 0;
-          const descuentoValor = parseInt(data.dato, 10) || 0;
-          if (nombreValor <= subtotal) {
-            setCuponValor(descuentoValor);
-            setInfoGlobal({
-              text: `Cupón aplicado por $${descuentoValor.toLocaleString()}.`,
-              color: "green",
-            });
-          } else {
-            setCuponValor(0);
-            setInfoGlobal({
-              text: "No aplica para el valor comprado",
-              color: "#f97316",
-            });
-          }
-        } catch {
-          setCuponValor(0);
-          setInfoGlobal({ text: "Cupón No Valido", color: "#f97316" });
-        }
-      })();
-      return () => {
-        mountedLocal = false;
-      };
+    // 2️⃣ No autenticado
+    if (!cliente) {
+      setCuponValor(0);
+      setInfoGlobal({
+        text: "Debes iniciar sesión para usar cupones",
+        color: "#f97316",
+      });
+      return;
     }
-  }, [cupon, subtotal]);
+
+    // 3️⃣ Cliente sin cupones
+    if (!Array.isArray(cliente.cupon) || cliente.cupon.length === 0) {
+      setCuponValor(0);
+      setInfoGlobal({
+        text: "No tienes cupones disponibles",
+        color: "#f97316",
+      });
+      return;
+    }
+
+    // 4️⃣ Cupón no pertenece al cliente
+    if (!cliente.cupon.includes(cupon)) {
+      setCuponValor(0);
+      setInfoGlobal({
+        text: "Este cupón no está asociado a tu cuenta",
+        color: "#f97316",
+      });
+      return;
+    }
+
+    let mountedLocal = true;
+
+    (async () => {
+      try {
+        const { data } = await axios.get(`/api/sist/${cupon}`);
+        if (!mountedLocal) return;
+
+        if (!data || !data.dato || !data.nombre) {
+          setCuponValor(0);
+          setInfoGlobal({ text: "Cupón No Válido", color: "#f97316" });
+          return;
+        }
+
+        // 5️⃣ Reglas del cupón
+        const porcentaje = parseInt(data.dato, 10) || 0;
+        const minimoCompra = parseInt(data.nombre, 10) || 0;
+
+        // porcentaje inválido
+        if (porcentaje <= 0 || porcentaje > 99) {
+          setCuponValor(0);
+          setInfoGlobal({ text: "Cupón No Válido", color: "#f97316" });
+          return;
+        }
+
+        // 6️⃣ Validar mínimo de compra
+        if (subtotal < minimoCompra) {
+          setCuponValor(0);
+          setInfoGlobal({
+            text: `Este cupón aplica desde $${minimoCompra.toLocaleString()}`,
+            color: "#f97316",
+          });
+          return;
+        }
+
+        // 7️⃣ Calcular descuento por porcentaje
+        let descuentoCalculado = Math.round((subtotal * porcentaje) / 100);
+
+        // 8️⃣ Tope máximo
+        const DESCUENTO_MAX = Number(import.meta.env.VITE_DESC_MAX) || 0;
+
+        if (DESCUENTO_MAX > 0 && descuentoCalculado > DESCUENTO_MAX) {
+          descuentoCalculado = DESCUENTO_MAX;
+        }
+
+        // 9️⃣ Aplicar cupón
+        setCuponValor(descuentoCalculado);
+        setInfoGlobal({
+          text: `Cupón aplicado: ${porcentaje}% (-$${descuentoCalculado.toLocaleString()})${
+            DESCUENTO_MAX > 0 ? ` · Máx $${DESCUENTO_MAX.toLocaleString()}` : ""
+          }`,
+          color: "green",
+        });
+      } catch (err) {
+        console.error("ERROR CUPÓN:", err);
+        setCuponValor(0);
+        setInfoGlobal({ text: "Cupón No Válido", color: "#f97316" });
+      }
+    })();
+
+    return () => {
+      mountedLocal = false;
+    };
+  }, [cupon, subtotal, cliente]);
 
   const onChangeMetodoPago = (val) => {
     setMetodoPago(val);
@@ -369,7 +436,7 @@ export default function CarroCompra({
       // 2. Eliminar del carrito en API
       if (clienteId && cliente) {
         const nuevoCarrito = (cliente.carrito || []).filter(
-          (item) => item.productoId !== productoId
+          (item) => item.productoId !== productoId,
         );
 
         await axios.put(`/api/clie`, [
@@ -620,9 +687,12 @@ export default function CarroCompra({
                 <label className="small-label">Cupón</label>
                 <input
                   type="text"
-                  placeholder="Ingrese su cupón"
-                  maxLength={6}
+                  placeholder={
+                    cliente ? "Ingrese su cupón" : "Debe autenticarse"
+                  }
+                  maxLength={7}
                   value={cupon}
+                  disabled={!cliente} // ✅ CLAVE
                   onChange={(e) => setCupon(e.target.value.toUpperCase())}
                 />
               </div>

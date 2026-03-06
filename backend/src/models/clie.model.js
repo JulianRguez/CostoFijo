@@ -37,6 +37,7 @@ const clieSchema = new mongoose.Schema({
   dire: { type: String, default: "" },
   tel: { type: String, default: "" },
   mail: { type: String, default: "" },
+  cupon: { type: [String], default: ["CUPON33"] },
   porpagar: { type: [porPagarSchema], default: [] },
   clave: { type: String, default: "" },
   favoritos: { type: [String], default: [] },     

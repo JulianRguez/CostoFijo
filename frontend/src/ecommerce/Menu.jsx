@@ -5,7 +5,7 @@ import {
   SlidersHorizontal,
   ShoppingBag,
   TicketPercent,
-  Tag,
+  MapPin,
   Heart,
   FileText,
   LogIn,
@@ -19,6 +19,7 @@ import "./Menu.css";
 
 export default function MenuLateral({
   isMobile = false,
+  isOpen,
   onOrdenar,
   autenticado,
   setAutenticado,
@@ -35,12 +36,108 @@ export default function MenuLateral({
   const [mensaje, setMensaje] = useState("Ingrese datos de autenticación");
   const [googleVisible, setGoogleVisible] = useState(false);
   const [whatsappVisible, setWhatsappVisible] = useState(false);
+  const [compras, setCompras] = useState([]);
+  const [cargandoCompras, setCargandoCompras] = useState(false);
+  useEffect(() => {
+    if (!isOpen) {
+      setAbierto(null);
+      setLoginVisible(false);
+      setGoogleVisible(false);
+      setWhatsappVisible(false);
+      setDato("");
+      setClave("");
+      setMensaje("Ingrese datos de autenticación");
+    }
+  }, [isOpen]);
 
+  useEffect(() => {
+    if (abierto === "compras" && autenticado && usuario?.doc) {
+      cargarCompras();
+    }
+  }, [abierto, autenticado]);
   useEffect(() => {
     if (opcionOrden && opcionOrden !== orden) {
       setOrden(opcionOrden);
     }
   }, [opcionOrden]);
+  const cargarCompras = async () => {
+    try {
+      setCargandoCompras(true);
+      const { data } = await axios.get(`/api/vent?idClient=${usuario.doc}`);
+
+      setCompras(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("❌ Error cargando compras", error);
+      setCompras([]);
+    } finally {
+      setCargandoCompras(false);
+    }
+  };
+  const calcularTotalFactura = (factura) => {
+    const totalProductos = factura.productos.reduce(
+      (acc, prod) => acc + prod.cantidad * prod.valor,
+      0,
+    );
+
+    return (
+      totalProductos + (factura.otrosCobros || 0) - (factura.descuentos || 0)
+    );
+  };
+
+  const obtenerEstadoFactura = (pago) => {
+    if (!pago) return "Estado desconocido";
+
+    // estados directos
+    if (pago === "pendiente") return "Pendiente por pagar";
+    if (pago === "anulado") return "Compra Anulada";
+    if (pago === "aBanco") return "Compra Finalizada";
+
+    // estados por prefijo + url Cloudinary
+    if (typeof pago === "string" && pago.startsWith("P")) {
+      return "Pago en verificación";
+    }
+    if (pago.startsWith("A")) {
+      return "Pago Aprobado";
+    }
+    if (pago.startsWith("E")) {
+      return "Pedido Enviado";
+    }
+    if (pago.startsWith("F")) {
+      return "Pedido Entregado";
+    }
+    if (pago.startsWith("X")) {
+      return "Compra Anulada";
+    }
+
+    return "Estado desconocido";
+  };
+  const obtenerClaseEstado = (estado) => {
+    if (
+      estado === "Pendiente por pagar" ||
+      estado === "Compra Finalizada" ||
+      estado === "Pago en verificación"
+    ) {
+      return "estado-amarillo";
+    }
+
+    if (
+      estado === "Compra Anulada" ||
+      estado === "Compra rechazada" ||
+      estado === "Estado desconocido"
+    ) {
+      return "estado-rojo";
+    }
+
+    if (
+      estado === "Pago Aprobado" ||
+      estado === "Pedido Enviado" ||
+      estado === "Pedido Entregado"
+    ) {
+      return "estado-verde";
+    }
+
+    return "";
+  };
 
   const toggleSeccion = (nombre) => {
     if (abierto === nombre) {
@@ -154,7 +251,7 @@ export default function MenuLateral({
         </span>
       </div>
 
-      {/* 🔹 SECCIÓN AUTENTICAR */}
+      {/*SECCIÓN AUTENTICAR */}
       <div className="menu-section">
         <button
           className={`menu-title ${abierto === "autenticar" ? "active" : ""}`}
@@ -241,6 +338,7 @@ export default function MenuLateral({
             </p>
             <input
               type="text"
+              maxLength={10}
               placeholder="Correo o celular"
               value={dato}
               onChange={(e) => setDato(e.target.value)}
@@ -270,7 +368,7 @@ export default function MenuLateral({
           </div>
         )}
 
-        {/* 🔹 REGISTRO POR WHATSAPP */}
+        {/*  REGISTRO POR WHATSAPP */}
         {!autenticado && abierto === "autenticar" && whatsappVisible && (
           <div className="menu-content">
             <AutWpp
@@ -285,7 +383,6 @@ export default function MenuLateral({
         )}
       </div>
 
-      {/* ORDENAR */}
       {/* ORDENAR */}
       <div className="menu-section">
         <button
@@ -389,54 +486,38 @@ export default function MenuLateral({
           Compras
         </button>
         {abierto === "compras" && autenticado && (
-          <div className="menu-content">
-            <p>Historial de compras</p>
-          </div>
-        )}
-      </div>
-
-      {/* CUPONES */}
-      <div className="menu-section">
-        <button
-          className={`menu-title ${abierto === "cupones" ? "active" : ""}`}
-          onClick={() => toggleSeccion("cupones")}
-        >
-          <TicketPercent className="menu-icon" />
-          Cupones
-        </button>
-        {abierto === "cupones" && (
-          <div className="menu-content">
-            {autenticado ? (
-              <p>Acumula compras para recibir cupones</p>
+          <div className="menu-content compras-scroll">
+            {cargandoCompras ? (
+              <p>Cargando compras...</p>
+            ) : compras.length === 0 ? (
+              <p>No tienes compras registradas</p>
             ) : (
-              <p>
-                Regístrate con dirección y cédula e ingresa el cupón{" "}
-                <strong>NUEVO540</strong> al realizar el pago y obtén un
-                descuento del 10% en tu primera compra superior a $50.000.
-              </p>
-            )}
-          </div>
-        )}
-      </div>
+              compras.map((factura) => (
+                <div key={factura._id} className="compra-card">
+                  <div className="compra-linea">
+                    <span
+                      className={obtenerClaseEstado(
+                        obtenerEstadoFactura(factura.pago),
+                      )}
+                    >
+                      {obtenerEstadoFactura(factura.pago)}
+                    </span>
+                  </div>
+                  <div className="compra-linea">
+                    <strong>Factura:</strong> {factura.factura}
+                  </div>
 
-      {/* PROMOCIONES */}
-      <div className="menu-section">
-        <button
-          className={`menu-title ${abierto === "promociones" ? "active" : ""}`}
-          onClick={() => toggleSeccion("promociones")}
-        >
-          <Tag className="menu-icon" />
-          Promociones
-        </button>
-        {abierto === "promociones" && (
-          <div className="menu-content">
-            {autenticado ? (
-              <p>
-                Revisa nuestros productos con <strong>10%, 20% y 30%</strong> de
-                descuento solo por este mes.
-              </p>
-            ) : (
-              <p>Regístrate y accede a los descuentos de este mes.</p>
+                  <div className="compra-linea">
+                    <strong>Fecha:</strong>{" "}
+                    {new Date(factura.fecha).toLocaleDateString()}
+                  </div>
+
+                  <div className="compra-linea">
+                    <strong>Valor:</strong> $
+                    {calcularTotalFactura(factura).toLocaleString()}
+                  </div>
+                </div>
+              ))
             )}
           </div>
         )}
@@ -454,7 +535,7 @@ export default function MenuLateral({
                 // ⚠️ No tiene favoritos → mostrar alerta
                 window.dispararAlerta(
                   "Favoritos vacíos",
-                  "No tienes productos en favoritos."
+                  "No tienes productos en favoritos.",
                 );
                 return;
               }
@@ -488,6 +569,66 @@ export default function MenuLateral({
         {abierto === "favoritos" && autenticado && (
           <div className="menu-content">
             <p>Mis Favoritos</p>
+          </div>
+        )}
+      </div>
+
+      {/* CUPONES */}
+      <div className="menu-section">
+        <button
+          className={`menu-title ${abierto === "cupones" ? "active" : ""}`}
+          onClick={() => toggleSeccion("cupones")}
+        >
+          <TicketPercent className="menu-icon" />
+          Cupones y Promociones
+        </button>
+        {abierto === "cupones" && (
+          <div className="menu-content">
+            {autenticado ? (
+              Array.isArray(usuario?.cupon) && usuario.cupon.length > 0 ? (
+                <p>
+                  <strong>Cupones disponibles:</strong>{" "}
+                  {usuario.cupon.join(", ")}
+                </p>
+              ) : (
+                <p>Acumula compras para recibir cupones</p>
+              )
+            ) : (
+              <p>
+                Regístrate con dirección y cédula e ingresa el cupón{" "}
+                <strong>CUPON33</strong> al realizar el pago y obtén un
+                descuento del 10% en tu primera compra superior a $50.000.
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* UBICACION*/}
+      <div className="menu-section">
+        <button
+          className={`menu-title ${abierto === "promociones" ? "active" : ""}`}
+          onClick={() => toggleSeccion("promociones")}
+        >
+          <MapPin className="menu-icon" />
+          Local comercial
+        </button>
+        {abierto === "promociones" && (
+          <div className="menu-content">
+            <h3 className="menu-local-titulo"> Visítanos </h3>{" "}
+            <p className="menu-local-subtitulo">
+              {" "}
+              Cl. 20 #5-192, Barrio Llano, Santa Fé de Antioquia, Antioquia{" "}
+            </p>{" "}
+            <a
+              href="https://www.google.com/maps/place/6%C2%B033'53.2%22N+75%C2%B049'15.9%22W/@6.564787,-75.8198055,551m/data=!3m1!1e3!4m4!3m3!8m2!3d6.564787!4d-75.821093?entry=ttu&g_ep=EgoyMDI2MDIwNC4wIKXMDSoASAFQAw%3D%3D"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="menu-local-link"
+            >
+              {" "}
+              Ver ubicación{" "}
+            </a>
           </div>
         )}
       </div>

@@ -15,7 +15,8 @@ const prodSchema = new mongoose.Schema({
   urlFoto3: { type: String },
   version: { type: String },
   reversado: { type: Number, default: 0 },
-  calificacion: { type: [Number], default: [] }
+  calificacion: { type: [Number], default: [] },
+  meta: { type: mongoose.Schema.Types.Mixed, default: {} }
 });
 
   export default mongoose.model("Prod", prodSchema, "prod");

@@ -12,8 +12,14 @@
   box-sizing: border-box;
 }
 body {
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial;
   margin: 0;
   color: var(--text);
   background: var(--bg);
@@ -335,7 +341,9 @@ body.show-left-sidebar .left-sidebar {
   color: white;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .buy-btn {
@@ -395,7 +403,9 @@ body.show-left-sidebar .left-sidebar {
   opacity: 0.55;
   filter: grayscale(0.45);
   cursor: pointer; /* sigue siendo clicable */
-  transition: opacity 0.15s ease, transform 0.12s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.12s ease;
 }
 .btn-grayed:hover {
   transform: translateY(-2px);
@@ -416,7 +426,9 @@ body.show-left-sidebar .left-sidebar {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
   opacity: 0;
   transform: translateY(8px);
-  transition: opacity 0.22s ease, transform 0.22s ease;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
 }
 .app-toast.show {
   opacity: 1;
@@ -593,4 +605,19 @@ body.show-left-sidebar .left-sidebar {
 
 .copy-link-container svg {
   color: var(--orange);
+}
+/* ===== Botón deshabilitado por stock 0 ===== */
+.buy-btn.disabled {
+  background: #ccc !important;
+  color: #666 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+  transform: none !important;
+  pointer-events: none; /* evita clicks */
+}
+
+/* Quita efectos hover cuando está deshabilitado */
+.buy-btn.disabled:hover {
+  transform: none;
+  opacity: 0.7;
 }

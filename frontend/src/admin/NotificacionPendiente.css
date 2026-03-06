@@ -1,0 +1,152 @@
+/* ===========================
+   OVERLAY Y MODAL
+=========================== */
+.pp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+}
+
+.pp-modal {
+  background: #1e293b;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+  border-radius: 14px;
+  position: relative;
+}
+
+/* ===========================
+   CABECERA
+=========================== */
+.pp-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #f8fafc;
+  cursor: pointer;
+}
+
+/* ===========================
+   CARD
+=========================== */
+.pp-card {
+  background: #0f172a;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: inset 0 0 0 1px #334155;
+}
+
+/* ===========================
+   FILA HORIZONTAL
+=========================== */
+.pp-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+/* ===========================
+   IMAGEN (IZQUIERDA)
+=========================== */
+.pp-img {
+  width: 180px;
+  max-height: 150px;
+  object-fit: contain;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+/* ===========================
+   CONTENIDO (DERECHA)
+=========================== */
+.pp-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* ===========================
+   TEXTO
+=========================== */
+.pp-card-title {
+  color: #facc15;
+  margin: 0 0 8px 0;
+  font-size: 1.05rem;
+}
+
+.pp-info p {
+  margin: 3px 0;
+  font-size: 0.9rem;
+}
+
+.pp-productos {
+  margin-top: 6px;
+  font-size: 0.9rem;
+}
+
+.pp-productos ul {
+  padding-left: 18px;
+  margin: 4px 0;
+}
+
+/* ===========================
+   BOTÓN
+=========================== */
+.pp-aprobar {
+  margin-top: auto; /* empuja el botón abajo */
+  width: 100%;
+  background: #059669;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.pp-aprobar:hover {
+  background: #047857;
+}
+
+/* ===========================
+   VACÍO
+=========================== */
+.pp-vacio {
+  text-align: center;
+  opacity: 0.7;
+}
+/* ===========================
+   CONTENEDOR DE BOTONES
+=========================== */
+.pp-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.pp-actions .pp-aprobar {
+  flex: 1;
+  width: auto; /* sobrescribe el 100% */
+}
+/* ===========================
+   BOTÓN CERRAR VENTA
+=========================== */
+.pp-aprobar.cerrar {
+  background: #334155;
+}
+
+.pp-aprobar.cerrar:hover {
+  background: #1e293b;
+}

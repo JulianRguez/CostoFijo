@@ -29,6 +29,7 @@ export default function Detalle({
 
   // 🔒 imagen por defecto desde .env
   const IMG_DEF = import.meta.env.VITE_IMG_DEF;
+  const modalRef = useRef(null);
 
   // --------------------------------------------
   // Parseo de versiones tipo “blanca-2-negra-1”
@@ -88,7 +89,12 @@ export default function Detalle({
     // Versiones
     const parsed = parseVersiones(producto.version);
     setVersionesParsed(parsed);
-    setVersionSel(parsed.length ? parsed[0].nombre : "");
+
+    // 👉 Buscar la primera con stock
+    const primeraDisponible = parsed.find((v) => v.stock > 0);
+
+    // 👉 Setear solo si existe
+    setVersionSel(primeraDisponible ? primeraDisponible.nombre : "");
 
     // Recomendados
     if (initializedFor.current === producto._id && similares.length) return;
@@ -102,7 +108,7 @@ export default function Detalle({
       simil = todos.filter(
         (p) =>
           p._id !== producto._id &&
-          (p.nombre || "").toUpperCase().includes(base)
+          (p.nombre || "").toUpperCase().includes(base),
       );
     }
 
@@ -113,7 +119,7 @@ export default function Detalle({
           (p) =>
             p._id !== producto._id &&
             p.etiqueta === producto.etiqueta &&
-            !simil.some((s) => s._id === p._id)
+            !simil.some((s) => s._id === p._id),
         )
         .slice(0, faltan);
 
@@ -157,6 +163,8 @@ export default function Detalle({
     ? Math.round((cal.reduce((a, b) => a + b, 0) / cal.length) * 10) / 10
     : 0;
 
+  const metaFormateada = formatearMeta(producto.meta);
+
   const stripCodigo = (name = "") =>
     name.replace(/\s*([A-Za-z]{3})(\d{2})?$/i, "").trim();
 
@@ -170,13 +178,54 @@ export default function Detalle({
   }
 
   // --------------------------------------------
+  // Formatear META
+  // --------------------------------------------
+  function formatearMeta(meta) {
+    if (!meta) return [];
+
+    let obj = meta;
+
+    // Si viene como string JSON lo convertimos
+    if (typeof meta === "string") {
+      try {
+        obj = JSON.parse(meta);
+      } catch {
+        return [];
+      }
+    }
+
+    if (typeof obj !== "object") return [];
+
+    return Object.entries(obj).map(([key, value]) => {
+      // Reemplazar _ por espacio en clave
+      let clave = key.replace(/_/g, " ");
+
+      // Separar mayúsculas internas en clave
+      clave = clave.replace(/([a-z0-9])([A-Z])/g, "$1 $2");
+
+      // Formatear valor
+      let val = value;
+
+      if (typeof val === "boolean") {
+        val = val ? "SI" : "NO";
+      } else {
+        val = String(val);
+
+        // Separar mayúsculas internas en valor
+        val = val.replace(/([a-z0-9])([A-Z])/g, "$1 $2");
+      }
+
+      return `${clave}: ${val}`;
+    });
+  }
+  // --------------------------------------------
   // AGREGAR AL CARRITO — AHORA CON ALERTA GLOBAL
   // --------------------------------------------
   const handleAddFromDetalle = async () => {
     if (!autenticado) {
       mostrarAlertaInicio(
         "Inicia sesión para continuar",
-        "Para agregar productos al carrito, inicia sesión."
+        "Para agregar productos al carrito, inicia sesión.",
       );
       return;
     }
@@ -184,7 +233,7 @@ export default function Detalle({
     if (stockDisponible <= 0) {
       mostrarAlertaInicio(
         "Sin unidades",
-        "No hay unidades disponibles de esta versión."
+        "No hay unidades disponibles de esta versión.",
       );
       return;
     }
@@ -197,7 +246,7 @@ export default function Detalle({
 
     const existente = carritoActual.find(
       (item) =>
-        item.productoId === producto._id && item.version === versionCompleta
+        item.productoId === producto._id && item.version === versionCompleta,
     );
 
     let nuevoCarrito;
@@ -206,13 +255,13 @@ export default function Detalle({
       if (existente.cantidad + 1 > stockDisponible) {
         mostrarAlertaInicio(
           "Stock máximo",
-          "No puedes agregar más unidades de esta versión."
+          "No puedes agregar más unidades de esta versión.",
         );
         return;
       }
 
       nuevoCarrito = carritoActual.map((x) =>
-        x === existente ? { ...x, cantidad: x.cantidad + 1 } : x
+        x === existente ? { ...x, cantidad: x.cantidad + 1 } : x,
       );
     } else {
       nuevoCarrito = [
@@ -234,13 +283,13 @@ export default function Detalle({
 
       mostrarAlertaInicio(
         "Producto agregado",
-        "El producto fue agregado al carrito correctamente."
+        "El producto fue agregado al carrito correctamente.",
       );
     } catch (err) {
       console.error(err);
       mostrarAlertaInicio(
         "Error",
-        "Ocurrió un error al agregar el producto al carrito."
+        "Ocurrió un error al agregar el producto al carrito.",
       );
     }
   };
@@ -250,7 +299,11 @@ export default function Detalle({
   // --------------------------------------------
   return (
     <div className="detalle-overlay" onClick={onClose}>
-      <div className="detalle-modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="detalle-modal"
+        ref={modalRef}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button className="detalle-close" onClick={onClose}>
           <X />
         </button>
@@ -313,7 +366,15 @@ export default function Detalle({
 
             <p>Stock disponible: {stockDisponible}</p>
             <p>Calificación promedio: {prom} / 5</p>
-
+            <div className="meta-desktop">
+              {metaFormateada.length > 0 && (
+                <div className="detalle-meta-box">
+                  {metaFormateada.map((linea, i) => (
+                    <p key={i}>{linea}</p>
+                  ))}
+                </div>
+              )}
+            </div>
             <label>Versión:</label>
             {versionesParsed.length ? (
               <select
@@ -321,7 +382,11 @@ export default function Detalle({
                 onChange={(e) => setVersionSel(e.target.value)}
               >
                 {versionesParsed.map((v) => (
-                  <option key={v.nombre} value={v.nombre}>
+                  <option
+                    key={v.nombre}
+                    value={v.nombre}
+                    disabled={v.stock === 0}
+                  >
                     {v.nombre} ({v.stock})
                   </option>
                 ))}
@@ -336,15 +401,21 @@ export default function Detalle({
               <button onClick={onClose}>Cerrar</button>
 
               <button
-                className={`btn-naranja ${!autenticado ? "btn-grayed" : ""}`}
+                className={`btn-naranja ${
+                  !autenticado || stockDisponible === 0 ? "btn-grayed" : ""
+                }`}
                 onClick={handleAddFromDetalle}
+                disabled={stockDisponible === 0}
+                id={`${stockDisponible === 0 ? "btn-disabled" : ""}`}
               >
                 Agregar <ShoppingCart size={16} />
                 X1
               </button>
 
               <button
-                className="btn-gris"
+                className={`btn-gris ${stockDisponible === 0 ? "btn-grayed" : ""}`}
+                disabled={stockDisponible === 0}
+                id={`${stockDisponible === 0 ? "btn-disabled" : ""}`}
                 onClick={() => {
                   // 1️⃣ Copia del producto original
                   let productoDirecto = { ...producto };
@@ -356,15 +427,9 @@ export default function Detalle({
                       versionesParsed[0];
 
                     if (v) {
-                      // Formato correcto: "verde-3"
                       productoDirecto.version = `${v.nombre}-${v.stock}`;
                     }
                   }
-
-                  console.log(
-                    "Producto enviado a compra rápida desde Detalle:",
-                    productoDirecto
-                  );
 
                   // 3️⃣ Abrir carro con el producto ya corregido
                   setProducto(productoDirecto);
@@ -383,12 +448,21 @@ export default function Detalle({
                   navigator.clipboard.writeText(url);
                   mostrarAlertaInicio(
                     "Copiado",
-                    "Enlace del producto copiado."
+                    "Enlace del producto copiado.",
                   );
                 }}
               >
                 Copiar Link del producto
               </button>
+            </div>
+            <div className="meta-mobile">
+              {metaFormateada.length > 0 && (
+                <div className="detalle-meta-box">
+                  {metaFormateada.map((linea, i) => (
+                    <p key={i}>{linea}</p>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -411,7 +485,16 @@ export default function Detalle({
                   <div
                     key={p._id}
                     className="reco-card"
-                    onClick={() => abrirDetalleDesdeRecomendado(p._id)}
+                    onClick={() => {
+                      if (modalRef.current) {
+                        modalRef.current.scrollTo({
+                          top: 0,
+                          behavior: "smooth",
+                        });
+                      }
+
+                      abrirDetalleDesdeRecomendado(p._id);
+                    }}
                   >
                     <img
                       src={p.urlFoto1}

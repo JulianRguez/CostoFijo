@@ -28,6 +28,8 @@ export default function Cliente({
     clave: "",
   });
   const [docBloqueado, setDocBloqueado] = useState(false);
+  const [existeClave, setExisteClave] = useState(false);
+  const [claveEditada, setClaveEditada] = useState(false);
 
   // Cargar datos del cliente por ID
   useEffect(() => {
@@ -59,8 +61,11 @@ export default function Cliente({
               : data.dire || "",
           tel: data.tel || "",
           mail: data.mail || "",
-          clave: "",
+          clave: data.clave ? "0000" : "",
         });
+        setExisteClave(!!data.clave);
+        setClaveEditada(false);
+
         setDocBloqueado(!!data.doc);
       } catch (e) {
         console.error(e);
@@ -73,7 +78,13 @@ export default function Cliente({
   }, [clienteId, modo, infoPedido]);
 
   useEffect(() => {
-    setGuardarDatos(!!clienteId); // ✔️ si hay clienteId inicia chuleado
+    if (!clienteId) {
+      // ❌ No autenticado → siempre guardar
+      setGuardarDatos(true);
+    } else {
+      // ✅ Autenticado → inicia chuleado pero editable
+      setGuardarDatos(true);
+    }
   }, [clienteId]);
 
   const textoCheckbox = clienteId
@@ -110,15 +121,36 @@ export default function Cliente({
   };
   const generarFactura = () => {
     const now = new Date();
-    const ss = String(now.getSeconds()).padStart(2, "0");
-    const ml = String(now.getMilliseconds()).padStart(2, "0");
-    const rnd = String(Math.floor(Math.random() * 1000)).padStart(3, "0");
+    const ss = String(now.getSeconds()).padStart(2, "0"); // 2
+    const ml = String(now.getMilliseconds()).padStart(3, "0"); //3
+    const rnd = String(Math.floor(Math.random() * 1000)).padStart(3, "0"); // 3
 
-    return `FRA-${ss}${ml}${rnd}`;
+    return `${ss}${ml}${rnd}`; // 2 + 3 + 3 = 8
   };
 
   // inicio de actualizar -----------------------------------------------------------------
   const actualizar = async () => {
+    // ------------------------------------------------
+    // VALIDACIÓN GLOBAL DE CLAVE
+    // ------------------------------------------------
+
+    // Caso 1: Cliente NO tiene clave
+    if (!existeClave) {
+      if (!form.clave) return setErrorMsg("Debe crear una clave de 4 dígitos");
+
+      if (form.clave.length !== 4 || isNaN(form.clave))
+        return setErrorMsg("La clave debe ser de 4 dígitos numéricos");
+    }
+
+    // Caso 2: Cliente SÍ tiene clave
+    if (existeClave) {
+      // Solo validar si la está cambiando
+      if (claveEditada) {
+        if (form.clave.length !== 4 || isNaN(form.clave))
+          return setErrorMsg("La clave debe ser de 4 dígitos numéricos");
+      }
+    }
+
     setErrorMsg("");
     const { doc, nombre, dire, tel, mail, clave } = form;
     setTnombre(nombre);
@@ -150,26 +182,9 @@ export default function Cliente({
     // Usar unfo para la compra
 
     if (modo === "venta" && infoPedido) {
-      const texto = `
-          Documento: ${doc}
-          Nombre: ${nombre}
-          dirección: ${infoPedido.direccion}
-          Teléfono: ${tel}
-          Correo: ${mail}
-          Clave: ${clave} 
-          productos: ${infoPedido.productos[0].version}
-          subtotal: ${infoPedido.subtotal}
-          medio pago: ${infoPedido.pago}
-          costoTrans: ${infoPedido.costoTrans}
-          cupon: ${infoPedido.cupon}
-          descuento: ${infoPedido.descuento}
-          envio: ${infoPedido.envio}
-          total a pagar: ${infoPedido.total}          
-          `;
-      console.log(texto);
-
       const productosPayload = infoPedido.productos.map((p) => ({
         idProd: p._id,
+        nomProd: p.nombre,
         cantidad: p.cantidad || 1,
         valor: p.valorVenta,
         etiqueta: p.etiqueta,
@@ -188,12 +203,12 @@ export default function Cliente({
       };
       setNota(payloadVenta.factura);
 
-      /*try {
+      try {
         await axios.post("/api/vent", payloadVenta);
       } catch (err) {
         console.error("Error creando la venta:", err);
         return setErrorMsg("No se pudo registrar la venta");
-      }*/
+      }
 
       setMostrarZeus(true); // ✅ ABRE ZEUSBOT
     }
@@ -201,7 +216,6 @@ export default function Cliente({
     //SI EL CLINTE NO ESTA AUTENTICADO NO SE ACTUALIZA LA INFO EN LA API
     // 👉 SOLO si el checkbox está marcado
     if (!guardarDatos) return;
-    console.log("Guardo");
     try {
       // 🟢 ACTUALIZAR
       if (clienteId) {
@@ -213,14 +227,14 @@ export default function Cliente({
             dire,
             tel,
             mail,
-            ...(clave ? { clave } : {}),
+            ...(claveEditada ? { clave } : {}),
           },
         ];
 
         await axios.put("/api/clie", payload);
 
         const { data: actualizado } = await axios.get(
-          `/api/clie/id/${clienteId}`
+          `/api/clie/id/${clienteId}`,
         );
 
         setUsuario(actualizado);
@@ -236,6 +250,7 @@ export default function Cliente({
             dire,
             tel,
             mail,
+            clave,
           },
         ];
 
@@ -319,10 +334,12 @@ export default function Cliente({
               type="password"
               maxLength={4}
               value={form.clave}
-              placeholder="****" // 👈 SOLO VISUAL
               onChange={(e) => {
                 const val = e.target.value.replace(/[^0-9]/g, "");
                 setForm({ ...form, clave: val });
+                if (val !== "0000") {
+                  setClaveEditada(true);
+                }
               }}
             />
           </div>
@@ -330,9 +347,10 @@ export default function Cliente({
             <input
               type="checkbox"
               checked={guardarDatos}
-              disabled={modo === "inicio"}
+              disabled={!clienteId} // 👈 clave
               onChange={(e) => setGuardarDatos(e.target.checked)}
             />
+
             <label>{textoCheckbox}</label>
           </div>
         </div>

@@ -6,6 +6,7 @@ import MenuLateral from "./Menu";
 import Detalle from "./Detalle";
 import CarroCompra from "./CarroCompra";
 import Cliente from "./Cliente";
+import ZeusBot from "./ZeusBot";
 import {
   Menu,
   ArrowLeft,
@@ -17,6 +18,7 @@ import {
   User,
   Star,
   Copy,
+  Bot,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import Alerta from "./Alerta";
@@ -62,6 +64,7 @@ export default function Inicio() {
   const [mostrarCarro, setMostrarCarro] = useState(false);
   const [productoCompraDirecta, setProductoCompraDirecta] = useState(null);
   const [versionesSeleccionadas, setVersionesSeleccionadas] = useState({});
+  const [mostrarZeus, setMostrarZeus] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
   const [alertaInicio, setAlertaInicio] = useState({
@@ -130,13 +133,13 @@ export default function Inicio() {
 
         const exclude = new Set(["Servicios papeleria", "Servicios técnicos"]);
         const productosValidos = (Array.isArray(data) ? data : []).filter(
-          (p) => !exclude.has(p.etiqueta)
+          (p) => !exclude.has(p.etiqueta),
         );
 
         setData(productosValidos);
 
         const etiquetas = Array.from(
-          new Set(productosValidos.map((p) => p.etiqueta).filter(Boolean))
+          new Set(productosValidos.map((p) => p.etiqueta).filter(Boolean)),
         );
 
         setTags(["Todos", ...etiquetas]);
@@ -169,7 +172,7 @@ export default function Inicio() {
     if (!autenticado || !usuario || !usuario._id) {
       mostrarAlertaInicio(
         "Inicia sesión",
-        "Necesitas iniciar sesión para continuar."
+        "Necesitas iniciar sesión para continuar.",
       );
       return;
     }
@@ -209,7 +212,7 @@ export default function Inicio() {
     if (maxStock <= 0) {
       mostrarAlertaInicio(
         "Cantidad Máxima",
-        "Ya agregó el maximo de unidades disponibles."
+        "Ya agregó el maximo de unidades disponibles.",
       );
       return;
     }
@@ -221,7 +224,7 @@ export default function Inicio() {
       (item) =>
         item.productoId === p._id &&
         item.version ===
-          (versionesParsed.length ? `${versionSel}-${maxStock}` : "")
+          (versionesParsed.length ? `${versionSel}-${maxStock}` : ""),
     );
 
     let nuevoCarrito;
@@ -231,13 +234,13 @@ export default function Inicio() {
       if (existente.cantidad + 1 > maxStock) {
         mostrarAlertaInicio(
           "Cantidad Máxima",
-          "Ya agregó el maximo de unidades disponibles."
+          "Ya agregó el maximo de unidades disponibles.",
         );
         return;
       }
 
       nuevoCarrito = carritoActual.map((x) =>
-        x === existente ? { ...x, cantidad: x.cantidad + 1 } : x
+        x === existente ? { ...x, cantidad: x.cantidad + 1 } : x,
       );
     } else {
       // agregar nuevo ítem
@@ -282,7 +285,7 @@ export default function Inicio() {
       setUsuario((u) => ({ ...u, carrito: nuevoCarrito }));
       mostrarAlertaInicio(
         "Proceso exitoso",
-        "Un Producto agregado al carrito."
+        "Un Producto agregado al carrito.",
       );
     } catch (err) {
       console.error("Error agregando al carrito:", err);
@@ -311,7 +314,7 @@ export default function Inicio() {
     if (!autenticado || !usuario || !usuario._id) {
       mostrarAlertaInicio(
         "Inicia sesión",
-        "Necesitas iniciar sesión para continuar."
+        "Necesitas iniciar sesión para continuar.",
       );
       return;
     }
@@ -342,7 +345,7 @@ export default function Inicio() {
   const totalTagPages = Math.ceil(Math.max(tags.length - 0, 0) / tagWindowSize);
   const visibleTags = tags.slice(
     tagPageIndex * tagWindowSize,
-    tagPageIndex * tagWindowSize + tagWindowSize
+    tagPageIndex * tagWindowSize + tagWindowSize,
   );
   const prevTagPage = () => setTagPageIndex((i) => Math.max(0, i - 1));
   const nextTagPage = () =>
@@ -423,7 +426,7 @@ export default function Inicio() {
       await navigator.clipboard.writeText(url);
       mostrarAlertaInicio(
         "Link copiado",
-        "El enlace del producto fue copiado."
+        "El enlace del producto fue copiado.",
       );
     } catch (e) {
       console.error("Error copiando link", e);
@@ -518,7 +521,9 @@ export default function Inicio() {
               : p.valorVenta;
 
             const grayedClass = !autenticado ? "btn-grayed" : "";
-
+            // 👉 STOCK GLOBAL DEL PRODUCTO
+            const stockGlobal = p.stock ?? p.cantidad ?? 0;
+            const sinStock = stockGlobal <= 0;
             return (
               <article className="card" key={p._id}>
                 <div className="card-media">
@@ -540,7 +545,7 @@ export default function Inicio() {
                       if (!autenticado) {
                         mostrarAlertaInicio(
                           "Inicia sesión",
-                          "Necesitas iniciar sesión para continuar."
+                          "Necesitas iniciar sesión para continuar.",
                         );
                         return;
                       }
@@ -597,9 +602,12 @@ export default function Inicio() {
                           const cantidad = parseInt(partes[i + 1], 10) || 0;
                           versiones.push({ nombre, cantidad });
                         }
+                        const primeraDisponible =
+                          versiones.find((v) => v.cantidad > 0)?.nombre || "";
 
+                        // 👉 Usar selección guardada o la primera disponible
                         const seleccionada =
-                          versionesSeleccionadas[p._id] || versiones[0]?.nombre;
+                          versionesSeleccionadas[p._id] || primeraDisponible;
 
                         return (
                           <select
@@ -613,7 +621,11 @@ export default function Inicio() {
                             }
                           >
                             {versiones.map((v) => (
-                              <option key={v.nombre} value={v.nombre}>
+                              <option
+                                key={v.nombre}
+                                value={v.nombre}
+                                disabled={v.cantidad === 0}
+                              >
                                 {v.nombre} ({v.cantidad})
                               </option>
                             ))}
@@ -636,7 +648,8 @@ export default function Inicio() {
 
                   <div className="card-buttons">
                     <button
-                      className={`buy-btn ${hasDiscount ? "discount" : ""}`}
+                      className={`buy-btn ${hasDiscount ? "discount" : ""} ${sinStock ? "disabled" : ""}`}
+                      disabled={sinStock}
                       onClick={() => {
                         // Copia local del producto (NO mutamos p directamente)
                         let producto = { ...p };
@@ -672,11 +685,12 @@ export default function Inicio() {
                     </button>
 
                     <button
-                      className={`buy-btn ${grayedClass}`}
+                      className={`buy-btn ${sinStock ? "disabled" : ""}`}
+                      disabled={sinStock}
                       onClick={() =>
                         handleAddToCartFromCard(
                           p,
-                          versionesSeleccionadas[p._id]
+                          versionesSeleccionadas[p._id],
                         )
                       }
                     >
@@ -716,7 +730,7 @@ export default function Inicio() {
             {autenticado && usuario?.carrito?.length
               ? usuario.carrito.reduce(
                   (acc, item) => acc + (item.cantidad || 0),
-                  0
+                  0,
                 )
               : 0}
           </span>
@@ -729,6 +743,17 @@ export default function Inicio() {
           style={{ cursor: "pointer" }}
         >
           <Home />
+        </button>
+
+        {/* CHAT */}
+        <button
+          className="bottom-btn"
+          onClick={() => {
+            setMostrarZeus(true);
+          }}
+          style={{ cursor: "pointer" }}
+        >
+          <Bot />
         </button>
 
         {/* USUARIO */}
@@ -765,6 +790,7 @@ export default function Inicio() {
       {/* Sidebar desktop */}
       <aside className="left-sidebar">
         <MenuLateral
+          isOpen={menuAbierto}
           autenticado={autenticado}
           setAutenticado={setAutenticado}
           usuario={usuario}
@@ -816,6 +842,7 @@ export default function Inicio() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <MenuLateral
               isMobile={true}
+              isOpen={showMenuModal}
               autenticado={autenticado}
               setAutenticado={setAutenticado}
               usuario={usuario}
@@ -902,6 +929,17 @@ export default function Inicio() {
         texto={alertaInicio.texto}
         onClose={onClickCerrarInicio}
       />
+      {mostrarZeus && (
+        <ZeusBot
+          inicio="menu"
+          userName={usuario?.nombre || usuario?.tel || "Comprador"}
+          nota={"nota"}
+          onClose={() => {
+            setMostrarZeus(false); // cierra Zeus
+            //onClose(); // cierra Cliente
+          }}
+        />
+      )}
     </div>
   );
 }

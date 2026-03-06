@@ -9,6 +9,34 @@ import Columna3 from "./Columna3";
 import Columna4 from "./Columna4";
 
 const URLIMGASTO = import.meta.env.VITE_IMGGASTO;
+// =========================
+//   SUBIR IMAGEN CLOUDINARY
+// =========================
+const subirImagenCloudinary = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "Img_prod");
+
+  // ⚠ Si NO quieres carpeta, elimina la línea folder
+  // Si es obligatorio, usa "IMG"
+  formData.append("folder", "IMG");
+
+  const resp = await fetch(
+    "https://api.cloudinary.com/v1_1/ddjdox6b0/image/upload",
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
+
+  if (!resp.ok) {
+    const errorText = await resp.text();
+    throw new Error("Error Cloudinary: " + errorText);
+  }
+
+  const data = await resp.json();
+  return data.secure_url;
+};
 
 export default function RegistrarCompra({ onCompraRegistrada }) {
   const [form1, setForm1] = useState({
@@ -107,9 +135,23 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
 
   const isCampoDeshabilitado = (campo) => {
     const coincide = productosBD.some((prod) => prod.ref === form1.ref);
-    return (
-      coincide && campo !== "stock" && campo !== "ref" && campo !== "version"
-    );
+
+    if (!coincide) return false;
+
+    // Permitir modificar estos campos aunque exista
+    if (
+      campo === "stock" ||
+      campo === "ref" ||
+      campo === "version" ||
+      campo === "valor" ||
+      campo === "descripcion" ||
+      campo === "valorVenta" ||
+      campo === "minStock"
+    ) {
+      return false;
+    }
+
+    return true;
   };
 
   // =========================
@@ -173,7 +215,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       }
 
       const yaExisteEnLista = productosAgregados.some(
-        (prod) => prod.ref.toLowerCase() === (form1.ref || "").toLowerCase()
+        (prod) => prod.ref.toLowerCase() === (form1.ref || "").toLowerCase(),
       );
       if (yaExisteEnLista) {
         setForm1((prev) => ({ ...prev, ref: "" }));
@@ -216,7 +258,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
         }
       }
 
-      const stockValidoOExcepcion = permitirSoloVersion || stockIngresado > 0;
+      const stockValidoOExcepcion = permitirSoloVersion || stockIngresado >= 0;
       const otrosNumerosValidos =
         parseInt(form1.valor || 0, 10) > 10 &&
         parseInt(form1.valorVenta || 0, 10) > 10 &&
@@ -365,6 +407,11 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
             _id: existente._id,
             stock: nuevoStock,
             version: prod.version,
+            precio: parseInt(prod.valor || 0, 10) || 0,
+            valorVenta: parseInt(prod.valorVenta || 0, 10) || 0,
+            minStock: parseInt(prod.minStock || 0, 10) || 0,
+            descripcion: prod.descripcion,
+            urlFoto1: prod.img1,
           });
         } else {
           productosCrear.push({
@@ -452,7 +499,29 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
 
   return (
     <div className="carrito-compra">
-      <h2 className="titulo-compra">Seleccionados</h2>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <h2 className="titulo-compra">Seleccionados</h2>
+
+        {mensajeValidacion.texto && (
+          <div
+            style={{
+              color: mensajeValidacion.tipo === "error" ? "#ef4444" : "#22c55e",
+              fontSize: "1rem",
+              fontWeight: "bold",
+              textAlign: "right",
+              paddingRight: "38px",
+            }}
+          >
+            {mensajeValidacion.texto}
+          </div>
+        )}
+      </div>
       <div
         className="grid-compras"
         style={{ gridTemplateColumns: "18% 18% 41% 18%" }}
@@ -468,6 +537,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
           isCampoDeshabilitado={isCampoDeshabilitado}
           setMensajeValidacion={setMensajeValidacion}
           esGastoExistente={esGastoExistente}
+          subirImagenCloudinary={subirImagenCloudinary}
         />
 
         <Columna2
@@ -554,7 +624,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
                       acc +
                       (parseInt(p.stock || 0, 10) || 0) *
                         (parseInt(p.valor || 0, 10) || 0),
-                    0
+                    0,
                   )
                   .toLocaleString()}
               </div>

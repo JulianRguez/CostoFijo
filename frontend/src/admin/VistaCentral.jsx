@@ -8,7 +8,7 @@ export default function VistaCentral() {
   const [filtrar, setFiltrar] = useState("");
   const [carrito, setCarrito] = useState([]);
   const [verAgotados, setVerAgotados] = useState(
-    localStorage.getItem("verAgotados") === "true"
+    localStorage.getItem("verAgotados") === "true",
   );
   const [mostrarModal, setMostrarModal] = useState(false);
   const [nombreCliente, setNombreCliente] = useState("000000");
@@ -48,7 +48,7 @@ export default function VistaCentral() {
     const hadVersions = !!(producto.version && producto.version.trim() !== "");
     const pairs = parsePairs(producto.version);
     const selectedName = hadVersions
-      ? selecciones[producto._id] ?? pairs.find((p) => p.qty > 0)?.name
+      ? (selecciones[producto._id] ?? pairs.find((p) => p.qty > 0)?.name)
       : null;
 
     if (hadVersions && !selectedName) return;
@@ -64,10 +64,10 @@ export default function VistaCentral() {
         prev.map((p) => {
           if (p._id !== producto._id) return p;
           const newPairs = pairs.map((pair) =>
-            pair.name === selectedName ? { ...pair, qty: pair.qty - 1 } : pair
+            pair.name === selectedName ? { ...pair, qty: pair.qty - 1 } : pair,
           );
           return { ...p, version: joinPairs(newPairs) };
-        })
+        }),
       );
     }
 
@@ -78,7 +78,7 @@ export default function VistaCentral() {
     const existe = carrito.find(
       (item) =>
         item._id === producto._id &&
-        (item.versionName || "Única versión") === versionName
+        (item.versionName || "Única versión") === versionName,
     );
 
     if (existe) {
@@ -87,8 +87,8 @@ export default function VistaCentral() {
           item._id === producto._id &&
           (item.versionName || "Única versión") === versionName
             ? { ...item, cantidad: item.cantidad + 1 }
-            : item
-        )
+            : item,
+        ),
       );
     } else {
       setCarrito([...carrito, { ...producto, cantidad: 1, versionName }]);
@@ -98,7 +98,7 @@ export default function VistaCentral() {
   // Quitar producto del carrito
   const quitarDelCarrito = (id, versionName) => {
     const item = carrito.find(
-      (i) => i._id === id && (i.versionName || "Única versión") === versionName
+      (i) => i._id === id && (i.versionName || "Única versión") === versionName,
     );
     if (!item) return;
 
@@ -110,25 +110,25 @@ export default function VistaCentral() {
           const newPairs = pairs.map((pair) =>
             pair.name === versionName
               ? { ...pair, qty: pair.qty + item.cantidad }
-              : pair
+              : pair,
           );
           return { ...p, version: joinPairs(newPairs) };
-        })
+        }),
       );
     }
 
     setCarrito(
       carrito.filter(
         (i) =>
-          !(i._id === id && (i.versionName || "Única versión") === versionName)
-      )
+          !(i._id === id && (i.versionName || "Única versión") === versionName),
+      ),
     );
   };
 
   // Total
   const total = carrito.reduce(
     (acc, item) => acc + (item.valorVenta ?? item.precio) * item.cantidad,
-    0
+    0,
   );
 
   // Filtrado de productos (mantengo tu pipeline) :contentReference[oaicite:5]{index=5}
@@ -205,6 +205,7 @@ export default function VistaCentral() {
 
           return {
             idProd: item._id,
+            nomProd: item.nombre,
             cantidad: item.cantidad,
             valor: item.valorVenta ?? item.precio,
             version: prodActual?.version || "",
@@ -227,7 +228,7 @@ export default function VistaCentral() {
             stock: (prod?.stock ?? 0) - cantVendida,
             version: prod?.version ?? "",
           };
-        }
+        },
       );
       if (payloadUpdate.length > 0) {
         await axios.put(`/api/prod`, payloadUpdate);
@@ -258,7 +259,7 @@ export default function VistaCentral() {
             const existentes = Array.isArray(cli.porpagar) ? cli.porpagar : [];
 
             const productosIds = [...new Set(carrito.map((i) => i._id))].join(
-              "-"
+              "-",
             );
             const hoyISO = new Date().toISOString().slice(0, 10);
 
@@ -414,7 +415,7 @@ export default function VistaCentral() {
                   onClick={() =>
                     quitarDelCarrito(
                       item._id,
-                      item.versionName || "Única versión"
+                      item.versionName || "Única versión",
                     )
                   }
                 >

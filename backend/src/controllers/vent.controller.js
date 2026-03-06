@@ -1,4 +1,34 @@
+import dotenv from "dotenv";
+dotenv.config();
 import Vent from "../models/vent.model.js";
+import cloudinary from "cloudinary";
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  
+});
+
+
+function obtenerPublicId(url) {
+  if (!url) return null;
+
+  const limpia = url.substring(1); // quita F / X / P
+  const partes = limpia.split("/upload/");
+  if (partes.length < 2) return null;
+
+  let publicId = partes[1].replace(/^v\d+\//, "");
+  publicId = publicId.replace(/\.[^/.]+$/, "");
+
+  return publicId;
+}
+
+async function eliminarImagenCloudinary(url) {
+  const publicId = obtenerPublicId(url);
+  if (!publicId) return;
+
+  await cloudinary.v2.uploader.destroy(publicId);
+}
 
 /**
  * GET /ventas
@@ -9,19 +39,21 @@ import Vent from "../models/vent.model.js";
  */
 export const getVentas = async (req, res) => {
   try {
-    const { idClient, page = 1, limit = 20 } = req.query;
+    const { idClient, factura, pago, page = 1, limit = 20 } = req.query;
 
-    const filtro = idClient ? { idClient } : {};
+    const filtro = {};
 
-    const ventas = await Vent.find(
-      filtro,
-      { productos: 0 } // no traer productos en listado
-    )
+    if (idClient) filtro.idClient = idClient;
+    if (factura) filtro.factura = factura;
+    if (pago) filtro.pago = pago; // 👈 ESTE ES EL CAMBIO CLAVE
+
+    const ventas = await Vent.find(filtro)
       .sort({ fecha: -1 })
-      .skip((Number(page) - 1) * Number(limit))
+      .skip((page - 1) * limit)
       .limit(Number(limit));
 
     res.json(ventas);
+
   } catch (error) {
     res.status(500).json({
       mensaje: "Error al obtener ventas",
@@ -29,6 +61,7 @@ export const getVentas = async (req, res) => {
     });
   }
 };
+
 
 /**
  * POST /ventas
@@ -147,7 +180,6 @@ export const updateVenta = async (req, res) => {
     });
   }
 };
-
 export const getResumenVentas = async (req, res) => {
   try {
     const mes = Number(req.query.mes);
@@ -163,9 +195,12 @@ export const getResumenVentas = async (req, res) => {
     const fin = new Date(anio, mes, 1);
 
     const ventas = await Vent.find(
-      { fecha: { $gte: inicio, $lt: fin } },
-      { productos: 1 }
-    );
+  {
+    fecha: { $gte: inicio, $lt: fin },
+    pago: { $in: ["efectivo", "aBanco"] }
+  },
+  { productos: 1 }
+);
 
     const resumen = {};
 
@@ -198,7 +233,6 @@ export const getResumenVentas = async (req, res) => {
     });
   }
 };
-
 export const getVentasDetalle = async (req, res) => {
   try {
     const ventas = await Vent.find(
@@ -216,6 +250,51 @@ export const getVentasDetalle = async (req, res) => {
       mensaje: "Error al obtener detalle de ventas",
       error: error.message
     });
+  }
+};
+export const getVentasPagoCloudinary = async (req, res) => {
+  try {
+    const ventas = await Vent.find({
+      pago: { $regex: /cloudinary\.com/ }
+    }).sort({ fecha: -1 });
+
+    res.json(ventas);
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error al obtener ventas con pago Cloudinary",
+      error: error.message
+    });
+  }
+};
+export const cerrarVenta = async (req, res) => {
+  try {
+    const venta = await Vent.findById(req.params.id);
+
+    if (!venta || !venta.pago) {
+      return res.status(404).json({ error: "Venta no encontrada" });
+    }
+
+    const estado = venta.pago[0]; // P, F, X
+    const { motivo } = req.body || {};
+
+    // 🗑 borrar imagen
+    await eliminarImagenCloudinary(venta.pago);
+
+    // 🔄 decidir estado final
+    if (motivo === "PAGO_RECHAZADO") {
+      venta.pago = "pendiente";
+    } else if (estado === "F") {
+      venta.pago = "aBanco";
+    } else if (estado === "X") {
+      venta.pago = "anulado";
+    }
+
+    await venta.save();
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("Error cerrando venta", error);
+    res.status(500).json({ error: "Error cerrando venta" });
   }
 };
 

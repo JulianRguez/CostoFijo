@@ -205,7 +205,8 @@ body {
   pointer-events: none; /* no permite clics */
   opacity: 0.5; /* se ve grisado */
 }
-.btn-inicio {
+.btn-inicio,
+.btn-inicio2 {
   background: transparent;
   border: none;
   color: white;
@@ -215,6 +216,10 @@ body {
   transition: transform 0.2s ease;
 }
 
-.btn-inicio:hover {
+.btn-inicio2:hover {
   transform: scale(1.2);
+}
+.btn-inicio2:hover svg {
+  transform: rotate(90deg);
+  transition: transform 0.2s ease;
 }

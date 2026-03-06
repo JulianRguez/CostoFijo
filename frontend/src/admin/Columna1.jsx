@@ -12,6 +12,7 @@ export default function Columna1({
   isCampoDeshabilitado,
   setMensajeValidacion,
   esGastoExistente,
+  subirImagenCloudinary,
 }) {
   return (
     <div className="columna">
@@ -54,10 +55,8 @@ export default function Columna1({
           <option value="Celulares y accesorios">Celulares y accesorios</option>
           <option value="Servicios papeleria">Servicios papeleria</option>
           <option value="Hogar">Hogar</option>
-          <option value="Tecnico">Tecnico</option>
           <option value="Vigilancia">Vigilancia</option>
           <option value="Redes y datos">Redes y datos</option>
-          <option value="Cargo Mensual">Cargo Mensual</option>
         </select>
       </label>
 
@@ -101,20 +100,49 @@ export default function Columna1({
           disabled={isCampoDeshabilitado("descripcion")}
         />
       </label>
+      {/* BOTÓN CARGAR IMAGEN */}
+      <label className="label-inline">
+        <span>Imagen</span>
 
-      {mensajeValidacion.texto && (
-        <div
-          style={{
-            color: mensajeValidacion.tipo === "error" ? "#ef4444" : "#22c55e",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            marginTop: "22px",
-            marginBottom: "6px",
-            width: "100%",
-            textAlign: "left",
+        <input
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          id="inputImagen"
+          onChange={async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+              const url = await subirImagenCloudinary(file);
+
+              // Guardar URL en img1
+              setForm2({ ...form2, img1: url });
+            } catch (err) {
+              console.error(err);
+              setMensajeValidacion({
+                texto: "Error subiendo imagen",
+                tipo: "error",
+              });
+            }
           }}
+        />
+
+        <button
+          type="button"
+          className="btn-agregar-compra"
+          onClick={() => document.getElementById("inputImagen").click()}
         >
-          {mensajeValidacion.texto}
+          Cargar
+        </button>
+      </label>
+
+      {/* Mostrar URL si existe */}
+      {form2.img1 && (
+        <div
+          style={{ fontSize: "0.7rem", textAlign: "left", color: "#22c55e" }}
+        >
+          Imagen cargada ✔
         </div>
       )}
     </div>

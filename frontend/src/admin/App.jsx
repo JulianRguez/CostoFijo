@@ -1,5 +1,6 @@
 //src/admin/App.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import VistaCentral from "./VistaCentral";
 import VistaCompras from "./VistaCompras";
 import HojaVida from "./HojaVida";
@@ -8,7 +9,9 @@ import VistaVentas from "./VistaVentas";
 import Stock from "./Stock";
 import Info from "./Info";
 import Clientes from "./Clientes";
-import { Home, Bell, User, UserX } from "lucide-react";
+import { Home, Bell, User, UserX, RefreshCw } from "lucide-react";
+import NotificacionPendiente from "./NotificacionPendiente";
+
 import "./App.css";
 
 export default function App() {
@@ -17,10 +20,30 @@ export default function App() {
   const [placeholder, setPlaceholder] = useState("Contraseña");
   const [vistaActiva, setVistaActiva] = useState(null);
   const [codigoPedido, setCodigoPedido] = useState("");
-
-  // 👇 nuevo estado para manejar datos de la hoja de vida
+  const [pagosPendientes, setPagosPendientes] = useState([]);
+  const [mostrarPagos, setMostrarPagos] = useState(false);
   const [datosHojaVida, setDatosHojaVida] = useState(null);
   const [mostrarPDF, setMostrarPDF] = useState(false);
+
+  const cargarPagosPendientes = async () => {
+    try {
+      const { data } = await axios.get("/api/vent/pagoEnImg");
+      setPagosPendientes(
+        (data || []).filter((v) => v.pago && v.pago[0] !== "Z"),
+      );
+    } catch (e) {
+      console.error("Error cargando pagos pendientes", e);
+    }
+  };
+
+  useEffect(() => {
+    if (!auth) {
+      setPagosPendientes([]); // 🔒 reset cuando no hay auth
+      return;
+    }
+
+    cargarPagosPendientes();
+  }, [auth]);
 
   const manejarAuth = () => {
     if (clave === "109021") {
@@ -40,6 +63,7 @@ export default function App() {
     setPlaceholder("Contraseña");
     setMostrarPDF(false);
     setDatosHojaVida(null);
+    setPagosPendientes([]);
   };
 
   const manejarClickMenu = (opcion) => {
@@ -167,10 +191,33 @@ export default function App() {
             >
               <Home size={22} strokeWidth={2} />
             </button>
-            <div className="notificacion">
-              <span className="contador">0</span>
+            <button
+              className="btn-inicio2"
+              onClick={cargarPagosPendientes}
+              disabled={!auth}
+              title="Actualizar notificaciones"
+            >
+              <RefreshCw size={22} strokeWidth={2} />
+            </button>
+
+            <div
+              className="notificacion"
+              onClick={() => {
+                if (!auth || pagosPendientes.length === 0) return;
+                setMostrarPagos(true);
+              }}
+              style={{
+                cursor:
+                  auth && pagosPendientes.length > 0 ? "pointer" : "default",
+                opacity: auth ? 1 : 0.5,
+              }}
+            >
+              <span className="contador">
+                {auth ? pagosPendientes.length : 0}
+              </span>
               <Bell size={22} strokeWidth={2} className="icono" />
             </div>
+
             <span className="estado-usuario">
               {auth ? (
                 <>
@@ -276,6 +323,12 @@ export default function App() {
             </div>
           )}
       </div>
+      {auth && mostrarPagos && (
+        <NotificacionPendiente
+          onClose={() => setMostrarPagos(false)}
+          onAprobado={cargarPagosPendientes}
+        />
+      )}
     </div>
   );
 }

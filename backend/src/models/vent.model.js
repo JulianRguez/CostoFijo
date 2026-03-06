@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const productoSchema = new mongoose.Schema(
   {
     idProd: { type: String, required: true },
+    nomProd: { type: String, default: "" },
     cantidad: { type: Number, required: true },
     valor: { type: Number, required: true },
     garantia: { type: Number, default: 0 },

@@ -1,3 +1,4 @@
+/*Detalle.css*/
 .detalle-overlay {
   position: fixed;
   inset: 0;
@@ -191,7 +192,9 @@
   background: #fafafa;
   text-align: center;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 .reco-card:hover {
   transform: scale(1.02);
@@ -238,7 +241,9 @@
   opacity: 0.55;
   filter: grayscale(0.45);
   cursor: pointer; /* sigue siendo clicable */
-  transition: opacity 0.15s ease, transform 0.12s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.12s ease;
 }
 .btn-grayed:hover {
   transform: translateY(-2px);
@@ -259,7 +264,9 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
   opacity: 0;
   transform: translateY(8px);
-  transition: opacity 0.22s ease, transform 0.22s ease;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
 }
 .app-toast.show {
   opacity: 1;
@@ -328,4 +335,55 @@
 /* Hover */
 .detalle-copy-btn:hover {
   color: #ffac5e;
+}
+/* ===== BOTONES DESHABILITADOS POR STOCK GENERAL ===== */
+#btn-disabled {
+  background: #ccc !important;
+  color: #666 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+  pointer-events: none; /* bloquea clicks */
+  transform: none !important;
+  filter: grayscale(0.3);
+}
+
+/* Quitar hover */
+#btn-disabled:hover {
+  background: #ccc !important;
+  color: #666 !important;
+  transform: none !important;
+  opacity: 0.7 !important;
+}
+/* ================= META BOX ================= */
+
+.detalle-meta-box {
+  margin-top: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px;
+  background: #fafafa;
+  max-height: 160px; /* alto definido */
+  overflow-y: auto; /* scroll si se necesita */
+  font-size: 0.9rem;
+}
+
+.detalle-meta-box p {
+  margin: 2px 0;
+  line-height: 1.2;
+}
+
+/* Mostrar según dispositivo */
+
+.meta-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .meta-desktop {
+    display: none;
+  }
+
+  .meta-mobile {
+    display: block;
+  }
 }

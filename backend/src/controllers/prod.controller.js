@@ -1,8 +1,48 @@
 import Prod from "../models/prod.model.js";
 
 export const getProducts = async (req, res) => {
-  const productos = await Prod.find();
-  res.json(productos);
+  try {
+    const { etiqueta } = req.query;
+
+    const filtro = etiqueta ? { etiqueta } : {};
+
+    const productos = await Prod.find(filtro);
+
+    res.json(productos);
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error obteniendo productos",
+      error: error.message
+    });
+  }
+};
+export const updateMeta = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const newMeta = req.body;
+
+    if (!id) {
+      return res.status(400).json({ mensaje: "Falta el id" });
+    }
+
+    const updated = await Prod.findByIdAndUpdate(
+      id,
+      { meta: newMeta },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ mensaje: "Producto no encontrado" });
+    }
+
+    res.json(updated);
+
+  } catch (error) {
+    res.status(500).json({
+      mensaje: "Error actualizando meta",
+      error: error.message
+    });
+  }
 };
 
 export const createProducts = async (req, res) => {
@@ -147,5 +187,29 @@ export const getProductById = async (req, res) => {
   } catch (error) {
     console.error("❌ Error al obtener producto:", error);
     res.status(500).json({ mensaje: "Error al obtener producto", error });
+  }
+};
+// POST /api/prod/by-ids
+export const getProductsByIds = async (req, res) => {
+  try {
+    const ids = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        mensaje: "Debe enviar un arreglo de _id de productos"
+      });
+    }
+
+    const productos = await Prod.find({
+      _id: { $in: ids }
+    });
+
+    res.json(productos);
+  } catch (error) {
+    console.error("Error obteniendo productos por ids", error);
+    res.status(500).json({
+      mensaje: "Error obteniendo productos",
+      error: error.message || error
+    });
   }
 };
