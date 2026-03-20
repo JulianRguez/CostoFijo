@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./ZeusBot.css";
 import { useRules } from "./useRules";
+import { useRules as useRules2 } from "./useRules2";
 import { X } from "lucide-react";
 
 export default function ZeusBot({ inicio, userName, nota, onClose }) {
   const { rules } = useRules(userName, nota);
+  const { rules: rulesCam } = useRules2(userName, nota);
+  const allRules = { ...rules, ...rulesCam };
 
   const [messages, setMessages] = useState([]);
   const [currentRule, setCurrentRule] = useState(inicio);
@@ -21,7 +24,7 @@ export default function ZeusBot({ inicio, userName, nota, onClose }) {
   useEffect(() => {
     if (initRef.current) return;
 
-    const rule = rules[inicio];
+    const rule = allRules[inicio];
     if (!rule) return;
 
     setMessages([
@@ -38,7 +41,7 @@ export default function ZeusBot({ inicio, userName, nota, onClose }) {
   const goToRule = (next, label, action) => {
     if (action) action();
 
-    const rule = rules[next];
+    const rule = allRules[next];
 
     setMessages((prev) => [
       ...prev,
@@ -52,7 +55,7 @@ export default function ZeusBot({ inicio, userName, nota, onClose }) {
 
   const handleInputAction = async (rule) => {
     const nextKey = await rule.input.action(inputValue);
-    const nextRule = rules[nextKey];
+    const nextRule = allRules[nextKey];
 
     setMessages((prev) => [
       ...prev,
@@ -72,7 +75,7 @@ export default function ZeusBot({ inicio, userName, nota, onClose }) {
         ? rule.fileInput.next()
         : rule.fileInput.next;
 
-    const nextRule = rules[nextKey];
+    const nextRule = allRules[nextKey];
 
     setMessages((prev) => [
       ...prev,
@@ -83,7 +86,7 @@ export default function ZeusBot({ inicio, userName, nota, onClose }) {
     setCurrentRule(nextKey);
   };
 
-  const rule = rules[currentRule];
+  const rule = allRules[currentRule];
 
   return (
     <div className="zeus-overlay">
@@ -144,6 +147,32 @@ export default function ZeusBot({ inicio, userName, nota, onClose }) {
                 onChange={(e) => handleFileInput(rule, e.target.files[0])}
               />
             </label>
+          </div>
+        )}
+        {rule?.quantityInput && (
+          <div className="zeus-qty-area">
+            {rule.quantityInput.items.map((item, i) => (
+              <div key={i} className="zeus-qty-row">
+                <span>{item.label}</span>
+
+                <input
+                  type="number"
+                  min="0"
+                  max="99"
+                  defaultValue="0"
+                  onChange={(e) =>
+                    rule.quantityInput.onChange(item.id, Number(e.target.value))
+                  }
+                />
+              </div>
+            ))}
+
+            <button
+              className="zeus-qty-btn"
+              onClick={() => goToRule(rule.quantityInput.next, "Continuar")}
+            >
+              Continuar
+            </button>
           </div>
         )}
       </div>

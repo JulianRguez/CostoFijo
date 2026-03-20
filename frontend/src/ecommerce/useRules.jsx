@@ -224,6 +224,7 @@ export function useRules(userName, nota) {
         options: [
           { label: "Medios de pago", next: "nPagos" },
           { label: "Gestionar compras", next: "estadoComp" },
+          { label: "Cotizar Cámaras Vigilancia", next: "camMenu" },
           { label: "Recuperar clave", next: "no" },
           { label: "Como comprar", next: "no" },
           { label: "Contactar un asesor", next: "no" },

@@ -1,6 +1,7 @@
 // Cam.jsx
 import React, { useState } from "react";
 import { X } from "lucide-react";
+import ZeusBot from "../ecommerce/ZeusBot";
 import "./Cam.css";
 
 export default function Cam({ onClose }) {
@@ -21,6 +22,7 @@ export default function Cam({ onClose }) {
   const [selectedKit, setSelectedKit] = useState(
     "Kit DVR 4 Cámaras 2 mp DD 500 GB",
   );
+  const [openChat, setOpenChat] = useState(false);
 
   const Card = ({ center }) => (
     <div className={`cam-card `}>
@@ -49,7 +51,9 @@ export default function Cam({ onClose }) {
       <div className="cam-modal">
         {/* FILA 1 */}
         <div className="cam-topbar">
-          <button className="cam-step-btn">Asesoría paso a paso</button>
+          <button className="cam-step-btn" onClick={() => setOpenChat(true)}>
+            Asesoría paso a paso
+          </button>
           <button onClick={onClose} className="cam-close">
             <X />
           </button>
@@ -181,6 +185,14 @@ export default function Cam({ onClose }) {
           </div>
         </div>
       </div>
+      {openChat && (
+        <ZeusBot
+          inicio="camMenu"
+          userName=""
+          nota=""
+          onClose={() => setOpenChat(false)}
+        />
+      )}
     </div>
   );
 }

@@ -47,7 +47,26 @@ function limpiarNombreProducto(nombre = "") {
   }
   return nombreLimpio;
 }
+function calcularPrecioFinal(producto) {
+  const nombre = producto.nombre || "";
 
+  // Buscar patrón: 3 letras + 2 números al final
+  const match = nombre.match(/([A-Z]{3})(\d{2})$/i);
+
+  let descuento = 0;
+
+  if (match && match[2]) {
+    descuento = parseInt(match[2], 10);
+  }
+
+  const precioBase = producto.valorVenta || 0;
+
+  if (descuento > 0) {
+    return Math.round(precioBase - (precioBase * descuento) / 100);
+  }
+
+  return precioBase;
+}
 // =====================
 // RUTA SOCIAL /p/:id
 // =====================
@@ -68,8 +87,15 @@ app.get("/p/:id", async (req, res) => {
 
       const nombreRedes = limpiarNombreProducto(producto.nombre);
       const imagen = producto.urlFoto1 || "";
+      const precioFinal = calcularPrecioFinal(producto);
       //const urlFinal = `${req.protocol}://${req.get("host")}/p/${id}`;
       //<meta property="og:url" content="${urlFinal}" />
+      const match = producto.nombre.match(/(\d{2})$/);
+const descuento = match ? parseInt(match[1], 10) : 0;
+
+const descripcion = descuento > 0
+  ? `🔥 ${descuento}% OFF - Precio: $${precioFinal}`
+  : `Precio: $${precioFinal}`;
       const html = `
 <!doctype html>
 <html lang="es">
@@ -80,7 +106,7 @@ app.get("/p/:id", async (req, res) => {
   <!-- Open Graph -->
   <meta property="og:type" content="product" />
   <meta property="og:title" content="${nombreRedes || "https://res.cloudinary.com/ddjdox6b0/image/upload/v1767477076/ImgDefault_f76tba.png"}" />
-  <meta property="og:description" content="$${producto.precio || ""}" />
+  <meta property="og:description" content="${descripcion}" />
   <meta property="og:image" content="${imagen || ""}" />
   <meta property="og:url" content="Vendido por Patiño Claro Servicios" />
   <meta property="og:image:width" content="1200" />

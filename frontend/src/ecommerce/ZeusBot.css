@@ -173,3 +173,43 @@
 .zeus-messages::-webkit-scrollbar-thumb:hover {
   background: #8a8a8a;
 }
+
+.zeus-msg p,
+.space-y-6 {
+  margin: 2px 0;
+  font-size: 13px;
+  color: #444;
+}
+.zeus-msg strong {
+  color: #ff8c00;
+}
+.zeus-qty-area {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.zeus-qty-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.zeus-qty-row input {
+  width: 60px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+.zeus-qty-btn {
+  background: #ffa83d;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
