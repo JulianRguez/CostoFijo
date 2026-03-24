@@ -94,7 +94,7 @@ app.get("/p/:id", async (req, res) => {
 const descuento = match ? parseInt(match[1], 10) : 0;
 
 const descripcion = descuento > 0
-  ? `🔥 ${descuento}% OFF - Precio: $${precioFinal}`
+  ? ` $${precioFinal} 🔥 ${descuento}%OFF`
   : `Precio: $${precioFinal}`;
       const html = `
 <!doctype html>

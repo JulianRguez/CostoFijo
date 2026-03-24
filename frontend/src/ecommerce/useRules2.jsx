@@ -10,24 +10,24 @@ export function useRules(userName, nota) {
   const [canalesSel, setCanalesSel] = useState(null);
   const [resSel, setResSel] = useState(null);
   const [grabadorSel, setGrabadorSel] = useState(null);
+  const [formatoSel, setFormatoSel] = useState(null);
+  const [audioSel, setAudioSel] = useState(null);
+  const [usoSel, setUsoSel] = useState(null);
 
   useEffect(() => {
     fetch("/api/prod?etiqueta=Vigilancia")
       .then((r) => r.json())
       .then(setProductos);
   }, []);
-
   function limpiarNombre(nombre) {
     return nombre.replace(/CMR\d{0,2}$/, "").trim();
   }
-
   function precioFinal(prod) {
     const match = prod.nombre.match(/CMR(\d{2})$/);
     if (!match) return prod.precio;
     const desc = Number(match[1]);
     return Math.round(prod.precio * (1 - desc / 100));
   }
-
   function agregarArticulosQty() {
     const nuevos = Object.entries(qtyTemp)
       .filter(([id, c]) => c > 0)
@@ -44,7 +44,6 @@ export function useRules(userName, nota) {
     setArticulos((a) => [...a, ...nuevos]);
     setQtyTemp({});
   }
-
   const rules = useMemo(
     () => ({
       /* MENU CAMARAS */
@@ -185,8 +184,10 @@ export function useRules(userName, nota) {
                 alt="Comparación de resoluciones de cámaras"
               />
             </a>
-
-            <p>Haga clic en la imagen para ampliarla.</p>
+            <p>
+              Seleccione la resolución que desea para el grabador, puede tomar
+              la imagen como referencia (clic para ampliarla).
+            </p>
           </div>
         ),
         options: [
@@ -217,7 +218,11 @@ export function useRules(userName, nota) {
 
           return (
             <div>
-              <strong>Seleccione el grabador</strong>
+              <span>
+                {grabadores.length === 1
+                  ? "Para las especificaciones seleccionadas solo tenemos disponible la siguiente referencia, haga clic en la opción para confirmar."
+                  : "Para las especificaciones seleccionadas tenemos disponibles las siguientes referencias, haga clic en una opción para confirmar."}
+              </span>
 
               {grabadores.map((g) => (
                 <div
@@ -259,7 +264,7 @@ export function useRules(userName, nota) {
           )
           .map((g) => ({
             label: limpiarNombre(g.nombre),
-            next: "camPaso4",
+            next: "camFormato",
             action: () => {
               setGrabadorSel(g);
 
@@ -276,24 +281,120 @@ export function useRules(userName, nota) {
           })),
       },
 
+      /*FORMATO*/
+      camFormato: {
+        resp: () =>
+          "Seleccione las características para la primera cámara o grupo de cámaras. Si necesita agregar alguna con características diferentes, podrá hacerlo más adelante en este chat.",
+
+        options: [
+          ...new Set(
+            productos
+              .filter(
+                (p) =>
+                  p.meta?.Categoria === "camara" &&
+                  p.meta.Tipo === "analogica" &&
+                  p.meta.ResolucionMaxMP === resSel,
+              )
+              .map((p) => p.meta.Formato),
+          ),
+        ].map((f) => ({
+          label: f,
+          next: grabadorSel?.meta?.GrabaAudio ? "camAudio" : "camUso",
+          action: () => {
+            setFormatoSel(f);
+            if (!grabadorSel?.meta?.GrabaAudio) setAudioSel(false);
+          },
+        })),
+      },
+      /*AUDIO*/
+      camAudio: {
+        resp: () => "¿Desea cámaras con audio?",
+
+        options: (() => {
+          const cams = productos.filter(
+            (p) =>
+              p.meta?.Categoria === "camara" &&
+              p.meta.Tipo === "analogica" &&
+              p.meta.ResolucionMaxMP === resSel &&
+              p.meta.Formato === formatoSel,
+          );
+
+          const hayAudio = cams.some((c) => c.meta.Audio === true);
+          const haySinAudio = cams.some((c) => c.meta.Audio === false);
+          const opts = [];
+
+          if (hayAudio)
+            opts.push({
+              label: "Con audio",
+              next: "camUso",
+              action: () => setAudioSel(true),
+            });
+
+          if (haySinAudio)
+            opts.push({
+              label: "Sin audio",
+              next: "camUso",
+              action: () => setAudioSel(false),
+            });
+
+          return opts;
+        })(),
+      },
+      /*USO*/
+      camUso: {
+        resp: () => "Seleccione el tipo de uso",
+
+        options: [
+          ...new Set(
+            productos
+              .filter(
+                (p) =>
+                  p.meta?.Categoria === "camara" &&
+                  p.meta.Tipo === "analogica" &&
+                  p.meta.ResolucionMaxMP === resSel &&
+                  p.meta.Formato === formatoSel &&
+                  p.meta.Audio === audioSel,
+              )
+              .map((p) => p.meta.Uso),
+          ),
+        ].map((u) => ({
+          label: u,
+          next: "camPaso4",
+          action: () => setUsoSel(u),
+        })),
+      },
+
       /* CAMARAS ANALOGAS */
 
       camPaso4: {
-        resp: () => "Seleccione modelos y cantidades de cámaras",
+        resp: () => "Seleccione modelos y cantidades de cámaras", // hasta aca y un cambio mas queda bien
 
         quantityInput: {
           items: productos
             .filter(
               (p) =>
-                p.meta?.Categoria === "camara" && p.meta.Tipo === "analogica",
+                p.meta?.Categoria === "camara" &&
+                p.meta.Tipo === "analogica" &&
+                p.meta.ResolucionMaxMP === resSel &&
+                p.meta.Formato === formatoSel &&
+                p.meta.Audio === audioSel &&
+                p.meta.Uso === usoSel,
             )
             .map((p) => ({
               id: p._id,
               label: limpiarNombre(p.nombre),
             })),
 
+          max: grabadorSel?.meta?.MaximoCamaras ?? 99,
+
           onChange: (id, val) => {
-            setQtyTemp((q) => ({ ...q, [id]: val }));
+            setQtyTemp((q) => {
+              const nuevo = { ...q, [id]: val };
+              const suma = Object.values(nuevo).reduce((t, c) => t + c, 0);
+              const max = grabadorSel?.meta?.MaximoCamaras ?? 99;
+              if (suma > max) return q; // rechaza el cambio si supera el límite
+              return nuevo;
+            });
           },
 
           next: "camPaso5",
@@ -303,12 +404,8 @@ export function useRules(userName, nota) {
       /* GUARDAR CAMARAS */
 
       camPaso5: {
-        resp: () => {
-          agregarArticulosQty();
-
-          return "Se agregaron las cámaras seleccionadas.";
-        },
-
+        resp: () => "Se agregaron las cámaras seleccionadas.",
+        onEnter: () => agregarArticulosQty(),
         options: [{ label: "Continuar", next: "camResumen" }],
       },
 
@@ -386,9 +483,18 @@ export function useRules(userName, nota) {
         },
       },
     }),
-    [productos, canalesSel, resSel, grabadorSel, articulos],
+    [
+      productos,
+      canalesSel,
+      resSel,
+      grabadorSel,
+      articulos,
+      formatoSel,
+      audioSel,
+      usoSel,
+      qtyTemp,
+    ],
   );
-  //console.log(articulos);
 
-  return { rules };
+  return { rules, qtyTemp };
 }

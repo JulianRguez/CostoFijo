@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 
 export default function ZeusBot({ inicio, userName, nota, onClose }) {
   const { rules } = useRules(userName, nota);
-  const { rules: rulesCam } = useRules2(userName, nota);
+  const { rules: rulesCam, qtyTemp: qtyCam } = useRules2(userName, nota);
   const allRules = { ...rules, ...rulesCam };
 
   const [messages, setMessages] = useState([]);
@@ -42,6 +42,8 @@ export default function ZeusBot({ inicio, userName, nota, onClose }) {
     if (action) action();
 
     const rule = allRules[next];
+
+    if (rule.onEnter) rule.onEnter();
 
     setMessages((prev) => [
       ...prev,
@@ -151,14 +153,23 @@ export default function ZeusBot({ inicio, userName, nota, onClose }) {
         )}
         {rule?.quantityInput && (
           <div className="zeus-qty-area">
+            {rule?.quantityInput?.max && (
+              <div
+                style={{ fontSize: "12px", color: "#888", textAlign: "center" }}
+              >
+                Puede seleccionar hasta <b>{rule.quantityInput.max}</b> cámaras
+                en total. Seleccionadas:{" "}
+                <b>{Object.values(qtyCam).reduce((t, c) => t + c, 0)}</b>
+              </div>
+            )}
+
             {rule.quantityInput.items.map((item, i) => (
               <div key={i} className="zeus-qty-row">
                 <span>{item.label}</span>
-
                 <input
                   type="number"
                   min="0"
-                  max="99"
+                  max={rule.quantityInput.max ?? 99}
                   defaultValue="0"
                   onChange={(e) =>
                     rule.quantityInput.onChange(item.id, Number(e.target.value))
