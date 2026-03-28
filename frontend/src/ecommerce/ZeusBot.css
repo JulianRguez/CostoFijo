@@ -33,11 +33,12 @@
   border: none;
   color: #ff8c00;
   cursor: pointer;
+  z-index: 20;
 }
 
 .zeus-messages {
   flex: 1;
-  padding: 40px;
+  padding: 20px;
   padding-top: 80px;
   overflow-y: auto;
   display: flex;
@@ -45,8 +46,7 @@
 }
 
 .zeus-msg {
-  max-width: 95%;
-  width: fit-content;
+  max-width: 100%;
   margin-bottom: 12px;
   padding: 12px 14px;
   border-radius: 14px;
@@ -57,14 +57,14 @@
 .zeus-msg.bot {
   background: #e2e2e2;
   color: #000000;
-  align-self: flex-start;
+  align-self: stretch;
 }
 
 .zeus-msg.user {
   background: #ffa83d;
   color: #0f0f0f;
   align-self: flex-start;
-  align-self: flex-start;
+  width: fit-content;
 }
 
 .zeus-options {
@@ -121,27 +121,21 @@
   top: 0;
   left: 0;
   right: 0;
-
-  display: flex; /* 👈 clave */
+  display: flex;
   align-items: center;
-  justify-content: space-between; /* 👈 izquierda / derecha */
-
+  justify-content: space-between;
   color: #ff8c00;
   height: 120px;
-  width: 83%;
-  margin-right: 33px;
-  margin-left: 6%;
-  padding: 18px;
+  width: 100%;
+  padding: 18px 40px;
   font-size: 130%;
   font-weight: bold;
-
   background: linear-gradient(
     to bottom,
     rgb(255, 255, 255),
     rgb(255, 255, 255),
     rgba(255, 255, 255, 0)
   );
-
   z-index: 5;
   pointer-events: none;
 }
@@ -181,7 +175,7 @@
   color: #444;
 }
 .zeus-msg strong {
-  color: #ff8c00;
+  color: #444;
 }
 .zeus-qty-area {
   padding: 14px;
@@ -205,6 +199,16 @@
   text-align: center;
 }
 
+.zeus-qty-row input::-webkit-outer-spin-button,
+.zeus-qty-row input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.zeus-qty-row input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 .zeus-qty-btn {
   background: #ffa83d;
   border: none;
@@ -212,4 +216,10 @@
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
+}
+@media (min-width: 768px) {
+  .zeus-messages {
+    padding: 40px;
+    padding-top: 80px;
+  }
 }
