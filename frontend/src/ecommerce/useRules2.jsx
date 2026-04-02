@@ -1,6 +1,6 @@
 // useRules2.jsx
 import { useState, useEffect, useMemo } from "react";
-import { Cable } from "lucide-react";
+import { Cable, Cctv, Server } from "lucide-react";
 
 export function useRules(userName, nota) {
   const [productos, setProductos] = useState([]);
@@ -69,9 +69,14 @@ export function useRules(userName, nota) {
         resp: () => (
           <div className="space-y-6">
             <br />
-            <strong style={{ fontSize: "15px" }}>
-              Los sistemas de video vigilancia más utilizados son:
-            </strong>
+            <div
+              style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
+            >
+              <Cctv className="icon" />
+              <strong className="iconText">
+                Los sistemas de video vigilancia más utilizados son:
+              </strong>
+            </div>
             <br />
             <br />
             <div>
@@ -91,16 +96,14 @@ export function useRules(userName, nota) {
                 />
 
                 <p style={{ margin: 0 }}>
-                  Grabador con cámaras conectadas por cable y almacenamiento en
-                  disco duro.
+                  Un grabador de video con cámaras conectadas por cable y
+                  almacenamiento en disco duro.
                 </p>
 
                 <div style={{ clear: "both" }} />
               </div>
             </div>
-
             <br />
-
             {/* KIT WIFI */}
             <div>
               <strong style={{ fontSize: "13px" }}>KIT CÁMARAS WIFI</strong>
@@ -119,7 +122,8 @@ export function useRules(userName, nota) {
                 />
 
                 <p style={{ margin: 0 }}>
-                  Cámaras conectadas a internet y grabación en tarjeta micro SD.
+                  Cámaras independientes conectadas a internet y grabación en
+                  tarjeta micro SD.
                 </p>
 
                 <div style={{ clear: "both" }} />
@@ -127,7 +131,7 @@ export function useRules(userName, nota) {
             </div>
             <br />
             <strong style={{ fontSize: "12px", color: "#444" }}>
-              Elija el kit que desea cotizar de las siguientes opciones:
+              De las siguientes opciones, Elija el kit que desea cotizar:
             </strong>
           </div>
         ),
@@ -143,22 +147,31 @@ export function useRules(userName, nota) {
         resp: () => (
           <div>
             <br />
-            <strong style={{ fontSize: "15px" }}>
-              Los sistemas de video vigilancia más utilizados son:
-            </strong>
-            <br />
+            <div
+              style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
+            >
+              <Server className="icon" />
+              <strong className="iconText">
+                Los tipos de grabadores de vídeo más usados son:
+              </strong>
+            </div>
             <br />
             <strong style={{ fontSize: "13px" }}>NVR</strong>
-            <p style={{ margin: 0 }}>Solo compatible con cámaras IP</p>
-            <br />
+            <p style={{ margin: 0 }}>
+              Solo compatible con cámaras IP, transmiten vídeo a través de la
+              red de internet o red local.
+            </p>
             <strong style={{ fontSize: "13px" }}>DVR</strong>
-            <p style={{ margin: 0 }}>Solo compatible con cámaras analógicas</p>
-            <br />
+            <p style={{ margin: 0 }}>
+              {" "}
+              Solo compatible con cámaras analógicas, transmiten vídeo a través
+              de cable UTP o par cobre.
+            </p>
             <strong style={{ fontSize: "13px" }}>XVR</strong>
             <p style={{ margin: 0 }}>Compatible con cámaras analógicas e IP</p>
             <br />
             <strong style={{ fontSize: "12px", color: "#444" }}>
-              Elija el kit que desea cotizar de las siguientes opciones:
+              De las siguientes opciones, Elija el grabador que desea cotizar:
             </strong>
           </div>
         ),
@@ -181,43 +194,69 @@ export function useRules(userName, nota) {
       /* PUERTOS ANALOGOS */
       camPaso1: {
         sinHistorial: true,
-        resp: () => (
-          <div className="flex items-center gap-2 font-semibold">
-            <br />
-            <strong style={{ fontSize: "15px", color: "#444" }}>
-              Cantidad de puertos analogicos
-            </strong>
-            <br />
-            <br />
-            <Cable size={30} color="orange" />{" "}
-            <span>
-              Seleccione la cantidad de puertos analógicos que debe tener el
-              grabador. Cada puerto permite conectar una cámara mediante cable,
-              por lo tanto esta cantidad corresponde al número máximo de cámaras
-              cableadas que podrá instalar en el sistema.
-            </span>
-            <br />
-            <br />
-            <strong style={{ fontSize: "12px", color: "#444" }}>
-              Elija puertos:
-            </strong>
-          </div>
-        ),
-        options: [
-          ...new Set(
-            productos
-              .filter(
-                (p) =>
-                  p.meta?.Categoria === "grabador" &&
-                  p.meta.Tipo === tipoGrabadorSel,
-              )
-              .map((p) => p.meta.CanalesAnalogos),
-          ),
-        ].map((c) => ({
-          label: `Con ${c} puertos para cámaras`,
-          next: "camPaso2",
-          action: () => setCanalesSel(c),
-        })),
+        resp: () => {
+          const esNVR = tipoGrabadorSel === "NVR";
+          const opciones = [
+            ...new Set(
+              productos
+                .filter(
+                  (p) =>
+                    p.meta?.Categoria === "grabador" &&
+                    p.meta.Tipo === tipoGrabadorSel,
+                )
+                .map((p) =>
+                  esNVR ? p.meta.CanalesIP : p.meta.CanalesAnalogos,
+                ),
+            ),
+          ];
+          console.log(
+            "🟡 opciones:",
+            opciones.length,
+            "productos:",
+            productos.length,
+          );
+          return (
+            <div style={{ display: "flex", gap: "10px" }}>
+              <Cable
+                size={30}
+                color="orange"
+                style={{ flexShrink: 0, marginTop: "2px" }}
+              />
+              <span>
+                {esNVR
+                  ? "Seleccione la cantidad de puertos IP que debe tener el grabador. Cada puerto permite conectar una cámara IP, por lo tanto esta cantidad corresponde al número máximo de cámaras que podrá instalar en el sistema."
+                  : "Seleccione la cantidad de puertos analógicos que debe tener el grabador. Cada puerto permite conectar una cámara mediante cable, por lo tanto esta cantidad corresponde al número máximo de cámaras cableadas que podrá instalar en el sistema."}
+                <br />
+                <br />
+                {opciones.length === 1
+                  ? `El grabador solo lo tenemos disponible con ${opciones[0]} puertos, haga clic para continuar.`
+                  : "De las siguientes opciones, elija la cantidad de puertos para el grabador:"}
+              </span>
+            </div>
+          );
+        },
+        options: (() => {
+          const esNVR = tipoGrabadorSel === "NVR";
+          return [
+            ...new Set(
+              productos
+                .filter(
+                  (p) =>
+                    p.meta?.Categoria === "grabador" &&
+                    p.meta.Tipo === tipoGrabadorSel,
+                )
+                .map((p) =>
+                  esNVR ? p.meta.CanalesIP : p.meta.CanalesAnalogos,
+                ),
+            ),
+          ].map((c) => ({
+            label: esNVR
+              ? `Con ${c} puertos IP`
+              : `Con ${c} puertos para cámaras`,
+            next: "camPaso2",
+            action: () => setCanalesSel(c),
+          }));
+        })(),
       },
       /* RESOLUCION */
       camPaso2: {
@@ -257,7 +296,10 @@ export function useRules(userName, nota) {
               .filter(
                 (p) =>
                   p.meta?.Categoria === "grabador" &&
-                  p.meta.Tipo === tipoGrabadorSel,
+                  p.meta.Tipo === tipoGrabadorSel &&
+                  (tipoGrabadorSel === "NVR"
+                    ? p.meta.CanalesIP
+                    : p.meta.CanalesAnalogos) === canalesSel,
               )
               .map((p) => p.meta.ResolucionMaxMP),
           ),
@@ -277,7 +319,9 @@ export function useRules(userName, nota) {
             (p) =>
               p.meta?.Categoria === "grabador" &&
               p.meta.Tipo === tipoGrabadorSel &&
-              p.meta.CanalesAnalogos === canalesSel &&
+              (tipoGrabadorSel === "NVR"
+                ? p.meta.CanalesIP
+                : p.meta.CanalesAnalogos) === canalesSel &&
               p.meta.ResolucionMaxMP === resSel,
           );
 
@@ -325,7 +369,9 @@ export function useRules(userName, nota) {
             (p) =>
               p.meta?.Categoria === "grabador" &&
               p.meta.Tipo === tipoGrabadorSel &&
-              p.meta.CanalesAnalogos === canalesSel &&
+              (tipoGrabadorSel === "NVR"
+                ? p.meta.CanalesIP
+                : p.meta.CanalesAnalogos) === canalesSel &&
               p.meta.ResolucionMaxMP === resSel,
           )
           .map((g) => ({
@@ -362,7 +408,7 @@ export function useRules(userName, nota) {
                     ? p.meta.Tipo === "analogica"
                     : p.meta.Tipo === "ip" || p.meta.Tipo === "wifi") &&
                   p.meta.Marca === grabadorSel?.meta?.Marca &&
-                  p.meta.ResolucionMaxMP === resSel,
+                  p.meta.ResolucionMaxMP <= resSel,
               )
               .map((p) => p.meta.Formato),
           ),
@@ -388,7 +434,7 @@ export function useRules(userName, nota) {
                 ? p.meta.Tipo === "analogica"
                 : p.meta.Tipo === "ip" || p.meta.Tipo === "wifi") &&
               p.meta.Marca === grabadorSel?.meta?.Marca &&
-              p.meta.ResolucionMaxMP === resSel &&
+              p.meta.ResolucionMaxMP <= resSel &&
               p.meta.Formato === formatoSel,
           );
 
@@ -428,7 +474,7 @@ export function useRules(userName, nota) {
                     ? p.meta.Tipo === "analogica"
                     : p.meta.Tipo === "ip" || p.meta.Tipo === "wifi") &&
                   p.meta.Marca === grabadorSel?.meta?.Marca &&
-                  p.meta.ResolucionMaxMP === resSel &&
+                  p.meta.ResolucionMaxMP <= resSel &&
                   p.meta.Formato === formatoSel &&
                   p.meta.Audio === audioSel,
               )
@@ -454,7 +500,7 @@ export function useRules(userName, nota) {
                   ? p.meta.Tipo === "analogica"
                   : p.meta.Tipo === "ip" || p.meta.Tipo === "wifi") &&
                 p.meta.Marca === grabadorSel?.meta?.Marca &&
-                p.meta.ResolucionMaxMP === resSel &&
+                p.meta.ResolucionMaxMP <= resSel &&
                 p.meta.Formato === formatoSel &&
                 p.meta.Audio === audioSel &&
                 p.meta.Uso === usoSel,
@@ -504,7 +550,7 @@ export function useRules(userName, nota) {
               p.meta?.Categoria === "camara" &&
               (p.meta.Tipo === "ip" || p.meta.Tipo === "wifi") &&
               p.meta.Marca === grabadorSel?.meta?.Marca &&
-              p.meta.ResolucionMaxMP === resSel,
+              p.meta.ResolucionMaxMP <= resSel,
           );
 
           if (esXVR && primerCiclo && hayIP && hayCaramasIP) {
