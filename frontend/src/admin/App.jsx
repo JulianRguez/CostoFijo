@@ -1,6 +1,7 @@
 //src/admin/App.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import VistaCentral from "./VistaCentral";
 import VistaCompras from "./VistaCompras";
 import HojaVida from "./HojaVida";
@@ -27,7 +28,9 @@ export default function App() {
 
   const cargarPagosPendientes = async () => {
     try {
-      const { data } = await axios.get("/api/vent/pagoEnImg");
+      const { data } = await axios.get("/api/vent/pagoEnImg", {
+        headers: { "x-api-key": API_KEY },
+      });
       setPagosPendientes(
         (data || []).filter((v) => v.pago && v.pago[0] !== "Z"),
       );

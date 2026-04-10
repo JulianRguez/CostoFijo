@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { X, ShoppingCart } from "lucide-react";
 import axios from "axios";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import CarroCompra from "./CarroCompra";
 import "./Detalle.css";
 
@@ -50,7 +51,9 @@ export default function Detalle({
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await axios.get(`/api/prod`);
+        const { data } = await axios.get(`/api/prod`, {
+          headers: { "x-api-key": API_KEY },
+        });
         setTodos(data || []);
         const actual = data.find((p) => p._id === productoId);
         setProducto(actual || null);
@@ -63,7 +66,9 @@ export default function Detalle({
   useEffect(() => {
     if (!producto && productoId) {
       axios
-        .get(`/api/prod/${productoId}`)
+        .get(`/api/prod/${productoId}`, {
+          headers: { "x-api-key": API_KEY },
+        })
         .then((res) => setProducto(res.data))
         .catch((err) => console.error(err));
     }
@@ -275,9 +280,13 @@ export default function Detalle({
     }
 
     try {
-      await axios.put(`/api/clie`, [
-        { _id: usuario._id, carrito: nuevoCarrito },
-      ]);
+      await axios.put(
+        `/api/clie`,
+        [{ _id: usuario._id, carrito: nuevoCarrito }],
+        {
+          headers: { "x-api-key": API_KEY },
+        },
+      );
 
       setUsuario?.((u) => ({ ...u, carrito: nuevoCarrito }));
 

@@ -1,6 +1,7 @@
 //src/CarroCompra.jsx
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import { X } from "lucide-react";
 import "./CarroCompra.css";
 
@@ -84,7 +85,9 @@ export default function CarroCompra({
     // 🟢 2️⃣ Si está autenticado, SIEMPRE cargar cliente (para la dirección)
     if (clienteId) {
       axios
-        .get(`/api/clie/id/${clienteId}`)
+        .get(`/api/clie/id/${clienteId}`, {
+          headers: { "x-api-key": API_KEY },
+        })
         .then(async (res) => {
           setCliente(res.data);
 
@@ -108,6 +111,9 @@ export default function CarroCompra({
                 try {
                   const { data: prod } = await axios.get(
                     `/api/prod/${item.productoId}`,
+                    {
+                      headers: { "x-api-key": API_KEY },
+                    },
                   );
                   return {
                     ...prod,
@@ -285,7 +291,9 @@ export default function CarroCompra({
 
     (async () => {
       try {
-        const { data } = await axios.get(`/api/sist/${cupon}`);
+        const { data } = await axios.get(`/api/sist/${cupon}`, {
+          headers: { "x-api-key": API_KEY },
+        });
         if (!mountedLocal) return;
 
         if (!data || !data.dato || !data.nombre) {
@@ -439,9 +447,13 @@ export default function CarroCompra({
           (item) => item.productoId !== productoId,
         );
 
-        await axios.put(`/api/clie`, [
-          { _id: clienteId, carrito: nuevoCarrito },
-        ]);
+        await axios.put(
+          `/api/clie`,
+          [{ _id: clienteId, carrito: nuevoCarrito }],
+          {
+            headers: { "x-api-key": API_KEY },
+          },
+        );
 
         setCliente((prev) => ({ ...prev, carrito: nuevoCarrito }));
 
@@ -456,9 +468,13 @@ export default function CarroCompra({
       if (cliente?.favoritos?.length) {
         const nuevosFavs = cliente.favoritos.filter((f) => f !== productoId);
 
-        await axios.put(`/api/clie`, [
-          { _id: cliente._id, favoritos: nuevosFavs },
-        ]);
+        await axios.put(
+          `/api/clie`,
+          [{ _id: cliente._id, favoritos: nuevosFavs }],
+          {
+            headers: { "x-api-key": API_KEY },
+          },
+        );
 
         setCliente((prev) => ({ ...prev, favoritos: nuevosFavs }));
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import "./Info.css";
 
 export default function Info() {
@@ -36,9 +37,11 @@ export default function Info() {
       setLoading(true);
       try {
         const [resCred, resComp, resResumen] = await Promise.all([
-          fetch(`/api/cred`),
-          fetch(`/api/comp`),
-          fetch(`/api/vent/resumen?mes=${mes}&anio=${anio}`),
+          fetch(`/api/cred`, { headers: { "x-api-key": API_KEY } }),
+          fetch(`/api/comp`, { headers: { "x-api-key": API_KEY } }),
+          fetch(`/api/vent/resumen?mes=${mes}&anio=${anio}`, {
+            headers: { "x-api-key": API_KEY },
+          }),
         ]);
 
         const dataCred = await resCred.json();

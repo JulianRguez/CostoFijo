@@ -1,6 +1,7 @@
 // AutWpp.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import "./AutWpp.css";
 
 export default function AutWpp({ setAutenticado, setUsuario, onCancelar }) {
@@ -53,7 +54,9 @@ export default function AutWpp({ setAutenticado, setUsuario, onCancelar }) {
 
       const newTimer = setTimeout(async () => {
         try {
-          const res = await axios.get(`/api/clie/${telefono}`);
+          const res = await axios.get(`/api/clie/${telefono}`, {
+            headers: { "x-api-key": API_KEY },
+          });
 
           if (res.data && res.data.tel === telefono) {
             setNumeroExiste(true);
@@ -161,7 +164,9 @@ export default function AutWpp({ setAutenticado, setUsuario, onCancelar }) {
 
     try {
       const payload = [{ tel: numeroLimpio, clave: clave.toString() }];
-      const { data } = await axios.post(`/api/clie`, payload);
+      const { data } = await axios.post(`/api/clie`, payload, {
+        headers: { "x-api-key": API_KEY },
+      });
 
       if (data && (Array.isArray(data) || typeof data === "object")) {
         // 🔸 Incrementar contador local al registrarse con éxito

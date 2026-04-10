@@ -1,6 +1,7 @@
 // src/Menu.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import {
   SlidersHorizontal,
   ShoppingBag,
@@ -63,7 +64,9 @@ export default function MenuLateral({
   const cargarCompras = async () => {
     try {
       setCargandoCompras(true);
-      const { data } = await axios.get(`/api/vent?idClient=${usuario.doc}`);
+      const { data } = await axios.get(`/api/vent?idClient=${usuario.doc}`, {
+        headers: { "x-api-key": API_KEY },
+      });
 
       setCompras(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -168,7 +171,9 @@ export default function MenuLateral({
         return;
       }
 
-      const { data } = await axios.get(`/api/clie/${dato}`);
+      const { data } = await axios.get(`/api/clie/${dato}`, {
+        headers: { "x-api-key": API_KEY },
+      });
 
       if (!data) {
         setMensaje("Datos no válidos");

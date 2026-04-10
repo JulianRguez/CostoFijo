@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import "./ConfVenta.css";
 
 export default function ConfVenta({
@@ -16,7 +17,7 @@ export default function ConfVenta({
   const [clienteValido, setClienteValido] = useState(false);
   const [clienteData, setClienteData] = useState(null);
   const [mensajeCliente, setMensajeCliente] = useState(
-    "Para crédito y garantía el cliente debe estar registrado; ingrese el documento de identidad."
+    "Para crédito y garantía el cliente debe estar registrado; ingrese el documento de identidad.",
   );
   const [loading, setLoading] = useState(false);
   const [garantias, setGarantias] = useState({});
@@ -35,7 +36,9 @@ export default function ConfVenta({
   // ✅ Validar cliente con nueva ruta y excluir inactivos
   const validarClienteAPI = async (doc) => {
     try {
-      const res = await fetch(`/api/clie/cc/${doc}`);
+      const res = await fetch(`/api/clie/cc/${doc}`, {
+        headers: { "x-api-key": API_KEY },
+      });
       if (!res.ok) {
         setClienteValido(false);
         setClienteData(null);
@@ -51,7 +54,7 @@ export default function ConfVenta({
         setClienteValido(false);
         setClienteData(null);
         setMensajeCliente(
-          "El cliente está inactivo y no puede registrar crédito."
+          "El cliente está inactivo y no puede registrar crédito.",
         );
         setCreditoDirecto(false);
         setGarantias({});
@@ -82,7 +85,7 @@ export default function ConfVenta({
     } else {
       setClienteValido(false);
       setMensajeCliente(
-        "Para crédito y garantía el cliente debe estar registrado; ingrese el documento de identidad."
+        "Para crédito y garantía el cliente debe estar registrado; ingrese el documento de identidad.",
       );
       setCreditoDirecto(false);
       setGarantias({});

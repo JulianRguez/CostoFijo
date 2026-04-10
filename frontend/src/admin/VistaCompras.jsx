@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import "./VistaCompras.css";
 import RegistrarCompra from "./RegistrarCompra";
 
@@ -8,13 +9,15 @@ export default function VistaCompras() {
   const [productos, setProductos] = useState([]);
   const [filtro, setFiltro] = useState("");
   const [verGastos, setVerGastos] = useState(
-    localStorage.getItem("verGastos") === "true"
+    localStorage.getItem("verGastos") === "true",
   );
   const [agruparFacturas, setAgruparFacturas] = useState(false);
 
   const cargarCompras = () => {
     axios
-      .get(`/api/comp`)
+      .get(`/api/comp`, {
+        headers: { "x-api-key": API_KEY },
+      })
       .then((res) => setItems(res.data))
       .catch((err) => console.error("Error al obtener compras:", err));
   };
@@ -22,7 +25,9 @@ export default function VistaCompras() {
   useEffect(() => {
     cargarCompras();
     axios
-      .get(`/api/prod`)
+      .get(`/api/prod`, {
+        headers: { "x-api-key": API_KEY },
+      })
       .then((res) => setProductos(res.data))
       .catch((err) => console.error("Error al obtener productos:", err));
   }, []);
@@ -75,7 +80,7 @@ export default function VistaCompras() {
       }
       acc[curr.factura].devueltos.push(curr.devuelto);
       return acc;
-    }, {})
+    }, {}),
   );
 
   const getRegistroStyle = (tipo) => {

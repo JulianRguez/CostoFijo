@@ -24,6 +24,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import Alerta from "./Alerta";
 import { useParams, useNavigate } from "react-router-dom";
 const IMG_DEF = import.meta.env.VITE_IMG_DEF;
+const API_KEY = import.meta.env.VITE_API_KEY;
 import "./Inicio.css";
 
 const WPP_LINK = import.meta.env.VITE_WPP_LINK;
@@ -128,7 +129,9 @@ export default function Inicio() {
     let cancelled = false;
     (async () => {
       try {
-        const { data } = await axios.get(`/api/prod`);
+        const { data } = await axios.get(`/api/prod`, {
+          headers: { "x-api-key": API_KEY },
+        });
         if (cancelled) return;
 
         const exclude = new Set(["Servicios papeleria", "Servicios técnicos"]);
@@ -281,7 +284,9 @@ export default function Inicio() {
     ];
 
     try {
-      await axios.put(`/api/clie`, payload);
+      await axios.put(`/api/clie`, payload, {
+        headers: { "x-api-key": API_KEY },
+      });
       setUsuario((u) => ({ ...u, carrito: nuevoCarrito }));
       mostrarAlertaInicio(
         "Proceso exitoso",
@@ -335,7 +340,9 @@ export default function Inicio() {
         },
       ];
 
-      await axios.put(`/api/clie`, payload);
+      await axios.put(`/api/clie`, payload, {
+        headers: { "x-api-key": API_KEY },
+      });
     } catch (error) {
       console.error("❌ Error al actualizar favoritos:", error);
       mostrarAlertaInicio("Algo salio mal", "Error al actualizar favoritos.");

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import "./Stock.css";
 
 export default function Stock() {
@@ -16,7 +17,9 @@ export default function Stock() {
 
   const cargarProductos = async () => {
     try {
-      const { data } = await axios.get(`/api/prod`);
+      const { data } = await axios.get(`/api/prod`, {
+        headers: { "x-api-key": API_KEY },
+      });
       setProductos(data);
     } catch (err) {
       console.error("Error al obtener productos:", err);
@@ -56,7 +59,7 @@ export default function Stock() {
 
   // 🔹 Filtro por etiqueta
   const productosFinales = productosFiltrados.filter(
-    (p) => !etiquetaFiltro || p.etiqueta === etiquetaFiltro
+    (p) => !etiquetaFiltro || p.etiqueta === etiquetaFiltro,
   );
 
   const etiquetas = [...new Set(productos.map((p) => p.etiqueta))];
@@ -90,7 +93,9 @@ export default function Stock() {
     setMensaje("Actualizando...");
 
     try {
-      await axios.put(`/api/prod`, payload);
+      await axios.put(`/api/prod`, payload, {
+        headers: { "x-api-key": API_KEY },
+      });
       setMensaje("Actualización Exitosa");
       setCambios({});
       await cargarProductos();

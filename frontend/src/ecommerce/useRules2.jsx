@@ -1,6 +1,7 @@
 // useRules2.jsx
 import { useState, useEffect, useMemo } from "react";
 import { Cable, Cctv, Server } from "lucide-react";
+const API_KEY = import.meta.env.VITE_API_KEY;
 
 export function useRules(userName, nota) {
   const [productos, setProductos] = useState([]);
@@ -17,7 +18,9 @@ export function useRules(userName, nota) {
   const [tipoCamaraCiclo, setTipoCamaraCiclo] = useState("analogica");
 
   useEffect(() => {
-    fetch("/api/prod?etiqueta=Vigilancia")
+    fetch("/api/prod?etiqueta=Vigilancia", {
+      headers: { "x-api-key": API_KEY },
+    })
       .then((r) => r.json())
       .then(setProductos);
   }, []);

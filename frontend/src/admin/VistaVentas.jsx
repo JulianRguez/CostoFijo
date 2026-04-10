@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import "./VistaVentas.css";
 
 export default function VistaVentas() {
@@ -13,12 +14,16 @@ export default function VistaVentas() {
   // Cargar ventas y productos
   useEffect(() => {
     axios
-      .get(`/api/vent/detalle`)
+      .get(`/api/vent/detalle`, {
+        headers: { "x-api-key": API_KEY },
+      })
       .then((res) => setVentas(res.data))
       .catch((err) => console.error("Error al obtener ventas:", err));
 
     axios
-      .get(`/api/prod`)
+      .get(`/api/prod`, {
+        headers: { "x-api-key": API_KEY },
+      })
       .then((res) => setProductos(res.data))
       .catch((err) => console.error("Error al obtener productos:", err));
   }, []);
@@ -55,7 +60,7 @@ export default function VistaVentas() {
       garantia: prod.garantia,
       etiqueta: prod.etiqueta,
       devuelto: prod.devuelto,
-    }))
+    })),
   );
 
   // Filtrar productos por fecha
@@ -74,7 +79,7 @@ export default function VistaVentas() {
 
   const totalMostrado = ventasFiltradas.reduce(
     (acc, v) => acc + v.cantidad * v.valor,
-    0
+    0,
   );
 
   // Nombres de meses
@@ -103,7 +108,7 @@ export default function VistaVentas() {
     partes.push(`del año ${filtroAnio}`);
 
     return `El valor de las ventas ${partes.join(
-      " "
+      " ",
     )} fueron: $${totalMostrado.toLocaleString()}`;
   };
 

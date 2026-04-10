@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import "./Cliente.css";
 import axios from "axios";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import { X } from "lucide-react";
 import ZeusBot from "./ZeusBot";
 
@@ -51,7 +52,9 @@ export default function Cliente({
     // Si SÍ tiene clienteId → cargar datos de la API
     const cargar = async () => {
       try {
-        const { data } = await axios.get(`/api/clie/id/${clienteId}`);
+        const { data } = await axios.get(`/api/clie/id/${clienteId}`, {
+          headers: { "x-api-key": API_KEY },
+        });
         setForm({
           doc: data.doc || "",
           nombre: data.nombre || "",
@@ -93,7 +96,9 @@ export default function Cliente({
 
   const validarTelefonoDisponible = async (tel) => {
     try {
-      const { data } = await axios.get(`/api/clie/${tel}`);
+      const { data } = await axios.get(`/api/clie/${tel}`, {
+        headers: { "x-api-key": API_KEY },
+      });
       if (data && data._id && data._id !== clienteId) return false;
       return true;
     } catch {
@@ -102,7 +107,9 @@ export default function Cliente({
   };
   const validarCcDisponible = async (doc) => {
     try {
-      const { data } = await axios.get(`/api/clie/cc/${doc}`);
+      const { data } = await axios.get(`/api/clie/cc/${doc}`, {
+        headers: { "x-api-key": API_KEY },
+      });
       if (data && data._id && data._id !== clienteId) return false;
       return true;
     } catch {
@@ -112,7 +119,9 @@ export default function Cliente({
 
   const validarMailDisponible = async (mail) => {
     try {
-      const { data } = await axios.get(`/api/clie/${mail}`);
+      const { data } = await axios.get(`/api/clie/${mail}`, {
+        headers: { "x-api-key": API_KEY },
+      });
       if (data && data._id && data._id !== clienteId) return false;
       return true;
     } catch {
@@ -204,7 +213,9 @@ export default function Cliente({
       setNota(payloadVenta.factura);
 
       try {
-        await axios.post("/api/vent", payloadVenta);
+        await axios.post("/api/vent", payloadVenta, {
+          headers: { "x-api-key": API_KEY },
+        });
       } catch (err) {
         console.error("Error creando la venta:", err);
         return setErrorMsg("No se pudo registrar la venta");
@@ -231,10 +242,15 @@ export default function Cliente({
           },
         ];
 
-        await axios.put("/api/clie", payload);
+        await axios.put("/api/clie", payload, {
+          headers: { "x-api-key": API_KEY },
+        });
 
         const { data: actualizado } = await axios.get(
           `/api/clie/id/${clienteId}`,
+          {
+            headers: { "x-api-key": API_KEY },
+          },
         );
 
         setUsuario(actualizado);
@@ -254,7 +270,9 @@ export default function Cliente({
           },
         ];
 
-        await axios.post("/api/clie", payload);
+        await axios.post("/api/clie", payload, {
+          headers: { "x-api-key": API_KEY },
+        });
         setErrorMsg("Datos guardados correctamente");
       }
     } catch (e) {

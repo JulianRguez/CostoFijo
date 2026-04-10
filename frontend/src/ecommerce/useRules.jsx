@@ -1,5 +1,6 @@
 // Rules.js
 import { useState, useCallback, useMemo, useEffect } from "react";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import {
   CheckCircle,
   Clock,
@@ -24,7 +25,9 @@ export function useRules(userName, nota) {
     if (nota && respuesta === null) {
       (async () => {
         try {
-          const resp = await fetch(`/api/vent?factura=${nota}`);
+          const resp = await fetch(`/api/vent?factura=${nota}`, {
+            headers: { "x-api-key": API_KEY },
+          });
           const data = await resp.json();
 
           if (Array.isArray(data) && data.length > 0) {
@@ -47,7 +50,9 @@ export function useRules(userName, nota) {
     }
 
     try {
-      const resp = await fetch(`/api/vent?factura=${valor}`);
+      const resp = await fetch(`/api/vent?factura=${valor}`, {
+        headers: { "x-api-key": API_KEY },
+      });
       const data = await resp.json();
 
       if (!Array.isArray(data) || data.length === 0) {
@@ -85,7 +90,9 @@ export function useRules(userName, nota) {
     }
 
     try {
-      const resp = await fetch(`/api/vent?factura=${valor}`);
+      const resp = await fetch(`/api/vent?factura=${valor}`, {
+        headers: { "x-api-key": API_KEY },
+      });
       const data = await resp.json();
 
       if (!Array.isArray(data) || data.length === 0) {
@@ -132,7 +139,9 @@ export function useRules(userName, nota) {
         let idventa;
 
         if (respuesta === null) {
-          const resp = await fetch(`/api/vent?factura=${nota}`);
+          const resp = await fetch(`/api/vent?factura=${nota}`, {
+            headers: { "x-api-key": API_KEY },
+          });
           const data = await resp.json();
 
           if (!Array.isArray(data) || data.length === 0) {
@@ -151,6 +160,7 @@ export function useRules(userName, nota) {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            "x-api-key": API_KEY,
           },
           body: JSON.stringify({
             pago: urlImg,

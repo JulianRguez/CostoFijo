@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import "./Clientes.css";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -27,7 +28,9 @@ export default function Clientes() {
 
   const cargarClientes = async () => {
     try {
-      const res = await axios.get(`/api/clie`);
+      const res = await axios.get(`/api/clie`, {
+        headers: { "x-api-key": API_KEY },
+      });
       setClientes(res.data);
     } catch (err) {
       console.error("Error al cargar clientes", err);
@@ -54,17 +57,21 @@ export default function Clientes() {
 
   const buscarClienteAbono = async (doc) => {
     try {
-      const res = await axios.get(`/api/clie/cc/${doc}`);
+      const res = await axios.get(`/api/clie/cc/${doc}`, {
+        headers: { "x-api-key": API_KEY },
+      });
       const cliente = res.data;
       const creditosConNombre = await Promise.all(
         cliente.porpagar.map(async (p) => {
           try {
-            const prodRes = await axios.get(`/api/prod/${p.producto}`);
+            const prodRes = await axios.get(`/api/prod/${p.producto}`, {
+              headers: { "x-api-key": API_KEY },
+            });
             return { ...p, nombreProd: prodRes.data.nombre };
           } catch {
             return { ...p, nombreProd: "Producto desconocido" };
           }
-        })
+        }),
       );
       setClienteAbono(cliente);
       setCreditos(creditosConNombre);
@@ -90,7 +97,7 @@ export default function Clientes() {
       const nuevoValor = credito.valor - valorNum;
       if (nuevoValor < 0)
         return alert(
-          "El valor del abono no puede superar el saldo del crédito."
+          "El valor del abono no puede superar el saldo del crédito.",
         );
 
       const nuevoAbono = { fecha: new Date().toISOString(), valor: valorNum };
@@ -124,7 +131,9 @@ export default function Clientes() {
         { _id: clienteCompleto._id, porpagar: porpagarActualizado },
       ];
 
-      await axios.put(`/api/clie`, payload);
+      await axios.put(`/api/clie`, payload, {
+        headers: { "x-api-key": API_KEY },
+      });
 
       await cargarClientes();
       setBusquedaAbono("");
@@ -136,7 +145,7 @@ export default function Clientes() {
     } catch (err) {
       console.error(
         "Error registrando abono:",
-        err.response?.data || err.message
+        err.response?.data || err.message,
       );
       alert("❌ No se pudo registrar el abono. Revise la consola.");
     }
@@ -160,7 +169,9 @@ export default function Clientes() {
       mail: newMail.trim(),
     };
     try {
-      await axios.post(`/api/clie`, payload);
+      await axios.post(`/api/clie`, payload, {
+        headers: { "x-api-key": API_KEY },
+      });
       await cargarClientes();
       setNewDoc("");
       setNewNombre("");
@@ -180,9 +191,13 @@ export default function Clientes() {
       const nuevoDoc = cliente.doc.startsWith("X")
         ? cliente.doc
         : `X${cliente.doc}`;
-      await axios.put(`/api/clie`, [
-        { _id: id, doc: nuevoDoc, porpagar: cliente.porpagar },
-      ]);
+      await axios.put(
+        `/api/clie`,
+        [{ _id: id, doc: nuevoDoc, porpagar: cliente.porpagar }],
+        {
+          headers: { "x-api-key": API_KEY },
+        },
+      );
       await cargarClientes();
     } catch (err) {
       console.error("Error marcando cliente como eliminado", err);
@@ -211,7 +226,9 @@ export default function Clientes() {
         },
       ];
 
-      await axios.put(`/api/clie`, payload);
+      await axios.put(`/api/clie`, payload, {
+        headers: { "x-api-key": API_KEY },
+      });
       await cargarClientes();
     } catch (err) {
       console.error("Error eliminando crédito:", err);
@@ -224,9 +241,11 @@ export default function Clientes() {
       const nuevos = cliente.porpagar.map((p) =>
         p.producto === productoId
           ? { ...p, abonos: p.abonos.filter((a) => a.fecha !== fecha) }
-          : p
+          : p,
       );
-      await axios.put(`/api/clie`, [{ _id: clienteId, porpagar: nuevos }]);
+      await axios.put(`/api/clie`, [{ _id: clienteId, porpagar: nuevos }], {
+        headers: { "x-api-key": API_KEY },
+      });
       cargarClientes();
     } catch (err) {
       console.error("Error eliminando abono", err);

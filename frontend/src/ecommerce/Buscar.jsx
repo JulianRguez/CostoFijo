@@ -10,7 +10,6 @@ export default function Buscar({
   onClear,
 }) {
   const [query, setQuery] = useState("");
-
   // 🔥 Cuando clearSignal cambia → vaciamos el input
   useEffect(() => {
     setQuery("");
@@ -24,7 +23,7 @@ export default function Buscar({
     if (query.length > 4) {
       const lower = query.toLowerCase();
       const filtrados = data.filter((p) =>
-        p.nombre.toLowerCase().includes(lower)
+        p.nombre.toLowerCase().includes(lower),
       );
 
       onBuscar(filtrados, query);

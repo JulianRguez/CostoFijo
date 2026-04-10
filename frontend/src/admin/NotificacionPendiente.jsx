@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import { X } from "lucide-react";
 import "./NotificacionPendiente.css";
 const revertirInventario = (productosVenta, productosApi) => {
@@ -149,7 +150,9 @@ export default function NotificacionPendiente({ onClose, onAprobado }) {
   useEffect(() => {
     const cargar = async () => {
       try {
-        const { data } = await axios.get("/api/vent/pagoEnImg");
+        const { data } = await axios.get("/api/vent/pagoEnImg", {
+          headers: { "x-api-key": API_KEY },
+        });
         setVentas((data || []).filter((v) => v.pago[0] !== "Z"));
       } catch (e) {
         console.error(e);
@@ -172,6 +175,9 @@ export default function NotificacionPendiente({ onClose, onAprobado }) {
         const { data: productosDeApi } = await axios.post(
           "/api/prod/ids",
           idsProductos,
+          {
+            headers: { "x-api-key": API_KEY },
+          },
         );
 
         // 2. Ejecutar comparaciones
@@ -191,27 +197,43 @@ export default function NotificacionPendiente({ onClose, onAprobado }) {
         }
 
         // 3. Si todo está bien, actualizamos productos en la DB
-        await axios.put("/api/prod", actualizaciones);
+        await axios.put("/api/prod", actualizaciones, {
+          headers: { "x-api-key": API_KEY },
+        });
       }
 
       // CONTINUACIÓN DE LÓGICA NORMAL (Actualizar estado de la venta)
       if (nuevoEstado === "X" && venta.pago[0] === "P") {
-        await axios.put(`/api/vent/cerrar/${venta._id}`, {
-          motivo: "PAGO_RECHAZADO",
-        });
+        await axios.put(
+          `/api/vent/cerrar/${venta._id}`,
+          {
+            motivo: "PAGO_RECHAZADO",
+          },
+          {
+            headers: { "x-api-key": API_KEY },
+          },
+        );
         setVentas((prev) => prev.filter((v) => v._id !== venta._id));
       }
       // ✅ CANCELAR VENTA DESDE ESTADO A
       else if (nuevoEstado === "X" && venta.pago[0] === "A") {
-        await axios.put(`/api/vent/cerrar/${venta._id}`, {
-          motivo: "PAGO_RECHAZADO",
-        });
+        await axios.put(
+          `/api/vent/cerrar/${venta._id}`,
+          {
+            motivo: "PAGO_RECHAZADO",
+          },
+          {
+            headers: { "x-api-key": API_KEY },
+          },
+        );
         setVentas((prev) => prev.filter((v) => v._id !== venta._id));
       }
 
       // ✅ CERRAR VENTA DESDE ESTADO F
       else if (nuevoEstado === "Z" && venta.pago[0] === "F") {
-        await axios.put(`/api/vent/cerrar/${venta._id}`);
+        await axios.put(`/api/vent/cerrar/${venta._id}`, {
+          headers: { "x-api-key": API_KEY },
+        });
         setVentas((prev) => prev.filter((v) => v._id !== venta._id));
       } else if (nuevoEstado === "Z" && venta.pago[0] === "X") {
         // 🔁 REVERTIR INVENTARIO
@@ -220,6 +242,9 @@ export default function NotificacionPendiente({ onClose, onAprobado }) {
         const { data: productosDeApi } = await axios.post(
           "/api/prod/ids",
           idsProductos,
+          {
+            headers: { "x-api-key": API_KEY },
+          },
         );
 
         const { actualizaciones, errorMsg } = revertirInventario(
@@ -232,15 +257,25 @@ export default function NotificacionPendiente({ onClose, onAprobado }) {
           return;
         }
 
-        await axios.put("/api/prod", actualizaciones);
+        await axios.put("/api/prod", actualizaciones, {
+          headers: { "x-api-key": API_KEY },
+        });
 
         // 🔒 Cerrar venta
-        await axios.put(`/api/vent/cerrar/${venta._id}`);
+        await axios.put(`/api/vent/cerrar/${venta._id}`, {
+          headers: { "x-api-key": API_KEY },
+        });
 
         setVentas((prev) => prev.filter((v) => v._id !== venta._id));
       } else {
         const nuevaUrl = nuevoEstado + venta.pago.slice(1);
-        await axios.put(`/api/vent/${venta._id}`, { pago: nuevaUrl });
+        await axios.put(
+          `/api/vent/${venta._id}`,
+          { pago: nuevaUrl },
+          {
+            headers: { "x-api-key": API_KEY },
+          },
+        );
 
         setVentas((prev) =>
           prev.map((v) =>

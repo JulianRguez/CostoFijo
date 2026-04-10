@@ -13,9 +13,7 @@ export default function Alerta({ visible, titulo, texto, onClose }) {
           <BellRing size={22} className="alerta-icon" />
           <h3 className="alerta-title">{titulo}</h3>
         </div>
-
         <p className="alerta-text">{texto}</p>
-
         <div className="alerta-actions">
           <button className="alerta-btn" onClick={onClose}>
             Aceptar

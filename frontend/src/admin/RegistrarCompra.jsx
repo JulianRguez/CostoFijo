@@ -1,5 +1,6 @@
 // RegistrarCompra.jsx
 import React, { useState, useEffect, useRef } from "react";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import "./RegistrarCompra.css";
 const URLAPI = import.meta.env.VITE_URLAPI;
 
@@ -82,7 +83,9 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
   };
 
   useEffect(() => {
-    fetch(`/api/prod`)
+    fetch(`/api/prod`, {
+      headers: { "x-api-key": API_KEY },
+    })
       .then((res) => res.json())
       .then((data) => setProductosBD(data))
       .catch((err) => console.error("Error cargando productos:", err));
@@ -436,7 +439,10 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       if (compArray.length > 0) {
         const resComp = await fetch(`/api/comp`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": API_KEY,
+          },
           body: JSON.stringify(compArray),
         });
         if (!resComp.ok) throw new Error("Error guardando en /api/comp");
@@ -445,7 +451,7 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       if (productosActualizar.length > 0) {
         const resPut = await fetch(`/api/prod`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "x-api-key": API_KEY },
           body: JSON.stringify(productosActualizar),
         });
         if (!resPut.ok)
@@ -455,7 +461,10 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       if (productosCrear.length > 0) {
         const resPost = await fetch(`/api/prod`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": API_KEY,
+          },
           body: JSON.stringify(productosCrear),
         });
         if (!resPost.ok) throw new Error("Error creando productos nuevos");
@@ -479,7 +488,9 @@ export default function RegistrarCompra({ onCompraRegistrada }) {
       setFecha(new Date().toISOString().substr(0, 10));
       setProductosAgregados([]);
 
-      const resProd = await fetch(`/api/prod`);
+      const resProd = await fetch(`/api/prod`, {
+        headers: { "x-api-key": API_KEY },
+      });
       const dataProd = await resProd.json();
       setProductosBD(dataProd);
 

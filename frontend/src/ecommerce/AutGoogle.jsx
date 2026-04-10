@@ -3,6 +3,7 @@ import React from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
+const API_KEY = import.meta.env.VITE_API_KEY;
 import "./AutGoogle.css";
 
 export default function AutGoogle({ setAutenticado, setUsuario }) {
@@ -20,7 +21,9 @@ export default function AutGoogle({ setAutenticado, setUsuario }) {
 
       // 🔹 Verificar si el cliente ya existe
       try {
-        const { data } = await axios.get(`/api/clie/${correo}`);
+        const { data } = await axios.get(`/api/clie/${correo}`, {
+          headers: { "x-api-key": API_KEY },
+        });
 
         // ✅ Cliente encontrado: iniciar sesión directamente
         setUsuario(data);
@@ -35,7 +38,9 @@ export default function AutGoogle({ setAutenticado, setUsuario }) {
         ) {
           try {
             const payload = [{ nombre, mail: correo }];
-            const { data } = await axios.post(`/api/clie`, payload);
+            const { data } = await axios.post(`/api/clie`, payload, {
+              headers: { "x-api-key": API_KEY },
+            });
 
             if (data && (Array.isArray(data) || typeof data === "object")) {
               const userData = data.clients?.[0] || data;

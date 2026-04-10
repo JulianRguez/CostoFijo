@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./db.js";
 import Prod from "./models/prod.model.js";
+import { verifyApiKey } from "./middleware/apikey.middleware.js";
 
 dotenv.config();
 connectDB();
@@ -28,6 +29,8 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+// 🔒 Proteger toda la API con API Key
+app.use("/api", verifyApiKey);
 
 // =====================
 // UTILIDAD: LIMPIAR NOMBRE
