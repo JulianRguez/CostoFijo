@@ -162,8 +162,6 @@ export default function MenuLateral({
     if (onOrdenar) onOrdenar(orden);
   };
 
-  // 🔐 Manejar autenticación
-  // ✅ Login completo con carga de favoritos
   const manejarLogin = async () => {
     try {
       if (!dato || !clave) {
