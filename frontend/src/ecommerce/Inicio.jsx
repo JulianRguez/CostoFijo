@@ -143,7 +143,7 @@ export default function Inicio() {
 
         const etiquetas = Array.from(
           new Set(productosValidos.map((p) => p.etiqueta).filter(Boolean)),
-        );
+        ).sort((a, b) => a.localeCompare(b, "es"));
 
         setTags(["Todos", ...etiquetas]);
       } catch (err) {
@@ -168,6 +168,11 @@ export default function Inicio() {
 
   const displayed = (dataFiltrada.length ? dataFiltrada : data)
     .filter((p) => (activeTag === "Todos" ? true : p.etiqueta === activeTag))
+    .sort((a, b) =>
+      activeTag === "Todos"
+        ? (a.etiqueta || "").localeCompare(b.etiqueta || "", "es")
+        : 0,
+    )
     .slice(0, visibleCount);
 
   // NUEVO: función central para agregar desde la card
