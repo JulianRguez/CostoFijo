@@ -329,7 +329,6 @@ export default function Detalle({
                   style={{ cursor: "pointer" }}
                 >
                   <img
-                    style={{ border: "2px solid #cccccc", borderRadius: "4px" }}
                     src={imagenes[indice]}
                     alt={producto.nombre}
                     onError={(e) => {

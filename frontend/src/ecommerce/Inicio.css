@@ -187,10 +187,7 @@ body {
   background: var(--orange);
   color: white;
 }
-.buy-btn.discount {
-  width: 100%;
-  background: var(--orange-dark);
-}
+
 .card-footer {
   display: flex;
   align-items: center;
@@ -348,10 +345,6 @@ body.show-left-sidebar .left-sidebar {
 
 .buy-btn {
   background: var(--orange);
-}
-
-.buy-btn.discount {
-  background: var(--orange-dark);
 }
 
 .buy-btn:hover {

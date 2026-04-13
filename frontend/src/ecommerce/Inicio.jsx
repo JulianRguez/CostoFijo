@@ -546,7 +546,6 @@ export default function Inicio() {
               <article className="card" key={p._id}>
                 <div className="card-media">
                   <img
-                    style={{ border: "2px solid #cccccc", borderRadius: "4px" }}
                     src={p.urlFoto1}
                     alt={p.nombre}
                     loading="lazy"
