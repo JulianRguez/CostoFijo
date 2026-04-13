@@ -407,12 +407,11 @@ export default function MenuLateral({
                 onChange={(e) => {
                   setOrden(e.target.value);
                   onOrdenar && onOrdenar(e.target.value);
-
-                  // 🔹 Si estamos en móvil, cerrar el menú (modal)
-                  if (isMobile) {
-                    const closeBtn = document.querySelector(".modal-overlay");
-                    if (closeBtn) closeBtn.click();
-                  }
+                  // Móvil: cerrar modal
+                  const closeBtn = document.querySelector(".modal-overlay");
+                  if (closeBtn) closeBtn.click();
+                  // Desktop: cerrar sidebar
+                  document.body.classList.remove("show-left-sidebar");
                 }}
               />
               Aleatorio
@@ -426,12 +425,11 @@ export default function MenuLateral({
                 onChange={(e) => {
                   setOrden(e.target.value);
                   onOrdenar && onOrdenar(e.target.value);
-
-                  // 🔹 Si estamos en móvil, cerrar el menú (modal)
-                  if (isMobile) {
-                    const closeBtn = document.querySelector(".modal-overlay");
-                    if (closeBtn) closeBtn.click();
-                  }
+                  // Móvil: cerrar modal
+                  const closeBtn = document.querySelector(".modal-overlay");
+                  if (closeBtn) closeBtn.click();
+                  // Desktop: cerrar sidebar
+                  document.body.classList.remove("show-left-sidebar");
                 }}
               />
               Menor Precio
@@ -445,12 +443,11 @@ export default function MenuLateral({
                 onChange={(e) => {
                   setOrden(e.target.value);
                   onOrdenar && onOrdenar(e.target.value);
-
-                  // 🔹 Si estamos en móvil, cerrar el menú (modal)
-                  if (isMobile) {
-                    const closeBtn = document.querySelector(".modal-overlay");
-                    if (closeBtn) closeBtn.click();
-                  }
+                  // Móvil: cerrar modal
+                  const closeBtn = document.querySelector(".modal-overlay");
+                  if (closeBtn) closeBtn.click();
+                  // Desktop: cerrar sidebar
+                  document.body.classList.remove("show-left-sidebar");
                 }}
               />
               Mayor Precio
@@ -464,12 +461,11 @@ export default function MenuLateral({
                 onChange={(e) => {
                   setOrden(e.target.value);
                   onOrdenar && onOrdenar(e.target.value);
-
-                  // 🔹 Si estamos en móvil, cerrar el menú (modal)
-                  if (isMobile) {
-                    const closeBtn = document.querySelector(".modal-overlay");
-                    if (closeBtn) closeBtn.click();
-                  }
+                  // Móvil: cerrar modal
+                  const closeBtn = document.querySelector(".modal-overlay");
+                  if (closeBtn) closeBtn.click();
+                  // Desktop: cerrar sidebar
+                  document.body.classList.remove("show-left-sidebar");
                 }}
               />
               Mejor Calificación

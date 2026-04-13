@@ -168,11 +168,17 @@ export default function Inicio() {
 
   const displayed = (dataFiltrada.length ? dataFiltrada : data)
     .filter((p) => (activeTag === "Todos" ? true : p.etiqueta === activeTag))
-    .sort((a, b) =>
-      activeTag === "Todos"
-        ? (a.etiqueta || "").localeCompare(b.etiqueta || "", "es")
-        : 0,
-    )
+    .sort((a, b) => {
+      if (opcionOrden === "Menor Precio")
+        return (a.valorVenta ?? a.precio) - (b.valorVenta ?? b.precio);
+      if (opcionOrden === "Mayor Precio")
+        return (b.valorVenta ?? b.precio) - (a.valorVenta ?? a.precio);
+      if (opcionOrden === "Mejor Calificación")
+        return avgRating(b.calificacion) - avgRating(a.calificacion);
+      if (activeTag === "Todos")
+        return (a.etiqueta || "").localeCompare(b.etiqueta || "", "es");
+      return 0;
+    })
     .slice(0, visibleCount);
 
   // NUEVO: función central para agregar desde la card
@@ -540,6 +546,7 @@ export default function Inicio() {
               <article className="card" key={p._id}>
                 <div className="card-media">
                   <img
+                    style={{ border: "2px solid #cccccc", borderRadius: "4px" }}
                     src={p.urlFoto1}
                     alt={p.nombre}
                     loading="lazy"
@@ -693,7 +700,7 @@ export default function Inicio() {
                         setMostrarCarro(true);
                       }}
                     >
-                      {hasDiscount ? `Comprar (-${discount}%)` : "Comprar"}
+                      Comprar
                     </button>
 
                     <button
@@ -706,13 +713,15 @@ export default function Inicio() {
                         )
                       }
                     >
-                      <ShoppingCart size={18} />
+                      <ShoppingCart size={14} />
                       x1
                     </button>
                   </div>
 
                   <div className="card-footer">
-                    <span>Envió Gratis, aplica condiciones.</span>
+                    <span style={{ fontSize: "0.90em" }}>
+                      Envio Gratis, ver TyC.
+                    </span>
                     <Truck className="mini-cart" />
                   </div>
                 </div>
