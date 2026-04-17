@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 import "./CarroCompra.css";
 
 const zonasPorMunicipio = {
-  "Santa Fe Ant": [
+  "Santafé de Antioquia": [
     "San Antonio",
     "Llano",
     "Guillermo Gav",
@@ -25,7 +25,7 @@ const zonasPorMunicipio = {
     "Rural",
   ],
   Olaya: ["Quebrada seca", "Sucre", "Olaya", "Llanadas", "Rural"],
-  Sopetran: [
+  Sopetrán: [
     "Urbana",
     "Rural",
     "San Nicolas",
@@ -35,7 +35,7 @@ const zonasPorMunicipio = {
   ],
   Liborina: ["Urbana", "Rural"],
 };
-
+const ZONAS_DEFAULT = ["Urbana"];
 export default function CarroCompra({
   visible,
   onClose,
@@ -48,9 +48,16 @@ export default function CarroCompra({
 }) {
   const [cliente, setCliente] = useState(null);
   const [productos, setProductos] = useState([]);
-  const [departamento, setDepartamento] = useState("Antioquia");
-  const [municipio, setMunicipio] = useState("Santa Fe Ant");
-  const [zona, setZona] = useState("Llano");
+
+  // 🔹 Listas dinámicas desde API Colombia
+  const [departamentos, setDepartamentos] = useState([]);
+  const [municipios, setMunicipios] = useState([]);
+
+  // 🔹 Selección actual (guardamos id + nombre del departamento)
+  const [departamentoId, setDepartamentoId] = useState("");
+  const [departamento, setDepartamento] = useState("");
+  const [municipio, setMunicipio] = useState("");
+  const [zona, setZona] = useState("");
   const [direccion, setDireccion] = useState("");
   const [envio, setEnvio] = useState(0);
   const [cupon, setCupon] = useState("");
@@ -65,6 +72,43 @@ export default function CarroCompra({
   });
 
   const mounted = useRef(false);
+
+  // 🔹 Cargar departamentos al inicio
+  useEffect(() => {
+    axios
+      .get("https://api-colombia.com/api/v1/Department")
+      .then((res) => {
+        // Ordenar alfabéticamente por nombre
+        const ordenados = res.data.sort((a, b) => a.name.localeCompare(b.name));
+        setDepartamentos(ordenados);
+        // Pre-seleccionar Antioquia si existe
+        const antioquia = ordenados.find((d) =>
+          d.name.toLowerCase().includes("antioquia"),
+        );
+        if (antioquia) {
+          setDepartamentoId(String(antioquia.id));
+          setDepartamento(antioquia.name);
+          // Cargar municipios de Antioquia
+          axios
+            .get(
+              `https://api-colombia.com/api/v1/Department/${antioquia.id}/cities`,
+            )
+            .then((r) => {
+              const muns = r.data.sort((a, b) => a.name.localeCompare(b.name));
+              setMunicipios(muns);
+              // Pre-seleccionar primer municipio
+              if (muns.length > 0) {
+                setMunicipio(muns[0].name);
+                const zonas = zonasPorMunicipio[muns[0].name] || [];
+                setZona(zonas[0] || "");
+              }
+            })
+            .catch((err) => console.error(err));
+        }
+      })
+      .catch((err) => console.error(err));
+  }, []);
+
   useEffect(() => {
     // ejecutar lógica del pago por defecto
     onChangeMetodoPago("Transferencia");
@@ -171,13 +215,16 @@ export default function CarroCompra({
     }
   }, [metodoPago, subtotal]);
 
-  const esRural = (mun, zon) => {
-    return (
-      (mun === "Santa Fe Ant" && zon === "Rural") ||
-      (mun === "Olaya" && ["Llanadas", "Rural"].includes(zon)) ||
-      (mun === "Sopetran" && zon === "Rural") ||
-      (mun === "Liborina" && zon === "Rural")
-    );
+  const calcularEnvio = (mun, zon) => {
+    const munNorm = mun.toLowerCase();
+
+    const GRATIS_CON_RURAL = ["santafé de antioquia", "olaya", "sopetrán"];
+
+    if (GRATIS_CON_RURAL.some((m) => munNorm.includes(m))) {
+      return zon === "Rural" ? 50000 : 0;
+    }
+
+    return 30000; // todos los demás municipios
   };
 
   const actualizarInfoDireccion = (
@@ -212,22 +259,48 @@ export default function CarroCompra({
     }
 
     if (dirLen >= 8) {
-      const rural = esRural(newMun ?? municipio, newZona ?? zona);
-      const costo = rural ? 30000 : 0;
+      const costo = calcularEnvio(newMun ?? municipio, newZona ?? zona);
       setEnvio(costo);
-      if (costo === 0)
-        setInfoGlobal({ text: "No tiene costo de envio", color: "green" });
+      if (costo === 0) setInfoGlobal({ text: "Envío gratis", color: "green" });
       else
         setInfoGlobal({
-          text: `Costos de Envío: $${costo.toLocaleString()}`,
+          text: `Costo de envío: $${costo.toLocaleString()}`,
           color: "green",
         });
     }
   };
 
-  const onChangeDepartamento = (val) => {
-    setDepartamento(val);
-    actualizarInfoDireccion(val, municipio, zona, direccion, true);
+  const onChangeDepartamento = (id) => {
+    const depto = departamentos.find((d) => String(d.id) === id);
+    const nombre = depto ? depto.name : "";
+    setDepartamentoId(id);
+    setDepartamento(nombre);
+    // Limpiar municipio y zona mientras carga
+    setMunicipios([]);
+    setMunicipio("");
+    setZona("");
+    setEnvio(0);
+    axios
+      .get(`https://api-colombia.com/api/v1/Department/${id}/cities`)
+      .then((res) => {
+        const muns = res.data.sort((a, b) => a.name.localeCompare(b.name));
+        setMunicipios(muns);
+        if (muns.length > 0) {
+          const primerMun = muns[0].name;
+          const zonas = zonasPorMunicipio[primerMun] || [];
+          const primeraZona = zonas[0] || "";
+          setMunicipio(primerMun);
+          setZona(primeraZona);
+          actualizarInfoDireccion(
+            nombre,
+            primerMun,
+            primeraZona,
+            direccion,
+            true,
+          );
+        }
+      })
+      .catch((err) => console.error(err));
   };
 
   const onChangeMunicipio = (val) => {
@@ -564,17 +637,39 @@ export default function CarroCompra({
     // Validación mínima de dirección
     if (!dir || dir.length < 8) return;
 
-    setDepartamento(dep);
-    setMunicipio(mun);
+    // Buscar el departamento en la lista cargada
+    const depObj = departamentos.find(
+      (d) => d.name.toLowerCase() === dep.toLowerCase(),
+    );
 
-    const zonas = zonasPorMunicipio[mun] || [];
-    const zonaFinal = zonas.includes(zon) ? zon : zonas[0] || "";
-
-    setZona(zonaFinal);
-    setDireccion(dir);
-
-    actualizarInfoDireccion(dep, mun, zonaFinal, dir, true);
-  }, [cliente]);
+    if (depObj) {
+      setDepartamentoId(String(depObj.id));
+      setDepartamento(depObj.name);
+      // Cargar municipios del departamento guardado
+      axios
+        .get(`https://api-colombia.com/api/v1/Department/${depObj.id}/cities`)
+        .then((res) => {
+          const muns = res.data.sort((a, b) => a.name.localeCompare(b.name));
+          setMunicipios(muns);
+          setMunicipio(mun);
+          const zonas = zonasPorMunicipio[mun] || [];
+          const zonaFinal = zonas.includes(zon) ? zon : zonas[0] || "";
+          setZona(zonaFinal);
+          setDireccion(dir);
+          actualizarInfoDireccion(depObj.name, mun, zonaFinal, dir, true);
+        })
+        .catch((err) => console.error(err));
+    } else {
+      // Fallback: si departamentos aún no cargaron, setear solo los strings
+      setDepartamento(dep);
+      setMunicipio(mun);
+      const zonas = zonasPorMunicipio[mun] || [];
+      const zonaFinal = zonas.includes(zon) ? zon : zonas[0] || "";
+      setZona(zonaFinal);
+      setDireccion(dir);
+      actualizarInfoDireccion(dep, mun, zonaFinal, dir, true);
+    }
+  }, [cliente, departamentos]);
 
   return (
     <div className="carro-overlay" onClick={onClose}>
@@ -646,10 +741,17 @@ export default function CarroCompra({
               <div className="campo-linea mini-gap">
                 <label className="small-label">Departamento</label>
                 <select
-                  value={departamento}
+                  value={departamentoId}
                   onChange={(e) => onChangeDepartamento(e.target.value)}
                 >
-                  <option>Antioquia</option>
+                  {departamentos.length === 0 && (
+                    <option value="">Cargando...</option>
+                  )}
+                  {departamentos.map((d) => (
+                    <option key={d.id} value={String(d.id)}>
+                      {d.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -658,9 +760,15 @@ export default function CarroCompra({
                 <select
                   value={municipio}
                   onChange={(e) => onChangeMunicipio(e.target.value)}
+                  disabled={municipios.length === 0}
                 >
-                  {Object.keys(zonasPorMunicipio).map((m) => (
-                    <option key={m}>{m}</option>
+                  {municipios.length === 0 && (
+                    <option value="">Cargando...</option>
+                  )}
+                  {municipios.map((m) => (
+                    <option key={m.id} value={m.name}>
+                      {m.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -668,18 +776,18 @@ export default function CarroCompra({
 
             {/* Zona + Dirección */}
             <div className="dos-col">
+              {/* Solo mostrar zona si el municipio tiene zonas definidas */}
               <div className="campo-linea mini-gap">
                 <label className="small-label">Zona</label>
                 <select
                   value={zona}
                   onChange={(e) => onChangeZona(e.target.value)}
                 >
-                  {(zonasPorMunicipio[municipio] || []).map((z) => (
+                  {(zonasPorMunicipio[municipio] || ZONAS_DEFAULT).map((z) => (
                     <option key={z}>{z}</option>
                   ))}
                 </select>
               </div>
-
               <div className="campo-linea mini-gap">
                 <label className="small-label">Dirección</label>
                 <input
