@@ -15,6 +15,7 @@ import {
   Truck,
   BadgeCheck,
   MessageCircle,
+  FileText,
 } from "lucide-react";
 
 export function useRules(userName, nota) {
@@ -110,14 +111,13 @@ export function useRules(userName, nota) {
       setRespuesta(textoRespuesta);
 
       // 👇 A diferencia de buscarFra, aquí NO validamos pago
-      return "gesCompra";
+      return "gesCom";
     } catch (error) {
       console.error(error);
       setRespuesta("Error al consultar la factura");
       return "fraNo";
     }
   }, []);
-
   const respFra = useCallback(() => {
     const respuestasNo = [
       "El valor ingresado no es válido",
@@ -218,42 +218,339 @@ export function useRules(userName, nota) {
     }
     return total;
   };
+  const limpiarNombre = (nombre) => {
+    return nombre.replace(/\s+[A-Z]{3}\d{0,2}$/i, "");
+  };
+  const totalCompra =
+    compraData?.productos?.reduce(
+      (acc, prod) => acc + prod.valor * prod.cantidad,
+      0,
+    ) || 0;
+
+  const totalFinal = totalCompra + (compraData?.otrosCobros || 0);
   // 📜 reglas del bot
   const rules = useMemo(
     () => ({
       menu: {
         resp: () => (
-          <div className="flex items-center gap-2 font-semibold">
-            <Smile size={30} color="orange" />
-            {"  "}
-            <span>
-              Hola {userName || "Usuario"}, Elige una opción del menú principal:
-            </span>
+          <div>
+            <br />
+            <div style={{ display: "flex", gap: "10px" }}>
+              <Smile size={35} color="orange" />
+              {"  "}
+              <span>
+                Hola {userName || "Usuario"}, Elige una opción del menú
+                principal:
+              </span>
+            </div>
           </div>
         ),
         options: [
-          { label: "Medios de pago", next: "nPagos" },
-          { label: "Gestionar compras", next: "estadoComp" },
+          { label: "Medios de pago", next: "medPag" },
+          { label: "Gestionar compras", next: "ingFra" },
           { label: "Cotizar Cámaras Vigilancia", next: "camMenu" },
           { label: "Recuperar clave", next: "no" },
           { label: "Como comprar", next: "no" },
           { label: "Contactar un asesor", next: "no" },
         ],
       }, //ok
-      nPagos: {
+      medPag: {
         resp: () => (
-          <div className="flex items-center gap-2 font-semibold">
-            <Receipt size={30} color="orange" />{" "}
-            <span>Seleccione un medio de pago para continuar.</span>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <Receipt size={35} color="orange" />{" "}
+            <span>
+              Seleccione un medio de pago para obtener más información.
+            </span>
           </div>
         ),
         options: [
-          { label: "Pago transferencia", next: "pTransfer" },
-          { label: "Contra entrega", next: "contraEnt" },
-          { label: "Pago SisteCedito", next: "sisteCredito" },
-          { label: "PSE", next: "no" },
+          { label: "Pago por transferencia", next: "transf" },
+          { label: "Pago Contra entrega", next: "conEnt" },
+          { label: "Pago con Sistecedito", next: "sisCre" },
+          { label: "Pago con ADDI", next: "addi" },
+          { label: "Pago con PSE", next: "pse" },
         ],
       }, //ok
+      transf: {
+        resp: () => (
+          <div className="space-y-3">
+            <p style={{ margin: 0 }}>
+              <strong>
+                Para realizar una compra con pago por transferencia bancaria
+                tenga en cuenta los siguientes pasos:{" "}
+              </strong>
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <ShoppingCart
+                size={30}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              <strong>1. Selecciona tus productos: </strong>
+              Agrega los productos al carrito y luego haz clic en “Realizar
+              pedido” para continuar o utiliza el botón “Comprar” para adquirir
+              un solo producto.
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <FileText
+                size={30}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              <strong>2. Completa tu información: </strong>
+              Ingresa tus datos de envío y datos personales, selecciona
+              “Transferencia” como medio de pago y haz clic en “Confirmar
+              pedido”.
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <Truck
+                size={30}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              <strong>3. Realiza el pago: </strong>
+              Sigue las instrucciones para efectuar la transferencia bancaria y
+              luego carga el comprobante en la opción “Cargar comprobante”. Una
+              vez verificado, procederemos con el envío o entrega de tu pedido.
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <HeartHandshake
+                size={20}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              ¡Estaremos atentos para ayudarte!
+            </p>
+          </div>
+        ),
+      }, //ok
+      conEnt: {
+        resp: () => (
+          <div className="space-y-3">
+            <p style={{ margin: 0 }}>
+              <strong>
+                Para realizar una Compra y pagar a contra entrega tenga en
+                cuenta los siguientes pasos:{" "}
+              </strong>
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <ShoppingCart
+                size={30}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              <strong>1. Selecciona tus productos: </strong>
+              Agrega los productos al carrito y luego haz clic en “Realizar
+              pedido” para continuar o utiliza el botón “Comprar” para adquirir
+              un solo producto.
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <FileText
+                size={30}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              <strong>2. Completa tu información: </strong>
+              Ingresa tus datos de envío y datos personales, selecciona “Contra
+              Entrega” como medio de pago y haz clic en “Confirmar pedido”.
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <Truck
+                size={30}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              <strong>3. Verificación : </strong>
+              Verificaremos los datos ingresados y te confirmaremos a través de
+              WhatsApp el envío o entrega de tu pedido pagando al recibirlo.
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <HeartHandshake
+                size={20}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              ¡Estaremos atentos para ayudarte!
+            </p>
+          </div>
+        ),
+      }, //ok
+      sisCre: {
+        resp: () => (
+          <div className="space-y-3">
+            <p style={{ margin: 0 }}>
+              <strong>
+                Para realizar una Compra con Sistecredito, tenga en cuenta los
+                siguientes pasos:
+              </strong>
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <ShoppingCart
+                size={30}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              <strong>1. Selecciona tus productos: </strong>
+              Agrega los productos al carrito y luego haz clic en “Realizar
+              pedido” para continuar o utiliza el botón “Comprar” para adquirir
+              un solo producto.
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <FileText
+                size={30}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              <strong>2. Completa tu información: </strong>
+              Ingresa tus datos de envío y datos personales, selecciona
+              “Sistecredito” como medio de pago y haz clic en “Confirmar
+              pedido”.
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <Truck
+                size={30}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              <strong>3. Verificación : </strong>
+              Verificaremos los datos ingresados y uno de nuestros asesores te
+              contactará vía WhatsApp desde el número 333 7351040 en un plazo
+              máximo de 30 minutos en horario laboral o al siguiente día hábil
+              para generar el link de pago y finalizar tu compra.
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <HeartHandshake
+                size={20}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              ¡Estaremos atentos para ayudarte!
+            </p>
+          </div>
+        ),
+      }, //ok
+      addi: {
+        resp: () =>
+          "Esta opción aún no está disponible, puedes usar Sistecredito como metodo de financiacion.",
+        options: [{ label: "Menú principal", next: "menu" }],
+      }, //ok
+      pse: {
+        resp: () =>
+          "Esta opción aún no está disponible, recomendamos realizar su pago a través de transferencia u otro medio de pago disponible",
+        options: [{ label: "Menú principal", next: "menu" }],
+      }, //ok
+      ingFra: {
+        resp: () => "Ingrese el número de la factura que desea gestionar.",
+        input: {
+          placeholder: "Número de factura",
+          buttonLabel: "Continuar",
+          action: buscarFra2,
+        },
+      }, //ok
+      gesCom: {
+        resp: () => (
+          <div className="flex items-center gap-2 font-semibold">
+            <Smile size={30} color="orange" />
+            {"  "}
+            <span>
+              Hola {userName || "Usuario"}, elige una opción para gestionar tu
+              compra:
+            </span>
+          </div>
+        ),
+        options: (() => {
+          const pago = compraData?.pago ?? "";
+          const opts = [{ label: "Estado de la compra", next: "estcom" }];
+
+          if (pago === "pendiente")
+            opts.push({ label: "Realizar pago", next: "no" });
+
+          if (pago.startsWith("P") || pago.startsWith("A"))
+            opts.push({ label: "Cancelar pedido", next: "no" });
+
+          if (pago.startsWith("F"))
+            opts.push({ label: "Devolución o garantía", next: "no" });
+
+          return opts;
+        })(),
+      }, //ok
+      estcom: {
+        resp: () => {
+          if (!compraData) {
+            return "No se encontró información de la compra.";
+          }
+
+          return (
+            <div className="space-y-3">
+              {/* Datos generales */}
+              <div>
+                <strong>Información de la compra:</strong>
+                <p>
+                  <b>Factura:</b> {compraData.factura}
+                </p>
+                <p>
+                  <b>Fecha:</b> {new Date(compraData.fecha).toLocaleString()}
+                </p>
+                <p>
+                  <b>Estado de pago:</b>{" "}
+                  {compraData.pago === "pendiente"
+                    ? "Por pagar"
+                    : compraData.pago.startsWith("P")
+                      ? "Verificando pago"
+                      : compraData.pago.startsWith("A")
+                        ? "Pendiente de envío"
+                        : compraData.pago.startsWith("X")
+                          ? "Compra cancelada"
+                          : compraData.pago.startsWith("E")
+                            ? "Pedido enviado"
+                            : compraData.pago.startsWith("F")
+                              ? "Pedido entregado"
+                              : compraData.pago}
+                </p>
+                <p>
+                  <b>Cliente:</b> {compraData.idClient}
+                </p>
+              </div>
+
+              {/* Productos */}
+              <div>
+                {compraData.productos.map((prod, i) => (
+                  <div key={i} className="border rounded-xl p-2 mt-2">
+                    <p>
+                      <b>• {limpiarNombre(prod.nomProd)}:</b>
+                      {" $"}
+                      {new Intl.NumberFormat("es-CO").format(prod.valor)}{" "}
+                      {" X "} {prod.cantidad}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <p>
+                <b>• Otros cobros:</b> $
+                {new Intl.NumberFormat("es-CO").format(compraData.otrosCobros)}
+              </p>
+              <p>
+                <b>Total compra:</b> $
+                {new Intl.NumberFormat("es-CO").format(totalFinal)}
+              </p>
+            </div>
+          );
+        },
+        options: [{ label: "Menú principal", next: "menu" }],
+      },
+
       pTransfer: {
         resp: () => "Ingrese el número de la factura pendiente por pagar.",
         input: {
@@ -261,12 +558,12 @@ export function useRules(userName, nota) {
           buttonLabel: "Continuar",
           action: buscarFra,
         },
-      }, //ok
+      },
       fraNo: {
         resp: () =>
           "El número de factura ingresado no es válido o no está pendiente por pagar. Puede verificar sus facturas desde el menú.",
         options: [{ label: "Menú principal", next: "menu" }],
-      }, //ok
+      },
       fraSi: {
         resp: () => {
           if (mensajeFactura === "") {
@@ -302,7 +599,7 @@ export function useRules(userName, nota) {
           action: GuardarImg,
           next: "respImg",
         },
-      }, //ok
+      },
       respImg: {
         resp: () => (
           <div className="space-y-3">
@@ -339,67 +636,10 @@ export function useRules(userName, nota) {
             </div>
           </div>
         ),
-      }, //ok
+      },
       no: {
         resp: () => "Esta opción aún no está disponible.",
         options: [{ label: "Menú principal", next: "menu" }],
-      }, //ok
-      contraEnt: {
-        resp: () => (
-          <div className="space-y-3">
-            <div className="flex items-start gap-2">
-              <PackageCheck size={18} color="orange" />
-              <div>
-                <strong>Compra contra entrega:</strong>
-                <p>
-                  Para realizar tu compra con pago contra entrega, primero debes
-                  seleccionar el producto que deseas adquirir desde nuestra
-                  tienda.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <ShoppingCart size={18} color="orange" />
-              <div>
-                <strong>Agregar al carrito o compra rápida:</strong>
-                <p>
-                  Puedes hacer clic en <strong>Compra rápida</strong> o agregar
-                  el producto al <strong>carrito de compras</strong> para
-                  continuar con el proceso.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <CreditCard size={18} color="orange" />
-              <div>
-                <strong>Seleccionar medio de pago:</strong>
-                <p>
-                  Al ingresar al carrito, continúa con la compra y en la sección
-                  <strong> Medio de pago</strong> elige la opción
-                  <strong> Contra entrega</strong>.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <Truck size={18} color="orange" />
-              <div>
-                <strong>Confirmación y entrega:</strong>
-                <p>
-                  Verifica tus datos de envío, confirma el pedido y pagarás el
-                  producto al momento de recibirlo en la dirección registrada.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <HeartHandshake size={18} color="orange" />
-              ¡Estaremos atentos para ayudarte con tu pedido!
-            </div>
-          </div>
-        ),
       },
       conEntrega: {
         resp: () => (
@@ -457,143 +697,6 @@ export function useRules(userName, nota) {
             </div>
           </div>
         ),
-      },
-      sisteCredito: {
-        resp: () => (
-          <div className="space-y-3">
-            <div className="flex items-start gap-2">
-              <BadgeCheck size={18} color="orange" />
-              <div>
-                <strong>Compra con sistema de crédito:</strong>
-                <p>
-                  Para comprar mediante nuestro sistema de crédito, debes
-                  seleccionar el producto que deseas adquirir desde la tienda.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <ShoppingCart size={18} color="orange" />
-              <div>
-                <strong>Agregar al carrito o compra rápida:</strong>
-                <p>
-                  Haz clic en <strong>Compra rápida</strong> o agrega el
-                  producto al
-                  <strong> carrito de compras</strong> para continuar con el
-                  proceso.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <CreditCard size={18} color="orange" />
-              <div>
-                <strong>Seleccionar medio de pago:</strong>
-                <p>
-                  Ingresa al carrito, continúa la compra y selecciona
-                  <strong> Sistema de crédito</strong> como medio de pago.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <MessageCircle size={18} color="orange" />
-              <div>
-                <strong>Contacto para finalizar la compra:</strong>
-                <p>
-                  Uno de nuestros asesores te contactará vía WhatsApp desde el
-                  número
-                  <strong> 333 735 1040</strong> en un plazo máximo de
-                  <strong> 30 minutos</strong> en horario laboral o al siguiente
-                  día hábil para generar el link de pago y finalizar tu compra.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <HeartHandshake size={18} color="orange" />
-              ¡Estaremos atentos para ayudarte con tu pedido!
-            </div>
-          </div>
-        ),
-      },
-      gesCompra: {
-        resp: () => (
-          <div className="flex items-center gap-2 font-semibold">
-            <Smile size={30} color="orange" />
-            {"  "}
-            <span>
-              Hola {userName || "Usuario"}, Elige una opción del menú principal:
-            </span>
-          </div>
-        ),
-        options: [
-          { label: "Estado de una compra", next: "compEstado" },
-          { label: "Modificar compra", next: "no" },
-          { label: "Cancelar compra", next: "no" },
-        ],
-      },
-      estadoComp: {
-        resp: () => "Ingrese el número de la factura que desea gestionar.",
-        input: {
-          placeholder: "Número de factura",
-          buttonLabel: "Continuar",
-          action: buscarFra2,
-        },
-      },
-      compEstado: {
-        resp: () => {
-          if (!compraData) {
-            return "No se encontró información de la compra.";
-          }
-
-          return (
-            <div className="space-y-3">
-              {/* Datos generales */}
-              <div>
-                <strong>Información de la compra:</strong>
-                <p>
-                  <b>Factura:</b> {compraData.factura}
-                </p>
-                <p>
-                  <b>Fecha:</b> {new Date(compraData.fecha).toLocaleString()}
-                </p>
-                <p>
-                  <b>Estado de pago:</b> {compraData.pago}
-                </p>
-                <p>
-                  <b>Cliente:</b> {compraData.idClient}
-                </p>
-              </div>
-
-              {/* Productos */}
-              <div>
-                <strong>Productos:</strong>
-
-                {compraData.productos.map((prod, i) => (
-                  <div key={i} className="border rounded-xl p-2 mt-2">
-                    <p>
-                      <b>Nombre:</b> {prod.nomProd}
-                    </p>
-                    <p>
-                      <b>Cantidad:</b> {prod.cantidad}
-                    </p>
-                    <p>
-                      <b>Valor:</b> ${prod.valor}
-                    </p>
-                    <p>
-                      <b>Categoría:</b> {prod.etiqueta}
-                    </p>
-                    <p>
-                      <b>Versión:</b> {prod.version}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        },
-        options: [{ label: "Menú principal", next: "menu" }],
       },
     }),
     [userName, nota, buscarFra, respFra, GuardarImg, compraData],

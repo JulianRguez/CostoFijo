@@ -18,7 +18,7 @@ export function useRules(userName, nota) {
   const [tipoCamaraCiclo, setTipoCamaraCiclo] = useState("analogica");
 
   useEffect(() => {
-    fetch("/api/prod?etiqueta=Vigilancia", {
+    fetch("/api/prod?etiqueta=Monitoreo", {
       headers: { "x-api-key": API_KEY },
     })
       .then((r) => r.json())
