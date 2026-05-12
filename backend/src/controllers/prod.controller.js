@@ -213,3 +213,66 @@ export const getProductsByIds = async (req, res) => {
     });
   }
 };
+export const actualizarStock = async (req, res) => {
+  try {
+    const payload = Array.isArray(req.body) ? req.body : [req.body];
+
+    if (!payload.length) {
+      return res.status(400).json({ msg: "El body está vacío" });
+    }
+
+    const resultados = [];
+
+    for (const item of payload) {
+      const { _id, accion, newStock, version } = item;
+
+      if (!_id || accion === undefined || newStock === undefined || version === undefined) {
+        resultados.push({ _id, error: "Faltan campos requeridos" });
+        continue;
+      }
+
+      const producto = await Prod.findById(_id);
+
+      if (!producto) {
+        resultados.push({ _id, error: "Producto no encontrado" });
+        continue;
+      }
+
+      // Actualizar stock general
+      if (accion === 0) {
+        producto.stock -= newStock;
+      } else {
+        producto.stock += newStock;
+      }
+
+      // Actualizar versión si viene
+      if (version !== "") {
+        const [nombreVersion, cantidadStr] = version.split("-");
+        const cantidad = parseInt(cantidadStr, 10);
+
+        let partes = producto.version.split("-");
+        const idx = partes.indexOf(nombreVersion);
+
+        if (idx === -1) {
+          resultados.push({ _id, error: `Versión "${nombreVersion}" no encontrada` });
+          continue;
+        }
+
+        let stockVersion = parseInt(partes[idx + 1], 10);
+        partes[idx + 1] = accion === 0
+          ? (stockVersion - cantidad).toString()
+          : (stockVersion + cantidad).toString();
+
+        producto.version = partes.join("-");
+      }
+
+      await producto.save();
+      resultados.push({ _id, ok: true, stock: producto.stock, version: producto.version });
+    }
+
+    res.json({ total: resultados.length, resultados });
+  } catch (error) {
+    console.error("actualizarStock:", error);
+    res.status(500).json({ msg: "Error interno del servidor" });
+  }
+};

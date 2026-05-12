@@ -23,13 +23,6 @@ function obtenerPublicId(url) {
   return publicId;
 }
 
-async function eliminarImagenCloudinary(url) {
-  const publicId = obtenerPublicId(url);
-  if (!publicId) return;
-
-  await cloudinary.v2.uploader.destroy(publicId);
-}
-
 /**
  * GET /ventas
  * Lista ventas (facturas)
@@ -61,7 +54,6 @@ export const getVentas = async (req, res) => {
     });
   }
 };
-
 
 /**
  * POST /ventas
@@ -146,7 +138,7 @@ export const updateVenta = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const allowedFields = ["pago", "otrosCobros", "descuentos"];
+    const allowedFields = ["pago", "imgPago", "otrosCobros", "descuentos"];
 
     const update = {};
     for (const field of allowedFields) {
@@ -254,47 +246,118 @@ export const getVentasDetalle = async (req, res) => {
 };
 export const getVentasPagoCloudinary = async (req, res) => {
   try {
+    const estadosActivos = [
+      "Pedido Enviado",
+      "Pago en verificación",
+      "Pendiente de envío",
+      "Esperando crédito",
+      "Pago Aprobado",
+      "Pedido Entregado",
+      "Pagar al recibir",
+      "Compra cancelada"
+    ];
+
     const ventas = await Vent.find({
-      pago: { $regex: /cloudinary\.com/ }
+      pago: { $in: estadosActivos }
     }).sort({ fecha: -1 });
 
     res.json(ventas);
   } catch (error) {
     res.status(500).json({
-      mensaje: "Error al obtener ventas con pago Cloudinary",
+      mensaje: "Error al obtener ventas activas",
       error: error.message
     });
   }
 };
-export const cerrarVenta = async (req, res) => {
+export const eliminarImagen = async (req, res) => {
   try {
-    const venta = await Vent.findById(req.params.id);
+    const { _id, url } = req.body;
 
-    if (!venta || !venta.pago) {
-      return res.status(404).json({ error: "Venta no encontrada" });
+    if (!_id || !url) {
+      return res.status(400).json({ msg: "Se requieren _id y url" });
     }
 
-    const estado = venta.pago[0]; // P, F, X
-    const { motivo } = req.body || {};
+    const publicId = obtenerPublicId(url);
 
-    // 🗑 borrar imagen
-    await eliminarImagenCloudinary(venta.pago);
-
-    // 🔄 decidir estado final
-    if (motivo === "PAGO_RECHAZADO") {
-      venta.pago = "pendiente";
-    } else if (estado === "F") {
-      venta.pago = "aBanco";
-    } else if (estado === "X") {
-      venta.pago = "anulado";
+    if (!publicId) {
+      return res.status(404).json({ msg: "no encontrado" });
     }
+
+    const result = await cloudinary.v2.uploader.destroy(publicId);
+
+    if (result.result === "not found") {
+      return res.status(404).json({ msg: "no encontrado" });
+    }
+
+    const venta = await Vent.findByIdAndUpdate(
+      _id,
+      { imgPago: "" },
+      { new: true }
+    );
+
+    if (!venta) {
+      return res.status(404).json({ msg: "Venta no encontrada" });
+    }
+
+    res.json({ msg: "Imagen eliminada correctamente", venta });
+  } catch (error) {
+    console.error("eliminarImagen:", error);
+    res.status(500).json({ msg: "Error interno del servidor" });
+  }
+};
+export const cambioEstado = async (req, res) => {
+  try {
+    const { _id, nuevoEstado } = req.body;
+
+    if (!_id || !nuevoEstado) {
+      return res.status(400).json({ msg: "Se requieren _id y nuevoEstado" });
+    }
+
+    const venta = await Vent.findByIdAndUpdate(
+      _id,
+      { pago: nuevoEstado },
+      { new: true }
+    );
+
+    if (!venta) {
+      return res.status(404).json({ msg: "Venta no encontrada" });
+    }
+
+    res.json({ msg: "Estado actualizado correctamente", venta });
+  } catch (error) {
+    console.error("cambioEstado:", error);
+    res.status(500).json({ msg: "Error interno del servidor" });
+  }
+};
+export const actualizarPrdVenta = async (req, res) => {
+  try {
+    const { _id, idProd, cantidad, version } = req.body;
+
+    if (!_id || !idProd) {
+      return res.status(400).json({ msg: "Se requieren _id e idProd" });
+    }
+
+    const venta = await Vent.findById(_id);
+
+    if (!venta) {
+      return res.status(404).json({ msg: "Venta no encontrada" });
+    }
+
+    const producto = venta.productos.find((p) => p.idProd === idProd);
+
+    if (!producto) {
+      return res.status(404).json({ msg: "Producto no encontrado en la venta" });
+    }
+
+    if (cantidad !== undefined) producto.cantidad = cantidad;
+    if (version !== undefined) producto.version = version;
 
     await venta.save();
 
-    res.json({ ok: true });
+    res.json({ msg: "Producto actualizado correctamente", venta });
   } catch (error) {
-    console.error("Error cerrando venta", error);
-    res.status(500).json({ error: "Error cerrando venta" });
+    console.error("actualizarPrdVenta:", error);
+    res.status(500).json({ msg: "Error interno del servidor" });
   }
 };
-
+ 

@@ -21,6 +21,7 @@ const ventSchema = new mongoose.Schema({
   fecha: { type: Date, default: Date.now },
 
   pago: { type: String, default: "efectivo" },
+  imgPago: { type: String, default: "" },
   otrosCobros: { type: Number, default: 0 },
   descuentos: { type: Number, default: 0 },
 

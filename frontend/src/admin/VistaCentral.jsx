@@ -167,11 +167,11 @@ export default function VistaCentral() {
   };
   const generarFactura = () => {
     const now = new Date();
-    const ss = String(now.getSeconds()).padStart(2, "0");
-    const ml = String(now.getMilliseconds()).padStart(2, "0");
-    const rnd = String(Math.floor(Math.random() * 1000)).padStart(3, "0");
+    const ss = String(now.getSeconds()).padStart(2, "0"); // 2
+    const ml = String(now.getMilliseconds()).padStart(3, "0"); //3
+    const rnd = String(Math.floor(Math.random() * 1000)).padStart(3, "0"); // 3
 
-    return `FRA-${ss}${ml}${rnd}`;
+    return `${ss}${ml}${rnd}`; // 2 + 3 + 3 = 8
   };
 
   // ✅ Confirmar venta: devuelve true/false y hace POST /api/cred si corresponde
@@ -193,7 +193,7 @@ export default function VistaCentral() {
         idClient: nombreCliente,
         factura: factura,
         fecha: new Date().toISOString(),
-        pago: extraData?.formaPago || "efectivo",
+        pago: extraData?.formaPago || "Pagado en efectivo",
         otrosCobros: Number(extraData?.otrosCobros) || 0,
         descuentos: Number(extraData?.descuentos) || 0,
         productos: carrito.map((item) => {

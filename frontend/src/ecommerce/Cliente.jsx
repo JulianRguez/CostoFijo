@@ -197,13 +197,15 @@ export default function Cliente({
         cantidad: p.cantidad || 1,
         valor: p.valorVenta,
         etiqueta: p.etiqueta,
-        version: p.version || "",
+        version: p.version
+          ? `${p.version.split("-")[0]}-${p.cantidad || 1}`
+          : "",
       }));
 
       const payloadVenta = {
         idClient: doc,
         factura: generarFactura(),
-        pago: "pendiente",
+        pago: "Pendiente por pagar",
         otrosCobros:
           Number(infoPedido.costoTrans || 0) + Number(infoPedido.envio || 0),
         descuentos:

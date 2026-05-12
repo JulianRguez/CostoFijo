@@ -6,7 +6,9 @@ router.get("/", ventController.getVentas);
 router.post("/", ventController.createVentas);
 
 // 🔥 CERRAR VENTA (antes del :id)
-router.put("/cerrar/:id", ventController.cerrarVenta);
+router.delete("/imagen", ventController.eliminarImagen);
+router.put("/estado", ventController.cambioEstado);
+router.put("/producto", ventController.actualizarPrdVenta);
 
 router.put("/:id", ventController.updateVenta);
 

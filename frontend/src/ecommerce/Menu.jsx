@@ -87,46 +87,19 @@ export default function MenuLateral({
     );
   };
 
-  const obtenerEstadoFactura = (pago) => {
-    if (!pago) return "Estado desconocido";
-
-    // estados directos
-    if (pago === "pendiente") return "Pendiente por pagar";
-    if (pago === "anulado") return "Compra Anulada";
-    if (pago === "aBanco") return "Compra Finalizada";
-
-    // estados por prefijo + url Cloudinary
-    if (typeof pago === "string" && pago.startsWith("P")) {
-      return "Pago en verificación";
-    }
-    if (pago.startsWith("A")) {
-      return "Pago Aprobado";
-    }
-    if (pago.startsWith("E")) {
-      return "Pedido Enviado";
-    }
-    if (pago.startsWith("F")) {
-      return "Pedido Entregado";
-    }
-    if (pago.startsWith("X")) {
-      return "Compra Anulada";
-    }
-
-    return "Estado desconocido";
-  };
   const obtenerClaseEstado = (estado) => {
     if (
-      estado === "Pendiente por pagar" ||
-      estado === "Compra Finalizada" ||
-      estado === "Pago en verificación"
+      estado === "Pago en verificación" ||
+      estado === "Pendiente de envío" ||
+      estado === "Esperando crédito"
     ) {
       return "estado-amarillo";
     }
 
     if (
-      estado === "Compra Anulada" ||
-      estado === "Compra rechazada" ||
-      estado === "Estado desconocido"
+      estado === "Venta cancelada" ||
+      estado === "Pendiente por pagar" ||
+      estado === "Compra Anulada"
     ) {
       return "estado-rojo";
     }
@@ -134,7 +107,10 @@ export default function MenuLateral({
     if (
       estado === "Pago Aprobado" ||
       estado === "Pedido Enviado" ||
-      estado === "Pedido Entregado"
+      estado === "Pagado en efectivo" ||
+      estado === "Pedido Entregado" ||
+      estado === "Pagar al recibir" ||
+      estado === "Ingresó a Banco"
     ) {
       return "estado-verde";
     }
@@ -494,12 +470,8 @@ export default function MenuLateral({
               compras.map((factura) => (
                 <div key={factura._id} className="compra-card">
                   <div className="compra-linea">
-                    <span
-                      className={obtenerClaseEstado(
-                        obtenerEstadoFactura(factura.pago),
-                      )}
-                    >
-                      {obtenerEstadoFactura(factura.pago)}
+                    <span className={obtenerClaseEstado(factura.pago)}>
+                      {factura.pago}
                     </span>
                   </div>
                   <div className="compra-linea">

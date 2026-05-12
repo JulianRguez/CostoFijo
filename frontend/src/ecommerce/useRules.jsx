@@ -163,7 +163,8 @@ export function useRules(userName, nota) {
             "x-api-key": API_KEY,
           },
           body: JSON.stringify({
-            pago: urlImg,
+            pago: "Pago en verificación",
+            imgPago: urlImg,
           }),
         });
 
@@ -196,7 +197,7 @@ export function useRules(userName, nota) {
     }
 
     const data = await resp.json();
-    return "P" + data.secure_url; // 👈 ESTE es el URL público
+    return data.secure_url; // 👈 ESTE es el URL público
   }
   const construirRespuestaFactura = (factura) => {
     if (!factura) return null;
@@ -475,7 +476,7 @@ export function useRules(userName, nota) {
           const opts = [{ label: "Estado de la compra", next: "estcom" }];
 
           if (pago === "pendiente")
-            opts.push({ label: "Realizar pago", next: "no" });
+            opts.push({ label: "Realizar pago", next: "opsPag" });
 
           if (pago.startsWith("P") || pago.startsWith("A"))
             opts.push({ label: "Cancelar pedido", next: "no" });
@@ -549,8 +550,107 @@ export function useRules(userName, nota) {
           );
         },
         options: [{ label: "Menú principal", next: "menu" }],
+      }, //ok
+      opsPag: {
+        resp: () => (
+          <div>
+            <br />
+            <div style={{ display: "flex", gap: "10px" }}>
+              <Smile size={35} color="orange" />
+              {"  "}
+              <span>
+                Elige el medio de pago que desea usar para cancelar la factura:
+              </span>
+            </div>
+          </div>
+        ),
+        options: [
+          { label: "Pago por transferencia", next: "pagTra" },
+          { label: "Contra entrega", next: "pagCen" },
+          { label: "Pago con Sistecedito", next: "no" },
+          { label: "Pago con ADDI", next: "no" },
+          { label: "Pago con PSE", next: "no" },
+        ],
+      }, //ok
+      pagTra: {
+        resp: () => {
+          if (mensajeFactura === "") {
+            return (
+              <>
+                Realice la transferencia o consignación y cargar el comprobante
+                desde "Seleccionar archivo".
+                <br />
+                <br />
+                <div style={{ color: "orange" }}>Datos bancarios:</div>
+                Cuenta ahorros Bancolombia: 24083017828
+                <br />
+                llave PRE-B: 0090625768.
+                <br />
+                <br />
+                Si va a cargar el comprobante posteriormente, puede hacerlo
+                ingresando a este chat desde el icono{" "}
+                <Bot
+                  size={18}
+                  style={{ verticalAlign: "middle", color: "orange" }}
+                />{" "}
+                e ingresar el número de factura, el cual puede visualizar en el
+                menú lateral en la opción “Compras”.
+              </>
+            );
+          }
+
+          return mensajeFactura;
+        },
+        fileInput: {
+          label: "Cargar comprobante",
+          accept: "image/*",
+          action: GuardarImg,
+          next: "respImg",
+        },
+      }, //ok
+      pagCen: {
+        resp: () => (
+          <div>
+            <CheckCircle size={18} color="orange" />{" "}
+            <strong>Pedido confirmado contra entrega.</strong>
+            <p>
+              Tu pedido ha sido registrado. Pagarás al momento de recibir el
+              producto. Nuestro equipo se pondrá en contacto contigo para
+              coordinar la entrega.
+            </p>
+          </div>
+        ),
+        onEnter: () => {
+          fetch(`/api/vent/${compraData._id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": API_KEY,
+            },
+            body: JSON.stringify({ pago: "contraentrega" }),
+          }).catch(console.error);
+        },
+        options: [{ label: "Menú principal", next: "menu" }],
       },
 
+      cenOk: {
+        resp: () => (
+          <div>
+            <CheckCircle size={18} color="orange" />{" "}
+            <strong>Pedido confirmado contra entrega.</strong>
+            <p>
+              Tu pedido ha sido registrado. Pagarás al momento de recibir el
+              producto. Nuestro equipo se pondrá en contacto contigo para
+              coordinar la entrega.
+            </p>
+          </div>
+        ),
+        options: [{ label: "Menú principal", next: "menu" }],
+      },
+      no: {
+        resp: () => "Esta opción aún no está disponible.",
+        options: [{ label: "Menú principal", next: "menu" }],
+      },
       pTransfer: {
         resp: () => "Ingrese el número de la factura pendiente por pagar.",
         input: {
