@@ -830,14 +830,9 @@ export default function CarroCompra({
                 >
                   <option value="Transferencia">Transferencia</option>
                   <option value="Contra Entrega">Contra Entrega</option>
-                  <option value="Recoger en Almacén">Recoger en Almacén</option>
-                  <option value="SistiCrédito">SistiCrédito</option>
-                  <option value="PSE" disabled>
-                    PSE (Pronto)
-                  </option>
-                  <option value="ADDI" disabled>
-                    ADDI (Pronto)
-                  </option>
+                  <option value="SistiCrédito">Sisticredito</option>
+                  <option value="PSE">PSE</option>
+                  <option value="ADDI">ADDI</option>
                 </select>
               </div>
             </div>

@@ -97,7 +97,7 @@ export default function MenuLateral({
     }
 
     if (
-      estado === "Venta cancelada" ||
+      estado === "Compra cancelada" ||
       estado === "Pendiente por pagar" ||
       estado === "Compra Anulada"
     ) {
@@ -110,7 +110,7 @@ export default function MenuLateral({
       estado === "Pagado en efectivo" ||
       estado === "Pedido Entregado" ||
       estado === "Pagar al recibir" ||
-      estado === "Ingresó a Banco"
+      estado === "Pagado y entregado"
     ) {
       return "estado-verde";
     }

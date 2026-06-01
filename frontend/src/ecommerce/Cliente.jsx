@@ -128,6 +128,14 @@ export default function Cliente({
       return true;
     }
   };
+  const MAPA_PAGO = {
+    Transferencia: { inicio: "pagTra", estado: "Pendiente por pagar" },
+    "Contra Entrega": { inicio: "pagCen", estado: "Pendiente de envío" },
+    "Recoger en Almacén": { inicio: "pagTra", estado: "Pendiente por pagar" },
+    SistiCrédito: { inicio: "pagCre", estado: "Esperando crédito" },
+    PSE: { inicio: "no", estado: "Pendiente por pagar" },
+    ADDI: { inicio: "pagCre", estado: "Esperando crédito" },
+  };
   const generarFactura = () => {
     const now = new Date();
     const ss = String(now.getSeconds()).padStart(2, "0"); // 2
@@ -201,11 +209,15 @@ export default function Cliente({
           ? `${p.version.split("-")[0]}-${p.cantidad || 1}`
           : "",
       }));
+      const configuracion = MAPA_PAGO[infoPedido.pago] || {
+        inicio: "pagTra",
+        estado: "Pendiente por pagar",
+      };
 
       const payloadVenta = {
         idClient: doc,
         factura: generarFactura(),
-        pago: "Pendiente por pagar",
+        pago: configuracion.estado,
         otrosCobros:
           Number(infoPedido.costoTrans || 0) + Number(infoPedido.envio || 0),
         descuentos:
@@ -398,7 +410,7 @@ export default function Cliente({
       </div>
       {mostrarZeus && (
         <ZeusBot
-          inicio="fraSi"
+          inicio={MAPA_PAGO[infoPedido?.pago]?.inicio || "pagTra"}
           userName={tnombre || Ttel}
           nota={nota}
           onClose={() => {

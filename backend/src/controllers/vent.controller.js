@@ -38,7 +38,7 @@ export const getVentas = async (req, res) => {
 
     if (idClient) filtro.idClient = idClient;
     if (factura) filtro.factura = factura;
-    if (pago) filtro.pago = pago; // 👈 ESTE ES EL CAMBIO CLAVE
+    if (pago) filtro.pago = pago; 
 
     const ventas = await Vent.find(filtro)
       .sort({ fecha: -1 })
@@ -189,24 +189,32 @@ export const getResumenVentas = async (req, res) => {
     const ventas = await Vent.find(
   {
     fecha: { $gte: inicio, $lt: fin },
-    pago: { $in: ["efectivo", "aBanco"] }
+    pago: { $in: ["Pagado en efectivo", "Pagado y entregado"] }
   },
-  { productos: 1 }
+  { productos: 1, otrosCobros: 1 }
 );
 
     const resumen = {};
 
     for (const venta of ventas) {
-      for (const prod of venta.productos) {
-        if (!prod.etiqueta) continue;
+  let etiquetaPrincipal = null;
 
-        if (!resumen[prod.etiqueta]) {
-          resumen[prod.etiqueta] = 0;
-        }
+  for (const prod of venta.productos) {
+    if (!prod.etiqueta) continue;
 
-        resumen[prod.etiqueta] += prod.valor * prod.cantidad;
-      }
+    if (!resumen[prod.etiqueta]) {
+      resumen[prod.etiqueta] = 0;
     }
+
+    resumen[prod.etiqueta] += prod.valor * prod.cantidad;
+
+    if (!etiquetaPrincipal) etiquetaPrincipal = prod.etiqueta;
+  }
+
+  if (venta.otrosCobros > 0 && etiquetaPrincipal) {
+    resumen[etiquetaPrincipal] += venta.otrosCobros;
+  }
+}
 
     const totalIngresos = Object.values(resumen).reduce(
       (acc, val) => acc + val,

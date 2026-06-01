@@ -16,6 +16,8 @@ import {
   BadgeCheck,
   MessageCircle,
   FileText,
+  ClipboardList,
+  AlertCircle,
 } from "lucide-react";
 
 export function useRules(userName, nota) {
@@ -43,45 +45,7 @@ export function useRules(userName, nota) {
   }, [nota, respuesta]);
   let mensajeFactura = "";
   // 🔎 acciones
-  const buscarFra = useCallback(async (valor) => {
-    const regex = /^[0-9]{8}$/;
-    if (!regex.test(valor)) {
-      setRespuesta("El valor ingresado no es válido");
-      return "fraNo";
-    }
 
-    try {
-      const resp = await fetch(`/api/vent?factura=${valor}`, {
-        headers: { "x-api-key": API_KEY },
-      });
-      const data = await resp.json();
-
-      if (!Array.isArray(data) || data.length === 0) {
-        setRespuesta("Factura no encontrada");
-        return "fraNo";
-      }
-
-      const factura = data[0];
-
-      if (factura.pago === "pendiente") {
-        const textoRespuesta = construirRespuestaFactura(factura);
-
-        const partes = textoRespuesta.split("|");
-        const total = construirvalor(partes);
-        mensajeFactura = `Para reportar el pago de la factura debe realizar la transferencia o consignación por un valor de $${total.toLocaleString()} y cargar el comprobante.`;
-
-        setRespuesta(textoRespuesta); // solo para usar el id luego
-        return "fraSi";
-      } else {
-        setRespuesta("Factura no pendiente de pago");
-        return "fraNo";
-      }
-    } catch (error) {
-      console.error(error);
-      setRespuesta("Error al consultar la factura");
-      return "fraNo";
-    }
-  }, []);
   const buscarFra2 = useCallback(async (valor) => {
     const regex = /^[0-9]{8}$/;
 
@@ -118,16 +82,7 @@ export function useRules(userName, nota) {
       return "fraNo";
     }
   }, []);
-  const respFra = useCallback(() => {
-    const respuestasNo = [
-      "El valor ingresado no es válido",
-      "Factura no encontrada",
-      "Factura no pendiente de pago",
-      "Error al consultar la factura",
-    ];
 
-    return respuestasNo.includes(respuesta) ? "fraNo" : "fraSi";
-  }, [respuesta]);
   const GuardarImg = useCallback(
     async (file) => {
       if (!file) {
@@ -234,35 +189,38 @@ export function useRules(userName, nota) {
     () => ({
       menu: {
         resp: () => (
-          <div>
+          <p style={{ margin: 0 }}>
             <br />
-            <div style={{ display: "flex", gap: "10px" }}>
-              <Smile size={35} color="orange" />
-              {"  "}
-              <span>
-                Hola {userName || "Usuario"}, Elige una opción del menú
-                principal:
-              </span>
-            </div>
-          </div>
+            <Smile
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>Menu Principal: </strong>
+            Hola {userName || "Usuario"}, ¿Cómo podemos ayudarte hoy? Elige una
+            opción del menú para continuar.
+          </p>
         ),
         options: [
-          { label: "Medios de pago", next: "medPag" },
-          { label: "Gestionar compras", next: "ingFra" },
-          { label: "Cotizar Cámaras Vigilancia", next: "camMenu" },
-          { label: "Recuperar clave", next: "no" },
-          { label: "Como comprar", next: "no" },
-          { label: "Contactar un asesor", next: "no" },
+          { label: "Ver medios de pago", next: "medPag" },
+          { label: "Gestionar mi compra", next: "ingFra" },
+          { label: "Cotizar cámaras y vigilancia", next: "camMenu" },
+          { label: "Recuperar contraseña", next: "recClav" },
+          { label: "Guía de compra", next: "comCom" },
+          { label: "Hablar con un asesor", next: "aWpp" },
         ],
-      }, //ok
+      },
       medPag: {
         resp: () => (
-          <div style={{ display: "flex", gap: "10px" }}>
-            <Receipt size={35} color="orange" />{" "}
-            <span>
-              Seleccione un medio de pago para obtener más información.
-            </span>
-          </div>
+          <p style={{ margin: 0 }}>
+            <Receipt
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>Medios de pago: </strong>
+            Seleccione un medio de pago para obtener más información.
+          </p>
         ),
         options: [
           { label: "Pago por transferencia", next: "transf" },
@@ -271,7 +229,7 @@ export function useRules(userName, nota) {
           { label: "Pago con ADDI", next: "addi" },
           { label: "Pago con PSE", next: "pse" },
         ],
-      }, //ok
+      },
       transf: {
         resp: () => (
           <div className="space-y-3">
@@ -328,7 +286,7 @@ export function useRules(userName, nota) {
             </p>
           </div>
         ),
-      }, //ok
+      },
       conEnt: {
         resp: () => (
           <div className="space-y-3">
@@ -383,7 +341,7 @@ export function useRules(userName, nota) {
             </p>
           </div>
         ),
-      }, //ok
+      },
       sisCre: {
         resp: () => (
           <div className="space-y-3">
@@ -441,52 +399,77 @@ export function useRules(userName, nota) {
             </p>
           </div>
         ),
-      }, //ok
+      },
       addi: {
         resp: () =>
           "Esta opción aún no está disponible, puedes usar Sistecredito como metodo de financiacion.",
-        options: [{ label: "Menú principal", next: "menu" }],
-      }, //ok
+      },
       pse: {
         resp: () =>
-          "Esta opción aún no está disponible, recomendamos realizar su pago a través de transferencia u otro medio de pago disponible",
-        options: [{ label: "Menú principal", next: "menu" }],
-      }, //ok
+          "Esta opción aún no está disponible, recomendamos realizar su pago a través de transferencia u otro medio disponible",
+      },
       ingFra: {
-        resp: () => "Ingrese el número de la factura que desea gestionar.",
+        resp: () => (
+          <p style={{ margin: 0 }}>
+            <FileText
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>Radicados: </strong>
+            Para pagar, cancelar, solicitar una devolución o registrar una queja
+            o comentario sobre una compra realizada, ingresa el número de
+            factura.
+          </p>
+        ),
         input: {
           placeholder: "Número de factura",
           buttonLabel: "Continuar",
           action: buscarFra2,
         },
-      }, //ok
+      },
+      fraNo: {
+        resp: () => (
+          <p style={{ margin: 0 }}>
+            <AlertCircle
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>Error: </strong>
+            El número de factura ingresado no es válido. Puedes verificar tus
+            facturas desde el menú lateral izquierdo, en la opción “Compras”.
+          </p>
+        ),
+      },
       gesCom: {
         resp: () => (
-          <div className="flex items-center gap-2 font-semibold">
-            <Smile size={30} color="orange" />
-            {"  "}
-            <span>
-              Hola {userName || "Usuario"}, elige una opción para gestionar tu
-              compra:
-            </span>
-          </div>
+          <p style={{ margin: 0 }}>
+            <Smile
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>Gestion de compra: </strong>
+            Elige una opción para modificar el estado de tu compra o para
+            presentar alguna petición:
+          </p>
         ),
         options: (() => {
           const pago = compraData?.pago ?? "";
           const opts = [{ label: "Estado de la compra", next: "estcom" }];
 
-          if (pago === "pendiente")
+          if (pago === "Pendiente por pagar")
             opts.push({ label: "Realizar pago", next: "opsPag" });
-
-          if (pago.startsWith("P") || pago.startsWith("A"))
-            opts.push({ label: "Cancelar pedido", next: "no" });
-
-          if (pago.startsWith("F"))
-            opts.push({ label: "Devolución o garantía", next: "no" });
+          else
+            opts.push({
+              label: "PQRS, devolución y garantía",
+              next: "reclamo",
+            });
 
           return opts;
         })(),
-      }, //ok
+      },
       estcom: {
         resp: () => {
           if (!compraData) {
@@ -494,108 +477,114 @@ export function useRules(userName, nota) {
           }
 
           return (
-            <div className="space-y-3">
-              {/* Datos generales */}
-              <div>
-                <strong>Información de la compra:</strong>
-                <p>
-                  <b>Factura:</b> {compraData.factura}
-                </p>
-                <p>
-                  <b>Fecha:</b> {new Date(compraData.fecha).toLocaleString()}
-                </p>
-                <p>
-                  <b>Estado de pago:</b>{" "}
-                  {compraData.pago === "pendiente"
-                    ? "Por pagar"
-                    : compraData.pago.startsWith("P")
-                      ? "Verificando pago"
-                      : compraData.pago.startsWith("A")
-                        ? "Pendiente de envío"
-                        : compraData.pago.startsWith("X")
-                          ? "Compra cancelada"
-                          : compraData.pago.startsWith("E")
-                            ? "Pedido enviado"
-                            : compraData.pago.startsWith("F")
-                              ? "Pedido entregado"
-                              : compraData.pago}
-                </p>
-                <p>
-                  <b>Cliente:</b> {compraData.idClient}
-                </p>
-              </div>
+            <p style={{ margin: 0 }}>
+              <ShoppingCart
+                size={30}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              <strong>Importante:</strong> La información refleja el estado
+              actual de la compra y puede cambiar posteriormente. Si espera
+              alguna actualización, consulte más tarde.
+              <div className="space-y-3">
+                <br />
+                {/* Datos generales */}
+                <div>
+                  <p>
+                    <b>Factura:</b> {compraData.factura}
+                  </p>
+                  <p>
+                    <b>Fecha:</b> {new Date(compraData.fecha).toLocaleString()}
+                  </p>
+                  <p>
+                    <b>Estado de pago:</b> {compraData.pago}
+                  </p>
+                  <p>
+                    <b>Cliente:</b> {compraData.idClient}
+                  </p>
+                </div>
 
-              {/* Productos */}
-              <div>
-                {compraData.productos.map((prod, i) => (
-                  <div key={i} className="border rounded-xl p-2 mt-2">
-                    <p>
-                      <b>• {limpiarNombre(prod.nomProd)}:</b>
-                      {" $"}
-                      {new Intl.NumberFormat("es-CO").format(prod.valor)}{" "}
-                      {" X "} {prod.cantidad}
-                    </p>
-                  </div>
-                ))}
+                {/* Productos */}
+                <div>
+                  {compraData.productos.map((prod, i) => (
+                    <div key={i} className="border rounded-xl p-2 mt-2">
+                      <p>
+                        <b>• {limpiarNombre(prod.nomProd)}:</b>
+                        {" $"}
+                        {new Intl.NumberFormat("es-CO").format(prod.valor)}{" "}
+                        {" X "} {prod.cantidad}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p>
+                  <b>• Otros cobros:</b> $
+                  {new Intl.NumberFormat("es-CO").format(
+                    compraData.otrosCobros,
+                  )}
+                </p>
+                <p>
+                  <b>Total compra:</b> $
+                  {new Intl.NumberFormat("es-CO").format(totalFinal)}
+                </p>
               </div>
-              <p>
-                <b>• Otros cobros:</b> $
-                {new Intl.NumberFormat("es-CO").format(compraData.otrosCobros)}
-              </p>
-              <p>
-                <b>Total compra:</b> $
-                {new Intl.NumberFormat("es-CO").format(totalFinal)}
-              </p>
-            </div>
+            </p>
           );
         },
-        options: [{ label: "Menú principal", next: "menu" }],
-      }, //ok
+      },
       opsPag: {
         resp: () => (
-          <div>
-            <br />
-            <div style={{ display: "flex", gap: "10px" }}>
-              <Smile size={35} color="orange" />
-              {"  "}
-              <span>
-                Elige el medio de pago que desea usar para cancelar la factura:
-              </span>
-            </div>
-          </div>
+          <p style={{ margin: 0 }}>
+            <BadgeCheck
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>Opciones de pago: </strong>
+            Elige el medio de pago que desea usar para cancelar la factura
+          </p>
         ),
         options: [
           { label: "Pago por transferencia", next: "pagTra" },
           { label: "Contra entrega", next: "pagCen" },
-          { label: "Pago con Sistecedito", next: "no" },
-          { label: "Pago con ADDI", next: "no" },
+          { label: "Pago con Sistecedito", next: "pagCre" },
+          { label: "Pago con ADDI", next: "pagCre" },
           { label: "Pago con PSE", next: "no" },
         ],
-      }, //ok
+      },
       pagTra: {
         resp: () => {
           if (mensajeFactura === "") {
             return (
-              <>
-                Realice la transferencia o consignación y cargar el comprobante
-                desde "Seleccionar archivo".
+              <p style={{ margin: 0 }}>
                 <br />
-                <br />
-                <div style={{ color: "orange" }}>Datos bancarios:</div>
-                Cuenta ahorros Bancolombia: 24083017828
-                <br />
-                llave PRE-B: 0090625768.
-                <br />
-                <br />
-                Si va a cargar el comprobante posteriormente, puede hacerlo
-                ingresando a este chat desde el icono{" "}
-                <Bot
-                  size={18}
-                  style={{ verticalAlign: "middle", color: "orange" }}
-                />{" "}
-                e ingresar el número de factura, el cual puede visualizar en el
-                menú lateral en la opción “Compras”.
-              </>
+                <FileText
+                  size={30}
+                  color="orange"
+                  style={{ float: "left", marginRight: "10px" }}
+                />
+                <strong>Realizar pago: </strong>
+                <>
+                  Realice la transferencia o consignación y carge el comprobante
+                  desde "Seleccionar archivo".
+                  <br />
+                  <br />
+                  <div style={{ color: "orange" }}>Datos bancarios:</div>
+                  Cuenta ahorros Bancolombia: 24083017828
+                  <br />
+                  llave BRE-B: 3226400155
+                  <br />
+                  <br />
+                  Si va a cargar el comprobante posteriormente, puede hacerlo
+                  ingresando a este chat desde el icono{" "}
+                  <Bot
+                    size={18}
+                    style={{ verticalAlign: "middle", color: "orange" }}
+                  />{" "}
+                  e ingresar el número de factura, el cual puede visualizar en
+                  el menú lateral en la opción “Compras”.
+                </>
+              </p>
             );
           }
 
@@ -607,18 +596,21 @@ export function useRules(userName, nota) {
           action: GuardarImg,
           next: "respImg",
         },
-      }, //ok
+      },
       pagCen: {
         resp: () => (
-          <div>
-            <CheckCircle size={18} color="orange" />{" "}
-            <strong>Pedido confirmado contra entrega.</strong>
-            <p>
-              Tu pedido ha sido registrado. Pagarás al momento de recibir el
-              producto. Nuestro equipo se pondrá en contacto contigo para
-              coordinar la entrega.
-            </p>
-          </div>
+          <p style={{ margin: 0 }}>
+            <br />
+            <CheckCircle
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>Pedido confirmado con pago contra entrega: </strong>
+            Tu pedido ha sido registrado. Pagarás al momento de recibir el
+            producto. Nuestro equipo se pondrá en contacto via WhatsApp para
+            coordinar la entrega.
+          </p>
         ),
         onEnter: () => {
           fetch(`/api/vent/${compraData._id}`, {
@@ -627,78 +619,131 @@ export function useRules(userName, nota) {
               "Content-Type": "application/json",
               "x-api-key": API_KEY,
             },
-            body: JSON.stringify({ pago: "contraentrega" }),
+            body: JSON.stringify({ pago: "Pendiente de envío" }),
           }).catch(console.error);
         },
-        options: [{ label: "Menú principal", next: "menu" }],
       },
-
-      cenOk: {
+      pagCre: {
         resp: () => (
-          <div>
-            <CheckCircle size={18} color="orange" />{" "}
-            <strong>Pedido confirmado contra entrega.</strong>
-            <p>
-              Tu pedido ha sido registrado. Pagarás al momento de recibir el
-              producto. Nuestro equipo se pondrá en contacto contigo para
-              coordinar la entrega.
-            </p>
-          </div>
+          <p style={{ margin: 0 }}>
+            <br />
+            <CheckCircle
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>Pedido confirmado para pago a credito: </strong>
+            Tu pedido ha sido registrado. Nuestro equipo se pondrá en contacto
+            contigo para coordinar el pago a credito.
+          </p>
         ),
-        options: [{ label: "Menú principal", next: "menu" }],
-      },
-      no: {
-        resp: () => "Esta opción aún no está disponible.",
-        options: [{ label: "Menú principal", next: "menu" }],
-      },
-      pTransfer: {
-        resp: () => "Ingrese el número de la factura pendiente por pagar.",
-        input: {
-          placeholder: "Número de factura",
-          buttonLabel: "Continuar",
-          action: buscarFra,
+        onEnter: () => {
+          fetch(`/api/vent/${compraData._id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": API_KEY,
+            },
+            body: JSON.stringify({ pago: "Esperando crédito" }),
+          }).catch(console.error);
         },
       },
-      fraNo: {
-        resp: () =>
-          "El número de factura ingresado no es válido o no está pendiente por pagar. Puede verificar sus facturas desde el menú.",
-        options: [{ label: "Menú principal", next: "menu" }],
-      },
-      fraSi: {
-        resp: () => {
-          if (mensajeFactura === "") {
-            return (
-              <>
-                Realice la transferencia o consignación y cargar el comprobante
-                desde "Seleccionar archivo".
-                <br />
-                <br />
-                <div style={{ color: "orange" }}>Datos bancarios:</div>
-                Cuenta ahorros Bancolombia: 24083017828
-                <br />
-                llave PRE-B: 0090625768.
-                <br />
-                <br />
-                Si va a cargar el comprobante posteriormente, puede hacerlo
-                ingresando a este chat desde el icono{" "}
-                <Bot
-                  size={18}
-                  style={{ verticalAlign: "middle", color: "orange" }}
-                />{" "}
-                e ingresar el número de factura, el cual puede visualizar en el
-                menú lateral en la opción “Compras”.
-              </>
-            );
-          }
+      reclamo: {
+        resp: () => (
+          <p style={{ margin: 0 }}>
+            <ClipboardList
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>Presentar una Solicitud: </strong>
+            Selecciona la opción que corresponda para presentar un PQRS, obtener
+            garantía o realizar la devolución de un producto.
+          </p>
+        ),
+        options: [
+          {
+            label: "Radicar una solicitud",
+            next: "fin",
+            action: () => {
+              const WPP_LINK = import.meta.env.VITE_WPP_LINK;
 
-          return mensajeFactura;
-        },
-        fileInput: {
-          label: "Cargar comprobante",
-          accept: "image/*",
-          action: GuardarImg,
-          next: "respImg",
-        },
+              const mensaje = encodeURIComponent(
+                `Hola, necesito Radicar una solicitud relacionado con un producto de la factura ${compraData?.factura}`,
+              );
+
+              window.open(`${WPP_LINK}?text=${mensaje}`, "_blank");
+            },
+          },
+          {
+            label: "Hacer devolución",
+            next: "fin",
+            action: () => {
+              const WPP_LINK = import.meta.env.VITE_WPP_LINK;
+
+              const mensaje = encodeURIComponent(
+                `Hola, necesito Hacer devolución relacionado con un producto de la factura ${compraData?.factura}`,
+              );
+
+              window.open(`${WPP_LINK}?text=${mensaje}`, "_blank");
+            },
+          },
+          {
+            label: "Solicitar una Garantía",
+            next: "fin",
+            action: () => {
+              const WPP_LINK = import.meta.env.VITE_WPP_LINK;
+
+              const mensaje = encodeURIComponent(
+                `Hola, necesito Solicitar una Garantía relacionado con un producto de la factura ${compraData?.factura}`,
+              );
+
+              window.open(`${WPP_LINK}?text=${mensaje}`, "_blank");
+            },
+          },
+        ],
+      },
+      fin: {
+        resp: () => (
+          <p style={{ margin: 0 }}>
+            <CheckCircle
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>El chat ha finalizado: </strong>
+            Si tiene alguna inquietud o solicitud, cierre esta ventana e ingrese
+            nuevamente a este chat de atención automatizada.
+          </p>
+        ),
+      },
+      finErr: {
+        resp: () => (
+          <p style={{ margin: 0 }}>
+            <CheckCircle
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>El chat ha finalizado: </strong>
+            Error en la solicitud registrada, cierre esta venta e ingrese
+            nuevamente a este chat de atención automatizada.
+          </p>
+        ),
+      },
+      procFin: {
+        resp: () => (
+          <p style={{ margin: 0 }}>
+            <CheckCircle
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>El chat ha finalizado: </strong>
+            Su solicitud ha registrada con éxito, si tiene alguna inquietud o
+            solicitud ingrese nuevamente a este chat de atención automatizada.
+          </p>
+        ),
       },
       respImg: {
         resp: () => (
@@ -723,7 +768,7 @@ export function useRules(userName, nota) {
             </div>
             <div>
               <ImageUp size={18} color="orange" fontWeight={"bold"} />
-              <strong>Comprobante erróneo: </strong>
+              <strong> Comprobante erróneo: </strong>
               <p>
                 ¿Subiste una imagen equivocada? Puedes volver a cargarla
                 ingresando a este chat, accediendo a la opción “ Medios de pago
@@ -737,69 +782,128 @@ export function useRules(userName, nota) {
           </div>
         ),
       },
-      no: {
-        resp: () => "Esta opción aún no está disponible.",
-        options: [{ label: "Menú principal", next: "menu" }],
+      recClav: {
+        resp: () => (
+          <p style={{ margin: 0 }}>
+            <ShoppingCart
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>Recuperar su contraseña: </strong>
+            Debes suministrar la información más completa posible, siendo
+            obligatorio el número de celular o correo electrónico, acompañado de
+            contraseñas anteriores, correos usados, nombre de usuario y número
+            de documento de identidad. la información será revisada y si
+            coincide con nuestros registros enviaremos en un plazo máximo de 30
+            minutos el link de recuperación de contraseña a su correo
+            electrónico y por mensaje de mensaje de texto al número celular si
+            se encuentra registrado. Recuerde que también puede solicitar el
+            link de recuperación de contraseña a través de la línea whatsapp.
+          </p>
+        ),
+        input: {
+          placeholder: "Ingrese datos que recuerde.",
+          buttonLabel: "Continuar",
+          action: async (valor) => {
+            if (!valor || valor.trim() === "") return "finErr";
+            try {
+              await fetch("/api/soli", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-api-key": API_KEY,
+                },
+                body: JSON.stringify({ solicitud: valor.trim() }),
+              });
+            } catch (error) {
+              console.error("Error al guardar solicitud:", error);
+            }
+            return "procFin"; // 👈 retorna el next para que ZeusBot navegue
+          },
+        },
       },
-      conEntrega: {
+      comCom: {
         resp: () => (
           <div className="space-y-3">
-            <div className="flex items-start gap-2">
-              <PackageCheck size={18} color="orange" />
-              <div>
-                <strong>Compra contra entrega:</strong>
-                <p>
-                  Para realizar tu compra con pago contra entrega, primero debes
-                  seleccionar el producto que deseas adquirir desde nuestra
-                  tienda.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <ShoppingCart size={18} color="orange" />
-              <div>
-                <strong>Agregar al carrito o compra rápida:</strong>
-                <p>
-                  Puedes hacer clic en <strong>Compra rápida</strong> o agregar
-                  el producto al <strong>carrito de compras</strong> para
-                  continuar con el proceso.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <CreditCard size={18} color="orange" />
-              <div>
-                <strong>Seleccionar medio de pago:</strong>
-                <p>
-                  Al ingresar al carrito, continúa con la compra y en la sección
-                  <strong> Medio de pago</strong> elige la opción
-                  <strong> Contra entrega</strong>.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <Truck size={18} color="orange" />
-              <div>
-                <strong>Confirmación y entrega:</strong>
-                <p>
-                  Verifica tus datos de envío, confirma el pedido y pagarás el
-                  producto al momento de recibirlo en la dirección registrada.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <HeartHandshake size={18} color="orange" />
-              ¡Estaremos atentos para ayudarte con tu pedido!
-            </div>
+            <p style={{ margin: 0 }}>
+              <strong>
+                Para realizar una compra tenga en cuenta los siguientes
+                pasos:{" "}
+              </strong>
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <ShoppingCart
+                size={30}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              <strong>1. Selecciona tus productos: </strong>
+              Agrega los productos al carrito y luego haz clic en “Realizar
+              pedido” para continuar o utiliza el botón “Comprar” para adquirir
+              un solo producto.
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <FileText
+                size={30}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              <strong>2. Completa tu información: </strong>
+              Ingresa tus datos de envío y datos personales, selecciona el medio
+              de pago y haz clic en “Confirmar pedido”.
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <Truck
+                size={30}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              <strong>3. Realiza el pago: </strong>
+              Sigue las instrucciones según el medio de pago seleccionado. Una
+              vez verificado, procederemos con el envío o entrega de tu pedido.
+            </p>
+            <br />
+            <p style={{ margin: 0 }}>
+              <HeartHandshake
+                size={20}
+                color="orange"
+                style={{ float: "left", marginRight: "10px" }}
+              />
+              ¡Estaremos atentos para ayudarte!
+            </p>
           </div>
         ),
       },
+      aWpp: {
+        resp: () => (
+          <p style={{ margin: 0 }}>
+            <ShoppingCart
+              size={30}
+              color="orange"
+              style={{ float: "left", marginRight: "10px" }}
+            />
+            <strong>Iniciar chat: </strong>
+            Haga clic en el siguiente botón para recibir atención personalizada
+            por parte de uno de nuestros asesores.
+          </p>
+        ),
+        options: [
+          {
+            label: "Ir a WhatsApp",
+            next: "fin",
+            action: () => {
+              const WPP_LINK = import.meta.env.VITE_WPP_LINK;
+              window.open(WPP_LINK, "_blank");
+            },
+          },
+        ],
+      },
     }),
-    [userName, nota, buscarFra, respFra, GuardarImg, compraData],
+    [userName, nota, GuardarImg, compraData],
   );
 
   return { rules, selectedImage };

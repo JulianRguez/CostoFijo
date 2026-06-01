@@ -182,7 +182,7 @@ export default function ZeusBot({ inicio, userName, nota, onClose }) {
 
     setMessages((prev) => [
       ...prev,
-      { from: "user", content: inputValue },
+      { from: "user", content: inputValue || "Sin información" },
       { from: "bot", content: nextRule.resp() },
     ]);
 
