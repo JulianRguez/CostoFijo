@@ -57,6 +57,7 @@ export default function CarroCompra({
   const [departamentoId, setDepartamentoId] = useState("");
   const [departamento, setDepartamento] = useState("");
   const [municipio, setMunicipio] = useState("");
+  const [apiLista, setApiLista] = useState(false);
   const [zona, setZona] = useState("");
   const [direccion, setDireccion] = useState("");
   const [envio, setEnvio] = useState(0);
@@ -78,33 +79,34 @@ export default function CarroCompra({
     axios
       .get("https://api-colombia.com/api/v1/Department")
       .then((res) => {
-        // Ordenar alfabéticamente por nombre
         const ordenados = res.data.sort((a, b) => a.name.localeCompare(b.name));
+
         setDepartamentos(ordenados);
-        // Pre-seleccionar Antioquia si existe
+
         const antioquia = ordenados.find((d) =>
           d.name.toLowerCase().includes("antioquia"),
         );
-        if (antioquia) {
-          setDepartamentoId(String(antioquia.id));
-          setDepartamento(antioquia.name);
-          // Cargar municipios de Antioquia
-          axios
-            .get(
-              `https://api-colombia.com/api/v1/Department/${antioquia.id}/cities`,
-            )
-            .then((r) => {
-              const muns = r.data.sort((a, b) => a.name.localeCompare(b.name));
-              setMunicipios(muns);
-              // Pre-seleccionar primer municipio
-              if (muns.length > 0) {
-                setMunicipio(muns[0].name);
-                const zonas = zonasPorMunicipio[muns[0].name] || [];
-                setZona(zonas[0] || "");
-              }
-            })
-            .catch((err) => console.error(err));
-        }
+
+        if (!antioquia) return;
+
+        setDepartamentoId(String(antioquia.id));
+        setDepartamento(antioquia.name);
+
+        axios
+          .get(
+            `https://api-colombia.com/api/v1/Department/${antioquia.id}/cities`,
+          )
+          .then((r) => {
+            const muns = r.data.sort((a, b) => a.name.localeCompare(b.name));
+
+            setMunicipios(muns);
+
+            // IMPORTANTE:
+            // aquí NO seleccionamos municipio ni zona
+
+            setApiLista(true);
+          })
+          .catch((err) => console.error(err));
       })
       .catch((err) => console.error(err));
   }, []);
@@ -624,52 +626,41 @@ export default function CarroCompra({
   // (solo si está autenticado y es válida)
   // ======================================
   useEffect(() => {
-    if (!cliente || !cliente.dire) return;
+    if (!apiLista) return;
 
-    // No sobrescribir si el usuario ya escribió
-    if (direccion && direccion.length > 0) return;
+    // Cliente NO autenticado
+    if (!cliente || !cliente.dire) {
+      setMunicipio("");
+      setZona("");
+      setDireccion("");
+      return;
+    }
 
     const partes = cliente.dire.split(",").map((p) => p.trim());
+
     if (partes.length !== 4) return;
 
     const [dep, mun, zon, dir] = partes;
 
-    // Validación mínima de dirección
-    if (!dir || dir.length < 8) return;
-
-    // Buscar el departamento en la lista cargada
     const depObj = departamentos.find(
       (d) => d.name.toLowerCase() === dep.toLowerCase(),
     );
 
-    if (depObj) {
-      setDepartamentoId(String(depObj.id));
-      setDepartamento(depObj.name);
-      // Cargar municipios del departamento guardado
-      axios
-        .get(`https://api-colombia.com/api/v1/Department/${depObj.id}/cities`)
-        .then((res) => {
-          const muns = res.data.sort((a, b) => a.name.localeCompare(b.name));
-          setMunicipios(muns);
-          setMunicipio(mun);
-          const zonas = zonasPorMunicipio[mun] || [];
-          const zonaFinal = zonas.includes(zon) ? zon : zonas[0] || "";
-          setZona(zonaFinal);
-          setDireccion(dir);
-          actualizarInfoDireccion(depObj.name, mun, zonaFinal, dir, true);
-        })
-        .catch((err) => console.error(err));
-    } else {
-      // Fallback: si departamentos aún no cargaron, setear solo los strings
-      setDepartamento(dep);
-      setMunicipio(mun);
-      const zonas = zonasPorMunicipio[mun] || [];
-      const zonaFinal = zonas.includes(zon) ? zon : zonas[0] || "";
-      setZona(zonaFinal);
-      setDireccion(dir);
-      actualizarInfoDireccion(dep, mun, zonaFinal, dir, true);
-    }
-  }, [cliente, departamentos]);
+    if (!depObj) return;
+
+    setDepartamentoId(String(depObj.id));
+    setDepartamento(depObj.name);
+
+    setMunicipio(mun);
+
+    const zonas = zonasPorMunicipio[mun] || [];
+    const zonaFinal = zonas.includes(zon) ? zon : zonas[0] || "";
+
+    setZona(zonaFinal);
+    setDireccion(dir);
+
+    actualizarInfoDireccion(depObj.name, mun, zonaFinal, dir, true);
+  }, [apiLista, cliente, departamentos]);
 
   return (
     <div className="carro-overlay" onClick={onClose}>

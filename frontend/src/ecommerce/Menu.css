@@ -219,3 +219,29 @@
 .menu-local-link:hover {
   text-decoration: underline;
 }
+.factura-linea {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.copy-icon {
+  width: 14px;
+  height: 14px;
+  color: #000000;
+  opacity: 0.4;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.copy-icon:hover {
+  opacity: 1;
+  color: #ff7a00;
+}
+
+.copy-icon:active {
+  opacity: 1;
+  color: #ff7a00;
+  transform: scale(0.85);
+}

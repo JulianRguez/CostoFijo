@@ -10,6 +10,7 @@ import {
   Heart,
   FileText,
   LogIn,
+  Copy,
   UserCheck,
   UserX,
 } from "lucide-react";
@@ -474,8 +475,17 @@ export default function MenuLateral({
                       {factura.pago}
                     </span>
                   </div>
-                  <div className="compra-linea">
-                    <strong>Factura:</strong> {factura.factura}
+                  <div className="compra-linea factura-linea">
+                    <strong>Factura:</strong>
+
+                    <span>{factura.factura}</span>
+
+                    <Copy
+                      className="copy-icon"
+                      onClick={() => {
+                        navigator.clipboard.writeText(String(factura.factura));
+                      }}
+                    />
                   </div>
 
                   <div className="compra-linea">

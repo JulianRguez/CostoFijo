@@ -191,7 +191,7 @@ export const getResumenVentas = async (req, res) => {
     fecha: { $gte: inicio, $lt: fin },
     pago: { $in: ["Pagado en efectivo", "Pagado y entregado"] }
   },
-  { productos: 1, otrosCobros: 1 }
+  { productos: 1, otrosCobros: 1, descuentos: 1 }
 );
 
     const resumen = {};
@@ -212,7 +212,7 @@ export const getResumenVentas = async (req, res) => {
   }
 
   if (venta.otrosCobros > 0 && etiquetaPrincipal) {
-    resumen[etiquetaPrincipal] += venta.otrosCobros;
+    resumen[etiquetaPrincipal] += (venta.otrosCobros || 0) - (venta.descuentos || 0);
   }
 }
 
