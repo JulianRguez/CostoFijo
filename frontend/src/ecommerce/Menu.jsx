@@ -318,7 +318,7 @@ export default function MenuLateral({
             </p>
             <input
               type="text"
-              maxLength={10}
+              maxLength={32}
               placeholder="Correo o celular"
               value={dato}
               onChange={(e) => setDato(e.target.value)}
@@ -579,6 +579,7 @@ export default function MenuLateral({
                 Regístrate con dirección y cédula e ingresa el cupón{" "}
                 <strong>CUPON33</strong> al realizar el pago y obtén un
                 descuento del 10% en tu primera compra superior a $50.000.
+                Aplica T&C
               </p>
             )}
           </div>
