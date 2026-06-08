@@ -941,6 +941,7 @@ export default function Inicio() {
           modo={modoCliente}
           setUsuario={setUsuario}
           infoPedido={infoPedido}
+          esCarrito={productoCompraDirecta === null}
         />
       )}
       <Alerta

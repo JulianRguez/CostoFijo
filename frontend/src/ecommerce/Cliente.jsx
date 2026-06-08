@@ -12,6 +12,7 @@ export default function Cliente({
   modo,
   setUsuario,
   infoPedido,
+  esCarrito,
 }) {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
@@ -233,6 +234,18 @@ export default function Cliente({
       } catch (err) {
         console.error("Error creando la venta:", err);
         return setErrorMsg("No se pudo registrar la venta");
+      }
+
+      // 🛒 Si el pedido vino del carrito, vaciarlo en la API y en el estado
+      if (esCarrito && clienteId) {
+        try {
+          await axios.put("/api/clie", [{ _id: clienteId, carrito: [] }], {
+            headers: { "x-api-key": API_KEY },
+          });
+          setUsuario((u) => ({ ...u, carrito: [] }));
+        } catch (err) {
+          console.error("Error vaciando el carrito:", err);
+        }
       }
 
       setMostrarZeus(true); // ✅ ABRE ZEUSBOT
